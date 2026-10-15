@@ -174,11 +174,20 @@ export function readTextContent(content: string) {
   );
 }
 export async function downloadFile(name: string, content: string) {
-  const blob = isLocalFile(content) ? await readLocalFile(content) : null;
+  let blob: Blob;
+  if (isLocalFile(content)) blob = await readLocalFile(content);
+  else {
+    if (!content.startsWith("data:"))
+      throw new Error("File content is invalid.");
+    blob = await (await fetch(content)).blob();
+  }
   const link = document.createElement("a");
-  const url = blob ? URL.createObjectURL(blob) : content;
+  const url = URL.createObjectURL(blob);
   link.href = url;
   link.download = name;
+  link.hidden = true;
+  document.body.append(link);
   link.click();
-  if (blob) setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
