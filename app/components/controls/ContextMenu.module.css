@@ -23,7 +23,16 @@
   font-size: 13px;
   cursor: pointer;
 }
-.menu button:hover,
+.menu button > svg {
+  flex-shrink: 0;
+}
+.menu button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.menu button:not(:disabled):hover,
 .menu button:focus-visible {
   background: var(--hover);
   outline: none;

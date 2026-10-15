@@ -106,7 +106,7 @@ export default function ContextMenu({
           }}
         >
           {Icon && <Icon size={16} />}
-          {label}
+          <span>{label}</span>
         </button>
       ))}
     </div>,

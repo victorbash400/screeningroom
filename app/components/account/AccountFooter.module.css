@@ -55,5 +55,12 @@
   height: 36px;
   gap: 12px;
 }
+.menu button > svg {
+  width: 17px;
+  height: 17px;
+}
+.menu button:first-child:disabled {
+  font-size: 12px;
+}
 
 .menu button:disabled { color: var(--muted); }
