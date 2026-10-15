@@ -61,13 +61,30 @@ export default function ChatDrawer({
   const [creating, setCreating] = useState(false);
   const [audience, setAudience] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  function closeAudience() {
+    setAudience(false);
+    queueMicrotask(() => {
+      drawer.current
+        ?.querySelector<HTMLButtonElement>(
+          '[aria-label="Who can see this conversation"]',
+        )
+        ?.focus();
+    });
+  }
   return (
     <aside
       ref={drawer}
       className={styles.drawer}
       aria-label="Agent chat"
       onKeyDown={(event) => {
+        if (
+          event.defaultPrevented ||
+          (event.target instanceof Element &&
+            event.target.closest("dialog[open]"))
+        )
+          return;
         if (event.key === "Escape") {
+          event.stopPropagation();
           if (historyOpen) setHistoryOpen(false);
           else onClose();
         }
@@ -136,7 +153,7 @@ export default function ChatDrawer({
         />
       )}
       {audience && (
-        <ConversationAudienceDialog onClose={() => setAudience(false)} />
+        <ConversationAudienceDialog onClose={closeAudience} />
       )}
     </aside>
   );

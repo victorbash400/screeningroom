@@ -25,7 +25,14 @@ export default function ReferencePicker({
     const previous = document.activeElement;
     dialog.current?.showModal();
     return () => {
-      if (previous instanceof HTMLElement) previous.focus();
+      queueMicrotask(() => {
+        if (
+          previous instanceof HTMLElement &&
+          previous !== document.body &&
+          previous.isConnected
+        )
+          previous.focus();
+      });
     };
   }, []);
   return (
