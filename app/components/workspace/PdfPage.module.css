@@ -1,0 +1,19 @@
+.page {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 16px 0;
+  box-sizing: border-box;
+  background: var(--hover);
+}
+.page canvas {
+  display: block;
+  margin: 0 auto;
+  background: white;
+}
+.page p {
+  color: var(--danger);
+  padding: 0 16px;
+  font-size: 12px;
+}

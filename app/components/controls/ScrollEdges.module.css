@@ -1,0 +1,26 @@
+.edges {
+  --scroll-top: 0px;
+  --scroll-bottom: 0px;
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--scroll-top),
+      #000 calc(100% - var(--scroll-bottom)),
+      transparent
+    ),
+    linear-gradient(#000, #000);
+  mask-size:
+    calc(100% - 8px) 100%,
+    8px 100%;
+  mask-position:
+    left top,
+    right top;
+  mask-repeat: no-repeat;
+}
+.edges[data-scroll-before="true"] {
+  --scroll-top: 12px;
+}
+.edges[data-scroll-after="true"] {
+  --scroll-bottom: 12px;
+}

@@ -1,0 +1,34 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding: 36px;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.list {
+  margin-top: 24px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.mobile {
+  display: none;
+}
+@media (max-width: 760px) {
+  .home {
+    padding: 20px;
+  }
+  .mobile {
+    display: block;
+  }
+}
+
+.refresh {
+  margin-left: auto;
+}

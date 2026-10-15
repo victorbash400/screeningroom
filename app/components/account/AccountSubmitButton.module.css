@@ -1,0 +1,26 @@
+.submit {
+  height: 52px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: #e0e6da;
+  color: #293326;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.submit:disabled {
+  color: #57604f;
+  cursor: default;
+}
+.light {
+  height: 42px;
+  background: #222226;
+  color: #fff;
+}
+.light:disabled {
+  background: #e3e3e6;
+  color: #737373;
+}

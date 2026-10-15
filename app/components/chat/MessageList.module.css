@@ -1,0 +1,10 @@
+.messages {
+  min-height: 0;
+  overflow-y: auto;
+  flex: 1;
+  padding: 12px 0;
+}
+.content {
+  max-width: 760px;
+  margin: 0 auto;
+}

@@ -1,0 +1,45 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: #737373;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -8px;
+}
+.actions button {
+  padding: 8px 10px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #222226;
+  font-size: 12px;
+  cursor: pointer;
+}
+.actions button:hover {
+  background: #2222260f;
+}
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.error {
+  margin: 0;
+  color: #b73526;
+  font-size: 12px;
+}
+.status {
+  color: #737373;
+  font-size: 12px;
+}

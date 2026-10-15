@@ -1,0 +1,13 @@
+.session {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+.room {
+  flex: 1;
+  min-height: 0;
+}
+.room[hidden] {
+  display: none;
+}

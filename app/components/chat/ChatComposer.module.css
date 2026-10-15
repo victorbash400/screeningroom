@@ -1,0 +1,59 @@
+.composer {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 24px);
+  max-width: 760px;
+  align-self: center;
+  box-sizing: border-box;
+  margin: 8px 12px 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+}
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.row textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  border: 0;
+  outline: none;
+  padding: 7px 0;
+  box-sizing: content-box;
+  background: transparent;
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: 90px;
+}
+.row textarea:focus-visible {
+  outline: none;
+}
+.composer:focus-within {
+  border-color: var(--muted);
+}
+.row textarea::placeholder {
+  color: var(--muted);
+}
+.send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  cursor: pointer;
+}
+.send:disabled {
+  background: var(--disabled);
+  cursor: default;
+}

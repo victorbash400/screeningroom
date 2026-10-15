@@ -1,0 +1,6 @@
+.grid {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 18px;
+}

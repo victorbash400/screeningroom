@@ -1,0 +1,52 @@
+.control {
+  width: 154px;
+}
+.field {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding-left: 10px;
+}
+.field:focus-within {
+  border-color: var(--accent);
+}
+.field > span {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.field input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+}
+.field button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.error {
+  display: block;
+  color: var(--danger);
+  font-size: 11px;
+  margin-top: 6px;
+}

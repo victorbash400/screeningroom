@@ -1,0 +1,70 @@
+import { useEffect, useRef, useState } from "react";
+import AccountField from "../account/AccountField";
+import PillButton from "./PillButton";
+import styles from "./NameDialog.module.css";
+interface Props {
+  error?: string | null;
+  label: string;
+  action: string;
+  initial?: string;
+  onSubmit: (name: string) => boolean;
+  onClose: () => void;
+}
+export default function NameDialog({
+  label,
+  action,
+  initial = "",
+  onSubmit,
+  onClose,
+  error,
+}: Props) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [name, setName] = useState(initial);
+  useEffect(() => {
+    const previous = document.activeElement;
+    dialog.current?.showModal();
+    return () => {
+      if (previous instanceof HTMLElement) previous.focus();
+    };
+  }, []);
+  return (
+    <dialog
+      ref={dialog}
+      className={styles.dialog}
+      aria-label={label}
+      onCancel={onClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (name.trim() && onSubmit(name.trim())) onClose();
+        }}
+      >
+        <AccountField
+          label={label}
+          autoFocus
+          value={name}
+          maxLength={100}
+          onChange={(event) => setName(event.target.value)}
+          onFocus={(event) => event.target.select()}
+        />
+        {error && (
+          <p role="alert" className={styles.error}>
+            {error}
+          </p>
+        )}
+        <div className={styles.actions}>
+          <PillButton secondary onClick={onClose}>
+            Cancel
+          </PillButton>
+          <PillButton type="submit" disabled={!name.trim()}>
+            {action}
+          </PillButton>
+        </div>
+      </form>
+    </dialog>
+  );
+}

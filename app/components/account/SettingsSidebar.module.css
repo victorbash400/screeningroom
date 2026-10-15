@@ -1,0 +1,12 @@
+.navigation {
+  margin-top: 18px;
+  animation: enter 220ms ease-out;
+}
+.navigation button[aria-current="page"] {
+  background: var(--selection);
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateX(6px); }
+  to { opacity: 1; transform: translateX(0); }
+}

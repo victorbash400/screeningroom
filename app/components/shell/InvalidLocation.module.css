@@ -1,0 +1,8 @@
+.surface {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 20px;
+  padding: 36px;
+  font-size: 13px;
+}

@@ -1,0 +1,20 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  min-height: 42px;
+  border-bottom: 1px solid var(--divider);
+}
+.row > svg {
+  flex-shrink: 0;
+  color: var(--icon);
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 500;
+}

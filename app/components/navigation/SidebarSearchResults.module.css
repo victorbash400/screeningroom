@@ -1,0 +1,44 @@
+.results {
+  position: absolute;
+  z-index: 30;
+  top: 100%;
+  left: -1px;
+  width: calc(100% + 2px);
+  max-height: min(360px, 55dvh);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 4px 6px 6px;
+  border: 1px solid var(--search-outline);
+  border-top: 0;
+  border-radius: 0 0 20px 20px;
+  background: var(--surface);
+  animation: expand 150ms ease-out;
+}
+.results button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.results button:hover,
+.results button:focus-visible { background: var(--hover); }
+.results button:focus-visible {
+  outline-offset: -2px;
+}
+.results svg { flex-shrink: 0; color: var(--icon); }
+.results span { min-width: 0; overflow-wrap: anywhere; }
+.results small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+.count { display: block; padding: 8px 12px; color: var(--muted); font-size: 12px; }
+
+@keyframes expand {
+  from { clip-path: inset(0 0 100%); }
+  to { clip-path: inset(0); }
+}

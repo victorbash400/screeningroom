@@ -1,0 +1,384 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Screening Room development foundation: private storage, managed auth and isolated Bedrock project.",
+  "Resources": {
+    "Records": {
+      "Type": "AWS::DynamoDB::Table",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "TableName": "ScreeningRoom-dev",
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "pk",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "sk",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "pk",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "sk",
+            "KeyType": "RANGE"
+          }
+        ],
+        "SSESpecification": {
+          "SSEEnabled": true
+        },
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": true
+        },
+        "TimeToLiveSpecification": {
+          "AttributeName": "expiresAt",
+          "Enabled": true
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "screeningroom"
+          },
+          {
+            "Key": "Environment",
+            "Value": "development"
+          }
+        ],
+        "DeletionProtectionEnabled": true
+      }
+    },
+    "Files": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "screeningroom-dev-${AWS::AccountId}-${AWS::Region}"
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "screeningroom"
+          },
+          {
+            "Key": "Environment",
+            "Value": "development"
+          }
+        ]
+      }
+    },
+    "FilesPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Files"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "RequireTLS",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Files",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${Files.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Users": {
+      "Type": "AWS::Cognito::UserPool",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "UserPoolName": "ScreeningRoom-dev",
+        "UsernameAttributes": [
+          "email"
+        ],
+        "AutoVerifiedAttributes": [
+          "email"
+        ],
+        "UsernameConfiguration": {
+          "CaseSensitive": false
+        },
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 12,
+            "RequireLowercase": true,
+            "RequireUppercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": false
+          }
+        },
+        "Schema": [
+          {
+            "Name": "email",
+            "Required": true,
+            "Mutable": true
+          },
+          {
+            "Name": "name",
+            "Required": true,
+            "Mutable": true
+          }
+        ],
+        "AccountRecoverySetting": {
+          "RecoveryMechanisms": [
+            {
+              "Name": "verified_email",
+              "Priority": 1
+            }
+          ]
+        },
+        "UserPoolTier": "LITE",
+        "UserPoolTags": {
+          "Application": "screeningroom",
+          "Environment": "development"
+        }
+      }
+    },
+    "WebClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "ClientName": "ScreeningRoom-next",
+        "UserPoolId": {
+          "Ref": "Users"
+        },
+        "GenerateSecret": false,
+        "ExplicitAuthFlows": [
+          "ALLOW_USER_PASSWORD_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH"
+        ],
+        "PreventUserExistenceErrors": "ENABLED",
+        "EnableTokenRevocation": true,
+        "AccessTokenValidity": 1,
+        "IdTokenValidity": 1,
+        "RefreshTokenValidity": 7,
+        "TokenValidityUnits": {
+          "AccessToken": "hours",
+          "IdToken": "hours",
+          "RefreshToken": "days"
+        },
+        "ReadAttributes": [
+          "email",
+          "email_verified",
+          "name"
+        ],
+        "WriteAttributes": [
+          "email",
+          "name"
+        ]
+      }
+    },
+    "AgentProject": {
+      "Type": "AWS::BedrockMantle::Project",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Name": "ScreeningRoom-Development",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "screeningroom"
+          },
+          {
+            "Key": "Environment",
+            "Value": "development"
+          }
+        ]
+      }
+    },
+    "RuntimeUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "UserName": "screeningroom-dev-runtime",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "screeningroom"
+          },
+          {
+            "Key": "Environment",
+            "Value": "development"
+          }
+        ]
+      }
+    },
+    "RuntimePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "screeningroom-dev-runtime",
+        "Users": [
+          {
+            "Ref": "RuntimeUser"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query",
+                "dynamodb:TransactWriteItems",
+                "dynamodb:DescribeTable"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "Records",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion"
+              ],
+              "Resource": {
+                "Fn::Sub": "${Files.Arn}/users/*"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "Files",
+                  "Arn"
+                ]
+              },
+              "Condition": {
+                "StringLike": {
+                  "s3:prefix": [
+                    "users/*"
+                  ]
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "bedrock-mantle:CreateInference",
+                "bedrock-mantle:GetProject",
+                "bedrock-mantle:ListTagsForResource"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "AgentProject",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "bedrock-mantle:CallWithBearerToken"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "TableName": {
+      "Value": {
+        "Ref": "Records"
+      }
+    },
+    "BucketName": {
+      "Value": {
+        "Ref": "Files"
+      }
+    },
+    "UserPoolId": {
+      "Value": {
+        "Ref": "Users"
+      }
+    },
+    "UserPoolClientId": {
+      "Value": {
+        "Ref": "WebClient"
+      }
+    },
+    "BedrockProjectId": {
+      "Value": {
+        "Fn::GetAtt": [
+          "AgentProject",
+          "Id"
+        ]
+      }
+    },
+    "BedrockProjectArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "AgentProject",
+          "Arn"
+        ]
+      }
+    },
+    "RuntimeUserName": {
+      "Value": {
+        "Ref": "RuntimeUser"
+      }
+    }
+  }
+}

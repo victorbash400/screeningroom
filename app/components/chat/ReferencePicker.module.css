@@ -1,0 +1,49 @@
+.picker {
+  width: min(468px, calc(100vw - 40px));
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.picker::backdrop {
+  background: #00000052;
+}
+.picker h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 500;
+}
+.content {
+  height: min(340px, calc(100dvh - 220px));
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+}
+.content header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.content header > span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.picker footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}

@@ -1,0 +1,95 @@
+.row {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  border-radius: 10px;
+  margin-top: 1px;
+}
+.row:hover {
+  background: var(--hover);
+}
+.row.selected {
+  background: var(--selection);
+}
+.toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.toggle svg {
+  transition: transform 220ms ease;
+}
+.toggle.expanded svg {
+  transform: rotate(90deg);
+}
+.label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 4px 0 2px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.label svg {
+  flex-shrink: 0;
+  color: var(--icon);
+}
+.label span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.actions {
+  display: flex;
+  flex-shrink: 0;
+}
+.actions button {
+  width: 24px;
+  height: 28px;
+}
+.actions svg {
+  width: 14px;
+  height: 14px;
+}
+.nested .actions {
+  opacity: 0;
+}
+.nested:hover .actions,
+.nested:focus-within .actions {
+  opacity: 1;
+}
+@media (hover: none) {
+  .nested .actions {
+    opacity: 1;
+  }
+}
+
+.nested .actions:has(.folderMenu) {
+  opacity: 1;
+}
+.nested .actions > button:not(.folderMenu) {
+  opacity: 0;
+}
+.nested:hover .actions > button,
+.nested:focus-within .actions > button {
+  opacity: 1;
+}
+
+.row[data-drag-over] {
+  background: var(--selection);
+}

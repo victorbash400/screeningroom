@@ -1,0 +1,56 @@
+.editor {
+  width: min(668px, calc(100vw - 40px));
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.editor::backdrop {
+  background: #00000052;
+}
+.editor form {
+  display: flex;
+  flex-direction: column;
+}
+.editor header {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.editor p {
+  color: var(--danger);
+  font-size: 12px;
+}
+.editor textarea {
+  width: 100%;
+  height: min(380px, 55dvh);
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  resize: none;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+.actions button {
+  border: 0;
+  border-radius: 20px;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.actions button:hover {
+  background: var(--hover);
+}

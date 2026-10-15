@@ -1,0 +1,25 @@
+.dialog {
+  width: min(380px, calc(100vw - 40px));
+  box-sizing: border-box;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 8px 32px #2d2d2b12;
+}
+.dialog::backdrop {
+  background: #00000052;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 12px;
+  margin: 12px 0 0;
+}

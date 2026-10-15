@@ -1,0 +1,22 @@
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0 16px;
+}
+.tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.tabs button:hover { background: var(--hover); }
+.tabs button[aria-pressed="true"] { background: var(--selection); color: var(--ink); }
+.tabs button:disabled { cursor: default; opacity: 0.5; }

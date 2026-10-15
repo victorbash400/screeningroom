@@ -1,0 +1,117 @@
+.dialog {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(#0b100633, #0b100633),
+    url("/account-moss.webp") 62.5% center / cover;
+  color: #e7ece1;
+}
+.dialog::backdrop {
+  background: var(--surface);
+}
+.position {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100% - 64px);
+}
+.surface {
+  width: 396px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 28px;
+}
+.surface header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 32px;
+  font-size: 17px;
+  font-weight: 500;
+}
+.surface header > :first-child {
+  opacity: 0.9;
+}
+.surface form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.links {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -8px;
+}
+.links button,
+.link {
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 0;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.back {
+  height: 52px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #e0e6da;
+  color: #293326;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.back:disabled,
+.link:disabled,
+.links button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.back {
+  margin-top: -8px;
+  background: #6c776a30;
+  color: #e3e9de;
+  border: 1px solid #7f8c7850;
+}
+.error {
+  margin: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f9e8e2;
+  color: #9e3022;
+  font-size: 12px;
+}
+.light {
+  --ink: #222226;
+  --muted: #737373;
+  --panel: #fff;
+  --border: #dadadd;
+  --accent: #087cff;
+  width: 436px;
+  border-radius: 20px;
+  background: #f7f7f2ef;
+  color: var(--ink);
+}
+.light .back {
+  border-color: var(--border);
+  color: var(--ink);
+  background: transparent;
+}
+@media (max-height: 650px) {
+  .position {
+    min-height: 100%;
+  }
+  .surface {
+    padding: 20px;
+  }
+}

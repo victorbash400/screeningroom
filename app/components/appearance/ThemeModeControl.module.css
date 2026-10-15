@@ -1,0 +1,20 @@
+.modes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modes button {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+}
+.modes button[aria-pressed="true"] {
+  border: 2px solid var(--accent);
+  padding: 2px;
+}
+.modes svg {
+  border-radius: 5px;
+}

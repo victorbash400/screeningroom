@@ -1,0 +1,34 @@
+.dialog {
+  width: min(408px, calc(100vw - 40px));
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: #00000052;
+}
+.dialog h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 500;
+}
+.dialog p {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.dialog p[role="alert"] {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}

@@ -1,0 +1,31 @@
+.area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  box-sizing: border-box;
+  padding: 28px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  transition: border-color 140ms, background-color 140ms;
+}
+.area[data-drag-over] { border-color: var(--accent); background: var(--selection); }
+.area > svg { margin-bottom: 20px; max-width: 100%; flex-shrink: 0; }
+.folder {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.folder:hover { background: var(--hover); color: var(--ink); }
+.folder:disabled { cursor: default; opacity: 0.5; }
+@media (max-height: 520px) {
+  .area { min-height: 220px; padding: 16px; }
+  .area > svg { height: 80px; margin-bottom: 12px; }
+}

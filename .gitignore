@@ -6,8 +6,12 @@ build/
 coverage/
 .turbo/
 .vercel/
+.agents/
+skills-lock.json
 .pnpm-store/
 *.tsbuildinfo
+__pycache__/
+*.pyc
 next-env.d.ts
 .DS_Store
 *.log
@@ -23,3 +27,4 @@ next-env.d.ts
 *.[mM][dD]
 *.[mM][dD][xX]
 !/README.md
+.vercel

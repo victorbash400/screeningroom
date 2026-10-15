@@ -1,0 +1,21 @@
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding-left: 10px;
+  border-radius: 9px;
+  background: var(--hover);
+  font-size: 12px;
+}
+.chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip svg {
+  flex-shrink: 0;
+}

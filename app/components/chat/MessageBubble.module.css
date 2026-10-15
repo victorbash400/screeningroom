@@ -1,0 +1,56 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 2px 16px;
+}
+.row.start {
+  padding-top: 12px;
+}
+.time {
+  padding: 0 4px 4px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.bubble {
+  max-width: 82%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: var(--selection);
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.bubble.joined {
+  border-top-right-radius: 6px;
+}
+.bubble.end {
+  border-bottom-right-radius: 5px;
+}
+.reference {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 6px 0;
+  text-align: left;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.thread {
+  display: block;
+  min-height: 26px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+}

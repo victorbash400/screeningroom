@@ -1,0 +1,47 @@
+.surface {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  container: directory / inline-size;
+}
+.browser {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+}
+.empty {
+  height: 100%;
+}
+.columns {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+}
+.column {
+  flex: 1 0 240px;
+  min-width: 240px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+.column:last-child {
+  border: 0;
+}
+.emptyRows {
+  min-height: 100%;
+  margin: 0 8px;
+  border-radius: 5px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--stripe) 0 32px,
+    transparent 32px 64px
+  );
+}

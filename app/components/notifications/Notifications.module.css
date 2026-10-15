@@ -1,0 +1,14 @@
+.surface {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.list {
+  min-height: 0;
+  overflow-y: auto;
+}
+.error {
+  color: var(--danger);
+  font-size: 12px;
+  padding: 12px 0;
+}

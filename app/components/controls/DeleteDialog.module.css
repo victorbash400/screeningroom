@@ -1,0 +1,42 @@
+.dialog {
+  width: max-content;
+  min-width: min(280px, calc(100vw - 40px));
+  max-width: calc(100vw - 40px);
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: #00000052;
+}
+.dialog form > span {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+.actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.actions button:hover {
+  background: var(--hover);
+}
+.error {
+  font-size: 12px;
+  color: var(--danger);
+}

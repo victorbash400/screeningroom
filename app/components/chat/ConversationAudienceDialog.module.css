@@ -1,0 +1,26 @@
+.dialog {
+  width: min(348px, calc(100vw - 40px));
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: #00000052;
+}
+.dialog h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 500;
+}
+.dialog > div {
+  padding: 6px 0;
+  font-size: 13px;
+}
+.dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

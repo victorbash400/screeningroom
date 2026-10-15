@@ -1,0 +1,15 @@
+.surface {
+  position: relative;
+}
+.surface[data-external-drag]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid var(--accent);
+  background: var(--selection);
+  opacity: 0.7;
+}
+.surface[data-drag-over] {
+  background: var(--selection);
+}

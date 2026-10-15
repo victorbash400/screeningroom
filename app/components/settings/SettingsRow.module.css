@@ -1,0 +1,32 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  font-size: 13px;
+}
+.label,
+.value {
+  flex: 1;
+  min-width: 0;
+}
+.value {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  text-align: right;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.value > span {
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+@container (max-width: 411px) {
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,21 @@
+.icon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.icon > span {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  box-sizing: border-box;
+  background: var(--accent);
+  border: 1.5px solid var(--panel);
+  border-radius: 50%;
+}

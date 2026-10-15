@@ -1,0 +1,30 @@
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  min-width: 0;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+.breadcrumbs span {
+  display: flex;
+  align-items: center;
+}
+.breadcrumbs svg {
+  flex-shrink: 0;
+}
+.breadcrumbs button {
+  border: 0;
+  background: transparent;
+  padding: 8px 5px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.breadcrumbs button:hover {
+  background: var(--hover);
+}

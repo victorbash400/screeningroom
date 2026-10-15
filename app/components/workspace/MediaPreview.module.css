@@ -1,0 +1,29 @@
+.media {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  max-height: 100%;
+}
+.media > video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--media-ratio, 16 / 9);
+  min-height: 0;
+  object-fit: contain;
+  background: #000;
+}
+.media > p {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--danger);
+}
+.media:fullscreen {
+  background: #000;
+  justify-content: center;
+}
+.media:fullscreen > video {
+  flex: 1;
+  min-height: 0;
+}

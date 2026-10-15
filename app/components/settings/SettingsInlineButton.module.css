@@ -1,0 +1,32 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.button:hover {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+.primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.button:disabled {
+  background: transparent;
+  color: var(--disabled);
+  cursor: default;
+}
+
+.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 4%, var(--accent));
+}
