@@ -1,4 +1,5 @@
 .media {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -14,6 +15,8 @@
   background: #000;
 }
 .media > p {
+  z-index: 1;
+  background: var(--panel);
   margin: 0;
   padding: 12px;
   font-size: 12px;
@@ -24,6 +27,14 @@
   justify-content: center;
 }
 .media:fullscreen > video {
-  flex: 1;
+  height: 100%;
+  max-height: 100dvh;
   min-height: 0;
+}
+
+@media (hover: hover) {
+  .media[data-playing="true"]:not(:hover):not(:focus-within) > [role="group"] {
+    opacity: 0;
+    pointer-events: none;
+  }
 }

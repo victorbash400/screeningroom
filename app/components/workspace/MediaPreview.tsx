@@ -36,13 +36,14 @@ export default function MediaPreview({
     onPause: () => setPlaying(false),
     onEnded: () => setPlaying(false),
     onTimeUpdate: () => setCurrent(media.current?.currentTime ?? 0),
+    onSeeking: () => setCurrent(media.current?.currentTime ?? 0),
     onLoadedMetadata: updateDuration,
     onDurationChange: updateDuration,
     onVolumeChange: () => setMuted(media.current?.muted ?? false),
     onError: () => setError("Cannot play this file."),
   };
   return (
-    <div className={styles.media}>
+    <div className={styles.media} data-playing={playing}>
       {video ? (
         <video
           ref={(element) => {
