@@ -27,7 +27,7 @@
   background: transparent;
   font-size: 13px;
   line-height: 1.5;
-  max-height: 90px;
+  max-height: 78px;
 }
 .row textarea:focus-visible {
   outline: none;

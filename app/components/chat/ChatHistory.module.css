@@ -20,7 +20,7 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  padding: 10px 8px;
+  padding: 10px 16px;
   text-align: left;
   font-size: 12px;
   cursor: pointer;
@@ -41,6 +41,9 @@
   margin-top: 16px;
 }
 .items button {
+  display: block;
+  padding-top: 9px;
+  padding-bottom: 9px;
   margin-bottom: 4px;
 }
 @keyframes arrive {
