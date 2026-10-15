@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import AccountField from "../account/AccountField";
 import PillButton from "./PillButton";
 import styles from "./NameDialog.module.css";
+import { useDialogBackdrop } from "../../state/useDialogBackdrop";
 interface Props {
   error?: string | null;
   label: string;
@@ -19,6 +20,7 @@ export default function NameDialog({
   error,
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const backdrop = useDialogBackdrop(onClose);
   const [name, setName] = useState(initial);
   useEffect(() => {
     const previous = document.activeElement;
@@ -33,9 +35,7 @@ export default function NameDialog({
       className={styles.dialog}
       aria-label={label}
       onCancel={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+      {...backdrop}
     >
       <form
         onSubmit={(event) => {

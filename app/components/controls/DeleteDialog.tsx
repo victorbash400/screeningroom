@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import styles from "./DeleteDialog.module.css";
+import { useDialogBackdrop } from "../../state/useDialogBackdrop";
 export default function DeleteDialog({
   name,
   onDelete,
@@ -12,6 +13,7 @@ export default function DeleteDialog({
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const backdrop = useDialogBackdrop(onClose);
   useEffect(() => {
     const previous = document.activeElement;
     dialog.current?.showModal();
@@ -25,6 +27,7 @@ export default function DeleteDialog({
       className={styles.dialog}
       aria-label={`Delete ${name}?`}
       onCancel={onClose}
+      {...backdrop}
     >
       <form
         onSubmit={(event) => {

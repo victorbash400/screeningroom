@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./NodeNameDialog.module.css";
+import { useDialogBackdrop } from "../../state/useDialogBackdrop";
 interface Props {
   action: "Create" | "Rename";
   initial?: string;
@@ -15,6 +16,7 @@ export default function NodeNameDialog({
   onClose,
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const backdrop = useDialogBackdrop(onClose);
   const [name, setName] = useState(initial);
   useEffect(() => {
     const previous = document.activeElement;
@@ -29,9 +31,7 @@ export default function NodeNameDialog({
       className={styles.dialog}
       aria-label={`${action} name`}
       onCancel={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+      {...backdrop}
     >
       <form
         onSubmit={(event) => {

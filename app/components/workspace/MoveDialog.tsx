@@ -4,6 +4,7 @@ import type { FileNode } from "../../lib/types";
 import { directory } from "../../lib/storage";
 import IconButton from "../controls/IconButton";
 import styles from "./MoveDialog.module.css";
+import { useDialogBackdrop } from "../../state/useDialogBackdrop";
 export default function MoveDialog({
   node,
   nodes,
@@ -20,6 +21,7 @@ export default function MoveDialog({
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const backdrop = useDialogBackdrop(onClose);
   const [path, setPath] = useState<FileNode[]>([]);
   const parentId = path.at(-1)?.id ?? null;
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function MoveDialog({
       className={styles.dialog}
       aria-label={`Move ${node.name}`}
       onCancel={onClose}
+      {...backdrop}
     >
       <div className={styles.body}>
         <header>
