@@ -20,7 +20,20 @@ export default function FileEditor({
     const previous = document.activeElement;
     dialog.current?.showModal();
     return () => {
-      if (previous instanceof HTMLElement) previous.focus();
+      queueMicrotask(() => {
+        if (
+          previous instanceof HTMLElement &&
+          previous !== document.body &&
+          previous.isConnected
+        ) {
+          previous.focus();
+          return;
+        }
+        const row = Array.from(
+          document.querySelectorAll<HTMLElement>("[data-node-id]"),
+        ).find((element) => element.dataset.nodeId === node.id);
+        row?.querySelector<HTMLButtonElement>("button")?.focus();
+      });
     };
   }, []);
   return (

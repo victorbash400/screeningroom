@@ -167,6 +167,10 @@ export function useScreeningroom() {
   }
   async function editFile(node: FileNode) {
     try {
+      if ((node.size ?? 0) > 1024 * 1024)
+        throw new Error(
+          "The text editor supports files up to 1 MiB. Use Export for larger files.",
+        );
       if (!node.content) throw new Error("File content is unavailable.");
       const text = isLocalFile(node.content)
         ? new TextDecoder("utf-8", { fatal: true }).decode(
