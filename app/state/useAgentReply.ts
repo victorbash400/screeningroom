@@ -1,4 +1,6 @@
 import { useAccount } from "./AccountContext";
+import { useChatTitle } from "./useChatTitle";
+import { canNameChat, isFirstChatReply } from "../lib/chatTitle";
 import { useEffect, useRef, useState } from "react";
 import { finishReply } from "../lib/messageBlocks";
 import { agentBlocks, waitingForAnswer } from "../lib/agentActivity";
@@ -10,6 +12,7 @@ type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useAgentReply(update: Update) {
   const account = useAccount();
   const [error, setError] = useState<string | null>(null);
+  const nameChat = useChatTitle(update, setError);
   const controllers = useRef(new Map<string, AbortController>());
   const [pending, setPending] = useState<Record<string, Message | undefined>>({});
   useEffect(() => {
@@ -45,9 +48,17 @@ export function useAgentReply(update: Update) {
       if (!stopped) setError(message);
     } finally {
       if (controllers.current.get(conversationId) === controller) {
-        const saved = update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => item.id === conversationId ? { ...item, messages: [...item.messages, current] } : item) }));
+        let shouldName = false;
+        const saved = update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => {
+          if (item.id !== conversationId) return item;
+          shouldName = isFirstChatReply(messages, current) && canNameChat(item, messages[0].id);
+          return { ...item, messages: [...item.messages, current] };
+        }) }));
         controllers.current.delete(conversationId);
-        if (saved) setPending((previous) => ({ ...previous, [conversationId]: undefined }));
+        if (saved) {
+          setPending((previous) => ({ ...previous, [conversationId]: undefined }));
+          if (shouldName) void nameChat(conversationId, messages[0].id, messages[0].text, current.text);
+        }
         else {
           setError("Cannot save reply. Retry saving your workspace.");
           setPending((previous) => ({ ...previous, [conversationId]: { ...current, status: "failed", error: "Cannot save reply. Retry saving your workspace." } }));

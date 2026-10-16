@@ -187,7 +187,6 @@ export function useLocalChat(
       ...previous,
       conversations: previous.conversations.map((item) => item.id === conversation.id ? {
         ...item,
-        title: item.messages.length || item.title !== "New chat" ? item.title : message.text.slice(0, 50),
         ...(thread ? { threadDrafts: { ...item.threadDrafts, [thread.id]: "" } } : { draft: "" }),
         messages: [...item.messages, message],
       } : item),
