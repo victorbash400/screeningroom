@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import { TriangleAlert } from "lucide-react";
 import PillButton from "../controls/PillButton";
+import dialogStyles from "../controls/StatusDialog.module.css";
 import styles from "./ErrorPopup.module.css";
 
 export default function ErrorPopup({ message, onDismiss, onRetry }: {
@@ -28,15 +29,15 @@ export default function ErrorPopup({ message, onDismiss, onRetry }: {
       role="alertdialog"
       aria-label="Error"
       aria-describedby={messageId}
-      className={styles.dialog}
+      className={dialogStyles.dialog}
       onCancel={(event) => {
         event.preventDefault();
         onDismiss();
       }}
     >
-      <TriangleAlert className={styles.icon} aria-hidden="true" />
-      <p id={messageId} className={styles.message}>{message}</p>
-      <div className={styles.actions}>
+      <TriangleAlert className={`${dialogStyles.symbol} ${styles.icon}`} aria-hidden="true" />
+      <p id={messageId} className={dialogStyles.message}>{message}</p>
+      <div className={dialogStyles.actions}>
         {onRetry && <PillButton secondary onClick={onRetry}>Retry</PillButton>}
         <PillButton ref={dismissButton} autoFocus onClick={onDismiss}>OK</PillButton>
       </div>
