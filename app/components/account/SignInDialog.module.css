@@ -1,4 +1,5 @@
 .dialog {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
   --ink: #292827;
   --muted: #78746f;
   --panel: #fff;

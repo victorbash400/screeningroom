@@ -7,7 +7,7 @@ export function affinityLayout(width: number, height: number) {
     height,
     compact,
     radius,
-    inset: -radius * 0.19,
+    inset: -radius * 0.3,
     cardWidth: compact ? 64 : Math.min(114, width * 0.087),
   };
 }
