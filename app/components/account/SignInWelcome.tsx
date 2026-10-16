@@ -19,12 +19,11 @@ export default function SignInWelcome({
           <AppIcon />
           <span>Screeningroom</span>
         </div>
-        <h1>
-          Discover where your
-          <br />
-          work could resonate.
-        </h1>
-        <p>Cultural intelligence for media.</p>
+        <h1>Find the right audience for what you create.</h1>
+        <p>
+          Analyze your media, understand audience preferences, explore potential
+          markets, and make informed decisions using cultural intelligence.
+        </p>
         <button
           className={styles.signIn}
           disabled={account.busy}
