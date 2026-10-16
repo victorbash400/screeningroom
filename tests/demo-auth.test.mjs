@@ -47,7 +47,7 @@ test("demo fails explicitly when server credentials are unavailable", async () =
   });
   assert.equal(calls.length, 0);
 });
-test("demo accepts only an empty request and uses server credentials", async () => {
+test("demo fills the shared credentials without authenticating or setting cookies", async () => {
   process.env.DEMO_ACCOUNT_EMAIL = "demo@example.test";
   process.env.DEMO_ACCOUNT_PASSWORD = "server-only-test-password";
   assert.equal(
@@ -61,8 +61,11 @@ test("demo accepts only an empty request and uses server credentials", async () 
   assert.equal(calls.length, 0);
   const response = await POST(request("http://localhost:3000"));
   assert.equal(response.status, 200);
-  assert.deepEqual(calls, [
-    { email: "demo@example.test", password: "server-only-test-password" },
-  ]);
-  assert.deepEqual(await response.json(), { authenticated: true });
+  assert.deepEqual(calls, []);
+  assert.equal(response.headers.get("set-cookie"), null);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.deepEqual(await response.json(), {
+    email: "demo@example.test",
+    password: "server-only-test-password",
+  });
 });

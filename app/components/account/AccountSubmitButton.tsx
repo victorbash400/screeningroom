@@ -5,12 +5,19 @@ interface Props {
   ready: boolean;
   busy: boolean;
   light: boolean;
+  roomy?: boolean;
 }
 
-export default function AccountSubmitButton({ label, ready, busy, light }: Props) {
+export default function AccountSubmitButton({
+  label,
+  ready,
+  busy,
+  light,
+  roomy,
+}: Props) {
   return (
     <button
-      className={`${styles.submit} ${light ? styles.light : ""}`}
+      className={`${styles.submit} ${light ? styles.light : ""} ${roomy ? styles.roomy : ""}`}
       type="submit"
       disabled={!ready || busy}
       aria-busy={busy}

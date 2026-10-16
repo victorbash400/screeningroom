@@ -72,7 +72,7 @@ export default function RoomApplication() {
             onNavigation={() => app.navigation.setSidebarOpen(true)}
           />
         ) : app.invalidLocation ? (
-          <InvalidLocation onHome={() => app.navigate(null)} />
+          <InvalidLocation onCreate={() => app.showName({ kind: "workspace" })} />
         ) : workspace ? (
           <WorkspaceSurface
             count={children.length}

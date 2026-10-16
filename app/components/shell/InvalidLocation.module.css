@@ -1,8 +1,2 @@
-.surface {
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 20px;
-  padding: 36px;
-  font-size: 13px;
-}
+.surface { display: flex; flex: 1; align-items: flex-start; min-width: 0; padding: 36px; }
+@media (max-width: 760px) { .surface { padding: 20px; } }

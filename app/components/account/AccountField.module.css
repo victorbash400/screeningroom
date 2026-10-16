@@ -92,3 +92,34 @@
   background: #9ca69b70;
   color: #e6ece1;
 }
+
+.rounded > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.rounded > div {
+  border-radius: 30px;
+  border-color: #dcd8d2;
+  background: #f8f7f4;
+}
+.rounded > div:focus-within {
+  border-color: #8a8176;
+}
+.rounded input {
+  height: 58px;
+  padding-left: 0;
+  font-size: 14px;
+}
+.rounded input::placeholder {
+  color: #827b73;
+}
+.rounded .icon {
+  color: #716a61;
+  background: #eae7e1;
+}
+.rounded input:autofill {
+  box-shadow: 0 0 0 100px #f8f7f4 inset;
+}

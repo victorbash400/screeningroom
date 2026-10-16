@@ -21,7 +21,8 @@ export function useAffinityAnimation(
       previous = 0;
     function draw(time: number) {
       if (previous && !reduced.matches)
-        elapsedTime.current += Math.min(time - previous, 64);
+        elapsedTime.current +=
+          Math.min(time - previous, 64) * (dismissed ? 0.35 : 1);
       previous = time;
       const elapsed = elapsedTime.current;
       const phase = reduced.matches ? 0 : (elapsed / 90000) * Math.PI * 2;
@@ -38,7 +39,7 @@ export function useAffinityAnimation(
         );
       });
       svg?.setAttribute("data-ready", "true");
-      if (!dismissed && !reduced.matches && !document.hidden)
+      if (!reduced.matches && !document.hidden)
         animation = requestAnimationFrame(draw);
     }
     const resume = () => {

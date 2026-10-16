@@ -191,33 +191,6 @@ export function useAccountSession() {
       setBusy(false);
     }
   }
-  async function signInDemo() {
-    if (busy) return false;
-    setBusy(true);
-    setError(null);
-    try {
-      const result = object(
-        await apiRequest("/api/auth/demo", {
-          method: "POST",
-          body: JSON.stringify({}),
-        }),
-      );
-      const expiry = sessionExpiry(result.expiresAt);
-      generation.current += 1;
-      setUser(parseUser(result.user));
-      setExpiresAt(expiry);
-      setReady(true);
-      channel.current?.postMessage("changed");
-      return true;
-    } catch (failure) {
-      setError(
-        failure instanceof Error ? failure.message : "Demo sign in failed.",
-      );
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  }
   async function signOut() {
     setBusy(true);
     setError(null);
@@ -327,7 +300,6 @@ export function useAccountSession() {
     }
   }
   return {
-    signInDemo,
     resend,
     deleteAccount,
     cleanupPending: cleanupId !== null,

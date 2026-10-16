@@ -189,22 +189,3 @@ test("expired or missing server expiry cannot establish a session", () => {
   const value = Date.now() + 60_000;
   assert.equal(sessionExpiry(value), value);
 });
-
-test("demo sign-in establishes only the session returned by the server", async () => {
-  const h = setup((path, init) => {
-    assert.equal(path, "/api/auth/demo");
-    assert.deepEqual(JSON.parse(init.body), {});
-    return response(session());
-  });
-  assert.equal(await h.render().signInDemo(), true);
-  assert.deepEqual(h.render().user, user);
-  assert.equal(h.render().ready, true);
-});
-test("failed demo sign-in never grants workspace access", async () => {
-  const h = setup(() =>
-    response({ error: "Demo account is not configured." }, 503),
-  );
-  assert.equal(await h.render().signInDemo(), false);
-  assert.equal(h.render().user, null);
-  assert.equal(h.render().error, "Demo account is not configured.");
-});

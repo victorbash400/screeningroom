@@ -12,11 +12,13 @@ import styles from "./AccountField.module.css";
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   onDark?: boolean;
+  rounded?: boolean;
 }
 export default function AccountField({
   label,
   type = "text",
   onDark,
+  rounded,
   ...props
 }: Props) {
   const [visible, setVisible] = useState(false);
@@ -29,10 +31,12 @@ export default function AccountField({
           ? KeyRound
           : CircleUserRound;
   return (
-    <label className={`${styles.field} ${onDark ? styles.dark : ""}`}>
+    <label
+      className={`${styles.field} ${onDark ? styles.dark : ""} ${rounded ? styles.rounded : ""}`}
+    >
       <span>{label}</span>
       <div>
-        {onDark && (
+        {(onDark || rounded) && (
           <div className={styles.icon}>
             <Icon size={18} />
           </div>
@@ -40,7 +44,7 @@ export default function AccountField({
         <input
           {...props}
           aria-label={label}
-          placeholder={onDark ? label : props.placeholder}
+          placeholder={onDark || rounded ? label : props.placeholder}
           type={type === "password" && visible ? "text" : type}
         />
         {type === "password" && (

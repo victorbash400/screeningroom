@@ -1,6 +1,11 @@
 import { z } from "zod";
-import { passwordSignIn } from "../../../server/password-sign-in";
-import { ApiError, body, checkOrigin, failure } from "../../../server/http";
+import {
+  ApiError,
+  body,
+  checkOrigin,
+  failure,
+  json,
+} from "../../../server/http";
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +15,7 @@ export async function POST(request: Request) {
     const password = process.env.DEMO_ACCOUNT_PASSWORD;
     if (!email || !password)
       throw new ApiError(503, "Demo account is not configured.");
-    return await passwordSignIn(email, password);
+    return json({ email, password });
   } catch (error) {
     return failure(error);
   }

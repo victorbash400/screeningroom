@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import SignInIntro from "./SignInIntro";
+import { demoAccount } from "../../lib/demoAccount";
 import AppIcon from "../controls/AppIcon";
 import type { AuthStep } from "../../lib/accountTypes";
 import { useAccount } from "../../state/AccountContext";
@@ -27,6 +28,24 @@ export default function SignInForm({
 }) {
   const account = useAccount();
   const surface = useRef<HTMLDivElement>(null);
+  const [fillingDemo, setFillingDemo] = useState(false);
+  const busy = account.busy || fillingDemo;
+  async function fillDemo() {
+    setFillingDemo(true);
+    account.setError(null);
+    try {
+      const credentials = await demoAccount();
+      setFields((current) => ({ ...current, ...credentials }));
+    } catch (error) {
+      account.setError(
+        error instanceof Error
+          ? error.message
+          : "Cannot fill demo credentials.",
+      );
+    } finally {
+      setFillingDemo(false);
+    }
+  }
   const [step, setStep] = useState<AuthStep>("sign-in");
   const [fields, setFields] = useState({
     email: "",
@@ -64,11 +83,15 @@ export default function SignInForm({
         <AppIcon />
         <span>Screeningroom</span>
       </header>
-      <SignInIntro title={labels[step]} id={titleId} />
+      <SignInIntro
+        title={labels[step]}
+        id={titleId}
+        hidden={step === "sign-in"}
+      />
       {step === "confirm" ? (
         <EmailVerificationForm
           email={fields.email}
-          busy={account.busy}
+          busy={busy}
           error={account.error}
           onVerify={async (code) => {
             const next = await account.authenticate("confirm", {
@@ -85,7 +108,7 @@ export default function SignInForm({
         <form
           onSubmit={async (event) => {
             event.preventDefault();
-            if (!ready || account.busy) return;
+            if (!ready || busy) return;
             const next = await account.authenticate(step, {
               ...fields,
               email: fields.email.trim(),
@@ -97,35 +120,38 @@ export default function SignInForm({
         >
           {step === "sign-up" && (
             <AccountField
+              rounded
               label="Name"
               autoComplete="name"
               required
               value={fields.name}
-              disabled={account.busy}
+              disabled={busy}
               onChange={(event) =>
                 setFields({ ...fields, name: event.target.value })
               }
             />
           )}
           <AccountField
+            rounded
             label="Email"
             type="email"
             autoComplete="username"
             required
             value={fields.email}
-            disabled={account.busy || needsCode}
+            disabled={busy || needsCode}
             onChange={(event) =>
               setFields({ ...fields, email: event.target.value })
             }
           />
           {needsCode && (
             <AccountField
+              rounded
               label="Verification code"
               autoComplete="one-time-code"
               inputMode="numeric"
               required
               value={fields.code}
-              disabled={account.busy}
+              disabled={busy}
               onChange={(event) =>
                 setFields({ ...fields, code: event.target.value })
               }
@@ -133,6 +159,7 @@ export default function SignInForm({
           )}
           {needsPassword && (
             <AccountField
+              rounded
               label={step === "reset-confirm" ? "New password" : "Password"}
               type="password"
               autoComplete={
@@ -141,7 +168,7 @@ export default function SignInForm({
               minLength={step === "sign-in" ? undefined : 12}
               required
               value={fields.password}
-              disabled={account.busy}
+              disabled={busy}
               onChange={(event) =>
                 setFields({ ...fields, password: event.target.value })
               }
@@ -151,17 +178,17 @@ export default function SignInForm({
             <div className={styles.links}>
               <button
                 type="button"
-                disabled={account.busy}
-                onClick={() => changeStep("sign-up")}
+                disabled={busy}
+                onClick={() => void fillDemo()}
               >
-                Create account
+                {fillingDemo ? "Filling…" : "Sign in with demo"}
               </button>
               <button
                 type="button"
-                disabled={account.busy}
-                onClick={() => changeStep("reset")}
+                disabled={busy}
+                onClick={() => changeStep("sign-up")}
               >
-                Forgot password
+                Create account
               </button>
             </div>
           )}
@@ -173,24 +200,25 @@ export default function SignInForm({
           <AccountSubmitButton
             label={labels[step]}
             ready={ready}
-            busy={account.busy}
+            busy={busy}
             light
+            roomy
           />
           {step === "sign-in" && (
             <button
               type="button"
-              className={styles.demo}
-              disabled={account.busy}
-              onClick={() => void account.signInDemo()}
+              className={styles.recovery}
+              disabled={busy}
+              onClick={() => changeStep("reset")}
             >
-              Sign in with demo
+              Forgot password
             </button>
           )}
           {(!required || step !== "sign-in") && (
             <button
               className={styles.back}
               type="button"
-              disabled={account.busy}
+              disabled={busy}
               onClick={() =>
                 step === "sign-in" ? account.open(null) : changeStep("sign-in")
               }
@@ -204,7 +232,7 @@ export default function SignInForm({
         <button
           type="button"
           className={styles.back}
-          disabled={account.busy}
+          disabled={busy}
           onClick={onReturn}
         >
           Back

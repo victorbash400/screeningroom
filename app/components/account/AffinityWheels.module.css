@@ -14,12 +14,12 @@
   transform-origin: center;
 }
 .wheels[data-dismissed] .left {
-  transform: translateX(-45%) rotate(-14deg);
-  opacity: 0;
+  transform: translateX(-10%);
+  opacity: 0.16;
 }
 .wheels[data-dismissed] .right {
-  transform: translateX(45%) rotate(14deg);
-  opacity: 0;
+  transform: translateX(10%);
+  opacity: 0.16;
 }
 @media (prefers-reduced-motion: reduce) {
   .left,
@@ -36,10 +36,10 @@
 }
 @media (max-width: 999px) {
   .wheels[data-dismissed] .left {
-    transform: translateY(-45%) rotate(-14deg);
+    transform: translateY(-6%);
   }
   .wheels[data-dismissed] .right {
-    transform: translateY(45%) rotate(14deg);
+    transform: translateY(6%);
   }
 }
 @media (max-height: 480px) {
