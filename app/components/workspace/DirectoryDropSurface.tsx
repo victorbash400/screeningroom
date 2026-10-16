@@ -20,7 +20,7 @@ export default function DirectoryDropSurface({
 }) {
   const scroll = useScrollEdges<HTMLDivElement>();
   const room = useRoomStore();
-  const actions = useRoomActions(room.update, room.setError, room.scope);
+  const actions = useRoomActions(room.update, room.setError, room.save);
   const drag = useNodeDrag(workspaceId, parentId);
   const [external, setExternal] = useState(false);
   const [busy, setBusy] = useState(false);

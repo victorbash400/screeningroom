@@ -1,10 +1,8 @@
 import { cookies } from "next/headers";
 import {
   accessCookie,
-  accessToken,
-  account,
   refreshCookie,
-  requireUser,
+  requireSession,
 } from "../../../server/auth";
 import { ApiError, failure, json } from "../../../server/http";
 
@@ -16,9 +14,9 @@ export async function GET() {
         throw new ApiError(401, "Session needs refresh.");
       return json({ user: null });
     }
-    const user = await requireUser();
+    const { user, account } = await requireSession();
     return json({
-      user: await account(await accessToken()),
+      user: account,
       expiresAt: user.exp * 1000,
     });
   } catch (error) {

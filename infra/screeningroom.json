@@ -94,7 +94,31 @@
             "Key": "Environment",
             "Value": "development"
           }
-        ]
+        ],
+        "CorsConfiguration": {
+          "CorsRules": [
+            {
+              "AllowedOrigins": [
+                "*"
+              ],
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "PUT"
+              ],
+              "AllowedHeaders": [
+                "*"
+              ],
+              "ExposedHeaders": [
+                "ETag",
+                "Content-Range",
+                "Accept-Ranges",
+                "Content-Length"
+              ],
+              "MaxAge": 300
+            }
+          ]
+        }
       }
     },
     "FilesPolicy": {

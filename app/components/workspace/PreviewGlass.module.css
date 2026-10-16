@@ -1,0 +1,19 @@
+.surface.surface {
+  color: #fff;
+  background: linear-gradient(165deg, #ffffff24, #ffffff08), #17171768;
+  border: 1px solid #ffffff30;
+  box-shadow: inset 0 1px 0 #ffffff18, 0 3px 14px #00000018;
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+}
+.surface.surface:is(button, a):hover {
+  background-color: #17171780;
+  opacity: 1;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .surface.surface {
+    background: #242424;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

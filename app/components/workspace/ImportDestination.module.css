@@ -1,0 +1,12 @@
+.destination {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.destination > svg { flex-shrink: 0; }
+.destination span { display: inline-flex; align-items: center; gap: 6px; }

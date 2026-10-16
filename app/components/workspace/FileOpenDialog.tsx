@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Download, X } from "lucide-react";
@@ -5,6 +6,9 @@ import type { FileNode } from "../../lib/types";
 import { filePreview } from "../../lib/filePreview";
 import { downloadFile } from "../../lib/fileTypes";
 import IconButton from "../controls/IconButton";
+import LoadingIndicator from "../controls/LoadingIndicator";
+import { useAccount } from "../../state/AccountContext";
+import { browserFileUrl, isCloudFile } from "../../lib/cloudFiles";
 import ImagePreview from "./ImagePreview";
 import MediaPreview from "./MediaPreview";
 import DocumentPreview from "./DocumentPreview";
@@ -12,6 +16,7 @@ import PdfPreview from "./PdfPreview";
 import PreviewOpenWith from "./PreviewOpenWith";
 import { usePreviewUrl } from "../../state/usePreviewUrl";
 import styles from "./FileOpenDialog.module.css";
+import glass from "./PreviewGlass.module.css";
 export default function FileOpenDialog({
   node,
   onClose,
@@ -19,13 +24,14 @@ export default function FileOpenDialog({
   node: FileNode;
   onClose: () => void;
 }) {
+  const account = useAccount();
   const dialog = useRef<HTMLDialogElement>(null);
   const { url, error: sourceError, text } = usePreviewUrl(node);
   const [actionError, setActionError] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState(16 / 9);
   async function exportFile() {
     try {
-      await downloadFile(node.name, node.content ?? "");
+      await downloadFile(node.name, node.content ?? "", account.user?.id);
     } catch (failure) {
       setActionError(
         failure instanceof Error ? failure.message : "Cannot export file.",
@@ -62,7 +68,7 @@ export default function FileOpenDialog({
   return (
     <dialog
       ref={dialog}
-      className={`${styles.dialog} ${preview?.kind === "audio" ? styles.compact : ""} ${preview?.kind === "video" || preview?.kind === "youtube" ? styles.video : ""} ${preview?.kind === "video" ? styles.immersive : ""}`}
+      className={`${styles.dialog} ${preview?.kind === "audio" ? styles.compact : ""} ${preview?.kind === "video" || preview?.kind === "youtube" || preview?.kind === "image" ? styles.video : ""} ${preview?.kind === "video" || preview?.kind === "image" ? styles.immersive : ""}`}
       style={{ "--media-ratio": aspectRatio } as CSSProperties}
       aria-label={`Preview ${node.name}`}
       onCancel={onClose}
@@ -72,6 +78,10 @@ export default function FileOpenDialog({
         {(url || node.content) && (
           <PreviewOpenWith
             source={url}
+            resolveSource={node.content && isCloudFile(node.content) ? async () => {
+              try { return await browserFileUrl(node.content!); }
+              catch (error) { setActionError(error instanceof Error ? error.message : "Cannot open file."); return undefined; }
+            } : undefined}
             image={preview?.kind === "image"}
             onExport={node.content ? exportFile : undefined}
           />
@@ -79,23 +89,23 @@ export default function FileOpenDialog({
         {node.content &&
           preview?.kind !== "audio" &&
           preview?.kind !== "video" && (
-            <IconButton label="Export file" onClick={exportFile}>
+            <IconButton className={`${glass.surface} ${styles.export}`} label="Export file" onClick={exportFile}>
               <Download />
             </IconButton>
           )}
-        <IconButton label="Close preview" onClick={onClose}>
+        <IconButton className={glass.surface} label="Close preview" onClick={onClose}>
           <X />
         </IconButton>
       </header>
       <div className={styles.content}>
         {error || sourceError || actionError ? (
-          <p role="alert">{error || sourceError || actionError}</p>
+          <ErrorNotice message={(error || sourceError || actionError)!} onDismiss={() => setActionError(null)} />
         ) : preview?.kind === "text" ? (
-          <pre>{text ?? preview.text}</pre>
+          text === undefined && !url ? <LoadingIndicator /> : <pre>{text ?? preview.text}</pre>
         ) : preview?.kind === "image" ? (
-          url && <ImagePreview source={url} name={node.name} />
+          url ? <ImagePreview source={url} name={node.name} onAspectRatio={setAspectRatio} /> : <LoadingIndicator />
         ) : preview?.kind === "pdf" ? (
-          url && <PdfPreview source={url} />
+          url ? <PdfPreview source={url} /> : <LoadingIndicator />
         ) : preview?.kind === "youtube" ? (
           <DocumentPreview source={preview.source} name={node.name} youtube />
         ) : preview?.kind === "link" ? (
@@ -108,10 +118,10 @@ export default function FileOpenDialog({
             Open link
           </a>
         ) : (
-          preview &&
-          url && (
+          preview && (
             <MediaPreview
-              source={url ?? preview.source}
+              source={url}
+              loading={!url}
               video={preview.kind === "video"}
               onAspectRatio={setAspectRatio}
             />

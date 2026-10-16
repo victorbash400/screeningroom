@@ -5,19 +5,12 @@ import {
   readDroppedItems,
   pickedEntries,
 } from "../app/lib/importFiles.ts";
-class MemoryFileReader {
-  async readAsDataURL(file) {
-    this.result = `data:${file.type || "application/octet-stream"};base64,${Buffer.from(await file.arrayBuffer()).toString("base64")}`;
-    this.onload();
-  }
+const blobs = new Map();
+async function saveFile(file) {
+  const id = "cloud-file:" + crypto.randomUUID();
+  blobs.set(id, file);
+  return id;
 }
-const originalReader = globalThis.FileReader;
-test.before(() => {
-  globalThis.FileReader = MemoryFileReader;
-});
-test.after(() => {
-  globalThis.FileReader = originalReader;
-});
 test("imports preserve empty directories, nested parents, and file bytes", async () => {
   const nodes = await prepareImport(
     [
@@ -35,6 +28,7 @@ test("imports preserve empty directories, nested parents, and file bytes", async
     ],
     "workspace",
     "parent",
+    saveFile,
   );
   assert.equal(nodes.length, 3);
   const root = nodes.find((node) => node.name === "Art"),
@@ -48,10 +42,7 @@ test("imports preserve empty directories, nested parents, and file bytes", async
   assert.equal(file.versions.length, 1);
   assert.equal(file.versions[0].content, file.content);
   assert.equal(file.versions[0].size, file.size);
-  assert.equal(
-    Buffer.from(file.content.split(",")[1], "base64").toString(),
-    "你好",
-  );
+  assert.equal(await blobs.get(file.content).text(), "你好");
 });
 test("duplicate sibling names reject the import", async () => {
   await assert.rejects(
@@ -75,6 +66,7 @@ test("the same name is valid in separate directories", async () => {
     })),
     "w",
     null,
+    saveFile,
   );
   const files = nodes.filter((node) => node.kind === "file");
   assert.equal(files.length, 2);
@@ -125,7 +117,7 @@ test("unreadable drops report an error instead of silently skipping files", asyn
   });
 });
 
-test("large media stay in browser blob storage with version references", async () => {
+test("large media retain cloud object references and versions", async () => {
   const media = new File([new Uint8Array(2_000_001)], "clip.mp4", {
     type: "video/mp4",
   });
@@ -136,12 +128,12 @@ test("large media stay in browser blob storage with version references", async (
     null,
     async (file) => {
       stored = file;
-      return "local-file:test";
+      return "cloud-file:test";
     },
   );
   assert.equal(stored, media);
-  assert.equal(nodes[0].content, "local-file:test");
-  assert.equal(nodes[0].versions[0].content, "local-file:test");
+  assert.equal(nodes[0].content, "cloud-file:test");
+  assert.equal(nodes[0].versions[0].content, "cloud-file:test");
   assert.equal(nodes[0].mimeType, "video/mp4");
   let cleaned;
   await assert.rejects(
@@ -152,13 +144,13 @@ test("large media stay in browser blob storage with version references", async (
       ],
       "w",
       null,
-      async () => "local-file:test",
+      async () => "cloud-file:test",
       async (contents) => {
         cleaned = contents;
       },
     ),
   );
-  assert.deepEqual(cleaned, ["local-file:test"]);
+  assert.deepEqual(cleaned, ["cloud-file:test"]);
 });
 test("folder picker paths retain their root and nested directories", () => {
   const file = new File(["test"], "note.txt");
@@ -169,4 +161,23 @@ test("folder picker paths retain their root and nested directories", () => {
   assert.equal(entries[0].name, "Art");
   assert.equal(entries[0].children[0].name, "Notes");
   assert.equal(entries[0].children[0].children[0].file, file);
+});
+
+test("import progress counts saved bytes and preserves the destination", async () => {
+  const progress = [];
+  const nodes = await prepareImport(
+    [
+      { kind: "file", file: new File(["abc"], "first.txt") },
+      { kind: "file", file: new File(["1234567"], "second.txt") },
+    ],
+    "workspace",
+    "destination",
+    saveFile,
+    undefined,
+    (value) => progress.push(value),
+  );
+  assert.deepEqual(progress.map((value) => value.completedBytes), [0, 3, 3, 10]);
+  assert.ok(progress.every((value) => value.totalBytes === 10));
+  assert.equal(progress.at(-1).completedItems, 2);
+  assert.ok(nodes.every((node) => node.parentId === "destination"));
 });

@@ -1,5 +1,6 @@
 .toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -20,6 +21,7 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  justify-self: end;
 }
 .group {
   display: flex;
@@ -41,16 +43,21 @@
 .mobile {
   display: none;
 }
-@container workspace (max-width: 619px) {
+@container workspace (max-width: 959px) {
   .toolbar {
-    flex-wrap: wrap;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 6px;
   }
+}
+@container workspace (max-width: 439px) {
   .navigation {
-    flex-basis: 100%;
+    grid-column: 1 / -1;
     min-height: 44px;
   }
   .actions {
-    margin-left: auto;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: center;
   }
 }
 @media (max-width: 760px) {

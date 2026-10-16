@@ -1,4 +1,7 @@
 import { useCallback, useState } from "react";
+import ChatLoadingIndicator from "./ChatLoadingIndicator";
+import MessageText from "./MessageText";
+import ToolCallIndicator from "./ToolCallIndicator";
 import ContextMenu from "../controls/ContextMenu";
 import { FolderClosed } from "lucide-react";
 import { fileIcon } from "../../lib/fileTypes";
@@ -8,7 +11,6 @@ export default function MessageBubble({
   message,
   reference,
   groupStart,
-  groupEnd,
   onReference,
   onReply,
   hasReplies,
@@ -16,7 +18,6 @@ export default function MessageBubble({
   message: Message;
   reference?: FileNode;
   groupStart: boolean;
-  groupEnd: boolean;
   onReference: (id: string) => void;
   onReply: () => void;
   hasReplies: boolean;
@@ -27,26 +28,20 @@ export default function MessageBubble({
   const referenceName = message.referenceName ?? reference?.name;
   const referenceKind = message.referenceKind ?? reference?.kind;
   const Icon = referenceKind === "folder" ? FolderClosed : fileIcon(referenceName ?? "", reference?.sourceUrl, reference?.mimeType);
+  const tools = message.tools;
+  const waiting = message.status === "streaming" && message.waiting;
+  if (!message.text && !referenceName && !tools?.length && !waiting) return null;
   return (
     <div
-      className={`${styles.row} ${groupStart ? styles.start : ""}`}
+      className={`${styles.row} ${groupStart ? styles.start : ""} ${message.role === "assistant" ? styles.assistant : ""}`}
       onContextMenu={(event) => {
         event.preventDefault();
         setMenu({ x: event.clientX, y: event.clientY });
       }}
     >
-      {groupStart && (
-        <time className={styles.time} dateTime={message.createdAt}>
-          {new Date(message.createdAt).toLocaleTimeString(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          })}
-        </time>
-      )}
       <div
         tabIndex={0}
-        aria-label={message.text || referenceName || "Message"}
+        aria-label={`${message.role === "assistant" ? "Agent" : "You"}: ${message.text || referenceName || message.error || ""}`}
         onKeyDown={(event) => {
           if (
             event.key === "ContextMenu" ||
@@ -58,9 +53,11 @@ export default function MessageBubble({
             setMenu({ x: rect.left, y: rect.bottom });
           }
         }}
-        className={`${styles.bubble} ${!groupStart ? styles.joined : ""} ${groupEnd ? styles.end : ""}`}
+        className={styles.bubble}
       >
-        {message.text && <div>{message.text}</div>}
+        {tools?.map((tool) => <ToolCallIndicator key={tool.id} tool={tool} status={message.status} />)}
+        {message.text && (message.role === "assistant" ? <MessageText text={message.text} /> : <div>{message.text}</div>)}
+        {waiting && <ChatLoadingIndicator />}
         {referenceId && referenceName && (
           <button
             className={styles.reference}

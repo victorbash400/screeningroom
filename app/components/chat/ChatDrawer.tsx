@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Conversation, FileNode, Message } from "../../lib/types";
-import NewConversationDialog from "./NewConversationDialog";
-import ConversationAudienceDialog from "./ConversationAudienceDialog";
 import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
 import ChatComposer from "./ChatComposer";
 import styles from "./ChatDrawer.module.css";
 interface Props {
+  label?: string;
+  busy: boolean;
+  onStop: () => void;
   referenceId?: string;
   referenceRequest: number;
   conversation: Conversation;
@@ -18,8 +19,7 @@ interface Props {
   nodes: FileNode[];
   workspaceName: string;
   onClose: () => void;
-  onNew: (name: string) => boolean;
-  error: string | null;
+  onNew: () => boolean;
   onSelect: (id: string) => void;
   onRename: () => void;
   onDelete: () => void;
@@ -28,6 +28,9 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
+  label = "Chats",
+  busy,
+  onStop,
   conversation,
   thread,
   draft,
@@ -37,7 +40,6 @@ export default function ChatDrawer({
   workspaceName,
   onClose,
   onNew,
-  error,
   onSelect,
   onRename,
   onDelete,
@@ -58,24 +60,12 @@ export default function ChatDrawer({
         previousFocus.current.focus();
     };
   }, []);
-  const [creating, setCreating] = useState(false);
-  const [audience, setAudience] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  function closeAudience() {
-    setAudience(false);
-    queueMicrotask(() => {
-      drawer.current
-        ?.querySelector<HTMLButtonElement>(
-          '[aria-label="Who can see this conversation"]',
-        )
-        ?.focus();
-    });
-  }
   return (
     <aside
       ref={drawer}
       className={styles.drawer}
-      aria-label="Agent chat"
+      aria-label={label}
       onKeyDown={(event) => {
         if (
           event.defaultPrevented ||
@@ -97,7 +87,6 @@ export default function ChatDrawer({
         onClose={onClose}
         onRename={onRename}
         onDelete={onDelete}
-        onAudience={() => setAudience(true)}
         threadOpen={Boolean(thread)}
         onBack={() => onThread()}
       />
@@ -111,6 +100,8 @@ export default function ChatDrawer({
           onReference={onReference}
         />
         <ChatComposer
+          busy={busy}
+          onStop={onStop}
           workspaceName={workspaceName}
           initialReferenceId={referenceId}
           referenceRequest={referenceRequest}
@@ -124,14 +115,14 @@ export default function ChatDrawer({
           <>
             <button
               className={styles.scrim}
-              aria-label="Close conversations"
+              aria-label="Close chats"
               onClick={() => setHistoryOpen(false)}
             />
             <ChatHistory
               items={conversations}
               activeId={conversation.id}
               onNew={() => {
-                setCreating(true);
+                if (onNew()) setHistoryOpen(false);
               }}
               onSelect={(id) => {
                 onSelect(id);
@@ -141,20 +132,6 @@ export default function ChatDrawer({
           </>
         )}
       </div>
-      {creating && (
-        <NewConversationDialog
-          error={error}
-          onClose={() => setCreating(false)}
-          onCreate={(name) => {
-            const success = onNew(name);
-            if (success) setHistoryOpen(false);
-            return success;
-          }}
-        />
-      )}
-      {audience && (
-        <ConversationAudienceDialog onClose={closeAudience} />
-      )}
     </aside>
   );
 }

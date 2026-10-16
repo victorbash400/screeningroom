@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { ChevronLeft, FolderClosed } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { FileNode } from "../../lib/types";
@@ -50,7 +51,7 @@ export default function MoveDialog({
           </IconButton>
           <span>{path.at(-1)?.name ?? workspaceName}</span>
         </header>
-        {error && <p role="alert">{error}</p>}
+        {error && <ErrorNotice message={error} />}
         <div className={styles.folders}>
           {directory(
             nodes.filter((item) => item.workspaceId === node.workspaceId),

@@ -2,11 +2,14 @@
 import { AccountProvider } from "../../state/AccountContext";
 import { AppearanceProvider } from "../../state/AppearanceContext";
 import RoomSession from "./RoomSession";
-export default function Screeningroom() {
+import { ErrorNoticeProvider } from "../../state/ErrorNoticeContext";
+export default function Screeningroom({ login = false }: { login?: boolean }) {
   return (
     <AccountProvider>
       <AppearanceProvider>
-        <RoomSession />
+        <ErrorNoticeProvider>
+          <RoomSession login={login} />
+        </ErrorNoticeProvider>
       </AppearanceProvider>
     </AccountProvider>
   );

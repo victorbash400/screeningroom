@@ -38,7 +38,14 @@
   overflow-y: auto;
   min-height: 0;
   flex: 1;
-  margin-top: 16px;
+  margin-top: 8px;
+}
+.history button.workspace {
+  display: block;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  flex-shrink: 0;
+  margin-top: 8px;
 }
 .items button {
   display: block;

@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import styles from "./NodeNameDialog.module.css";
 import { useDialogBackdrop } from "../../state/useDialogBackdrop";
@@ -51,9 +52,7 @@ export default function NodeNameDialog({
           />
         </label>
         {error && (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
+          <ErrorNotice message={error} />
         )}
         <div className={styles.actions}>
           <button type="button" onClick={onClose}>

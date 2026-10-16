@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import SignInIntro from "./SignInIntro";
 import { demoAccount } from "../../lib/demoAccount";
@@ -193,9 +194,10 @@ export default function SignInForm({
             </div>
           )}
           {account.error && (
-            <p role="alert" className={styles.error}>
-              {account.error}
-            </p>
+            <ErrorNotice
+              message={account.error}
+              onDismiss={() => account.setError(null)}
+            />
           )}
           <AccountSubmitButton
             label={labels[step]}

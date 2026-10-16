@@ -65,16 +65,27 @@ export function parseNotifications(value: unknown): AccountNotification[] {
 export async function apiRequest(
   path: string,
   init?: RequestInit,
+  transport: typeof fetch = fetch,
 ): Promise<unknown> {
-  const response = await fetch(path, {
-    ...init,
-    credentials: "same-origin",
-    cache: "no-store",
-    headers: {
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
-      ...init?.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await transport(path, {
+      ...init,
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: {
+        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...init?.headers,
+      },
+    });
+  } catch (error) {
+    if (error instanceof TypeError)
+      throw new ApiError(
+        "Could not connect to Screeningroom. Check your connection and try again.",
+        0,
+      );
+    throw error;
+  }
   let value: unknown;
   try {
     value = await response.json();
@@ -102,4 +113,10 @@ export async function apiRequest(
     );
   }
   return value;
+}
+
+let refreshPromise: Promise<unknown> | null = null;
+export function refreshAccountSession() {
+  refreshPromise ??= apiRequest("/api/auth/refresh", { method: "POST" }).finally(() => { refreshPromise = null; });
+  return refreshPromise;
 }

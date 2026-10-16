@@ -1,6 +1,5 @@
 import {
   Archive,
-  File,
   FileCode,
   FileImage,
   FileText,
@@ -10,7 +9,7 @@ import {
   SquarePlay,
 } from "lucide-react";
 import { parseLink, youtubeVideo } from "./linkFiles.ts";
-import { isLocalFile, readLocalFile } from "./localFiles.ts";
+import { readFileBlob } from "./cloudFiles.ts";
 const textExtensions = new Set([
   "txt",
   "md",
@@ -154,7 +153,7 @@ export function fileIcon(name: string, sourceUrl?: string, mimeType?: string) {
     return FileCode;
   if (["zip", "tar", "gz", "bz2", "xz", "7z", "rar"].includes(ext))
     return Archive;
-  return File;
+  return FileText;
 }
 export function fileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -173,14 +172,8 @@ export function readTextContent(content: string) {
     ),
   );
 }
-export async function downloadFile(name: string, content: string) {
-  let blob: Blob;
-  if (isLocalFile(content)) blob = await readLocalFile(content);
-  else {
-    if (!content.startsWith("data:"))
-      throw new Error("File content is invalid.");
-    blob = await (await fetch(content)).blob();
-  }
+export async function downloadFile(name: string, content: string, accountId?: string) {
+  const blob = await readFileBlob(content, accountId);
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
   link.href = url;

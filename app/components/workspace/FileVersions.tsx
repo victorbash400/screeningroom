@@ -3,9 +3,11 @@ import type { FileNode } from "../../lib/types";
 import { downloadFile, fileSize } from "../../lib/fileTypes";
 import IconButton from "../controls/IconButton";
 import styles from "./FileVersions.module.css";
+import { useAccount } from "../../state/AccountContext";
 import { useRoomStore } from "../../state/RoomDataContext";
 export default function FileVersions({ node }: { node: FileNode }) {
   const room = useRoomStore();
+  const account = useAccount();
   return (
     <div className={styles.versions} role="tabpanel" aria-label="Versions">
       {[...(node.versions ?? [])].reverse().map((version) => (
@@ -20,7 +22,7 @@ export default function FileVersions({ node }: { node: FileNode }) {
             label="Export this version"
             onClick={async () => {
               try {
-                await downloadFile(node.name, version.content);
+                await downloadFile(node.name, version.content, account.user?.id);
               } catch (failure) {
                 room.setError(
                   failure instanceof Error

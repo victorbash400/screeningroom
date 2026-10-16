@@ -11,7 +11,7 @@ export function useNodeDrag(
   node?: FileNode,
 ) {
   const room = useRoomStore();
-  const actions = useRoomActions(room.update, room.setError, room.scope);
+  const actions = useRoomActions(room.update, room.setError, room.save);
   const [over, setOver] = useState(false);
   const externalTarget = !node || node.kind === "folder";
   function destinationPath() {

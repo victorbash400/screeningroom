@@ -1,6 +1,8 @@
 .image {
   width: 100%;
-  height: 100%;
+  display: block;
+  height: auto;
+  aspect-ratio: var(--media-ratio);
   object-fit: contain;
 }
 .error {

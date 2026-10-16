@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { File, FolderClosed, Search, X } from "lucide-react";
+import { FileText, FolderClosed, Search, X } from "lucide-react";
 import type { FileNode, RoomData } from "../../lib/types";
 import { settingsNavigation } from "../../lib/settingsNavigation";
 import { useAccount } from "../../state/AccountContext";
@@ -30,7 +30,7 @@ export default function SidebarSearch({ data, settings, onNavigate, onOpenNode }
         ...data.nodes.filter((item) => item.name.toLocaleLowerCase().includes(term)).map((item) => ({
           id: `node:${item.id}`, name: item.name,
           context: data.workspaces.find((workspace) => workspace.id === item.workspaceId)?.name,
-          icon: item.kind === "folder" ? FolderClosed : File, onSelect: () => onOpenNode(item),
+          icon: item.kind === "folder" ? FolderClosed : FileText, onSelect: () => onOpenNode(item),
         })),
       ];
   const visible = open && term.length > 0;

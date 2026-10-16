@@ -18,6 +18,7 @@ function clock(seconds: number) {
 
 export default function VideoControls({
   playing,
+  buffering,
   muted,
   current,
   duration,
@@ -28,6 +29,7 @@ export default function VideoControls({
   onFullScreen,
 }: {
   playing: boolean;
+  buffering: boolean;
   muted: boolean;
   current: number;
   duration: number;
@@ -38,7 +40,7 @@ export default function VideoControls({
   onFullScreen: () => void;
 }) {
   return (
-    <div className={styles.controls} role="group" aria-label="Video controls">
+    <div className={styles.controls} data-buffering={buffering} role="group" aria-label="Video controls">
       <div className={styles.transport}>
         <button
           type="button"
@@ -53,6 +55,7 @@ export default function VideoControls({
           type="button"
           className={styles.play}
           aria-label={playing ? "Pause" : "Play"}
+          disabled={buffering}
           onClick={onPlay}
         >
           {playing ? (

@@ -1,5 +1,5 @@
-import type { FileNode } from "./types";
-import { storeLocalFile, removeLocalFiles } from "./localFiles.ts";
+import type { FileNode } from "./types.ts";
+import { uploadCloudFile } from "./cloudFiles.ts";
 export type ImportEntry =
   | { kind: "file"; file: File }
   | { kind: "folder"; name: string; children: ImportEntry[] };
@@ -64,15 +64,32 @@ export async function readDroppedItems(
   if (!entries.length) throw new Error("No files were dropped.");
   return entries;
 }
+export interface ImportProgress {
+  completedBytes: number;
+  totalBytes: number;
+  completedItems: number;
+  totalItems: number;
+  name: string;
+}
 export async function prepareImport(
   entries: ImportEntry[],
   workspaceId: string,
   parentId: string | null,
-  saveFile: (file: File) => Promise<string> = (file) =>
-    storeLocalFile(file, "screeningroom.v1"),
-  cleanup: (contents: string[]) => Promise<void> = removeLocalFiles,
+  saveFile: (file: File) => Promise<string> = uploadCloudFile,
+  cleanup?: (contents: string[]) => Promise<void>,
+  onProgress?: (progress: ImportProgress) => void,
 ): Promise<FileNode[]> {
   const nodes: FileNode[] = [];
+  let totalBytes = 0, totalItems = 0, completedBytes = 0, completedItems = 0;
+  function count(items: ImportEntry[]) {
+    for (const item of items) {
+      totalItems += 1;
+      if (item.kind === "file") totalBytes += item.file.size;
+      else count(item.children);
+    }
+  }
+  count(entries);
+  const report = (name: string) => onProgress?.({ completedBytes, totalBytes, completedItems, totalItems, name });
   async function append(entries: ImportEntry[], parentId: string | null) {
     const names = new Set<string>();
     for (const entry of entries) {
@@ -80,6 +97,7 @@ export async function prepareImport(
       if (names.has(name.toLocaleLowerCase()))
         throw new Error(`${name} already exists.`);
       names.add(name.toLocaleLowerCase());
+      report(name);
       const id = crypto.randomUUID();
       const base = {
         id,
@@ -90,21 +108,11 @@ export async function prepareImport(
       };
       if (entry.kind === "folder") {
         nodes.push({ ...base, kind: "folder" });
+        completedItems += 1;
+        report(name);
         await append(entry.children, id);
       } else {
-        const content =
-          entry.file.size > 256_000
-            ? await saveFile(entry.file)
-            : await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () =>
-                  typeof reader.result === "string"
-                    ? resolve(reader.result)
-                    : reject(new Error(`Cannot read ${name}.`));
-                reader.onerror = () =>
-                  reject(new Error(`Cannot read ${name}.`));
-                reader.readAsDataURL(entry.file);
-              });
+        const content = await saveFile(entry.file);
         nodes.push({
           ...base,
           kind: "file",
@@ -120,13 +128,16 @@ export async function prepareImport(
             },
           ],
         });
+        completedBytes += entry.file.size;
+        completedItems += 1;
+        report(name);
       }
     }
   }
   try {
     await append(entries, parentId);
   } catch (failure) {
-    await cleanup(
+    await cleanup?.(
       nodes.flatMap((node) => (node.content ? [node.content] : [])),
     );
     throw failure;

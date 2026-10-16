@@ -15,7 +15,7 @@ export async function GET() {
     for (const [index, result] of results.entries()) {
       if (result.status === "rejected") console.error("Screening Room health check failed", { service: index === 0 ? "database" : "storage", name: result.reason instanceof Error ? result.reason.name : "UnknownError" });
     }
-    const services = { database: results[0].status === "fulfilled" ? "connected" : "unavailable", storage: results[1].status === "fulfilled" ? "connected" : "unavailable", auth: "configured", bedrock: process.env.BEDROCK_PROJECT_ID && process.env.BEDROCK_MODEL_ID && process.env.BEDROCK_BASE_URL ? "configured" : "unavailable" };
+    const services = { database: results[0].status === "fulfilled" ? "connected" : "unavailable", storage: results[1].status === "fulfilled" ? "connected" : "unavailable", auth: "configured", qloo: process.env.QLOO_HACKATHON_API_KEY && process.env.QLOO_HACKATHON_API_SERVER_URL ? "configured" : "unavailable", bedrock: process.env.BEDROCK_PROJECT_ID && process.env.BEDROCK_MODEL_ID && process.env.BEDROCK_BASE_URL ? "configured" : "unavailable" };
     const ok = !Object.values(services).includes("unavailable");
     return json({ status: ok ? "ok" : "degraded", services }, ok ? 200 : 503);
   } catch (error) { return failure(error); }

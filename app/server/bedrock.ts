@@ -3,8 +3,9 @@ import { getTokenProvider } from "@aws/bedrock-token-generator";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { Agent, fetch as fetchWithDispatcher } from "undici";
 import { env, region } from "./config";
+import { awsLookup } from "./aws-dns";
 
-const dispatcher = new Agent({ connect: { family: 4, timeout: 5_000 }, headersTimeout: 50_000, bodyTimeout: 50_000 });
+const dispatcher = new Agent({ connect: { lookup: awsLookup, family: 4, timeout: 10_000 }, headersTimeout: 50_000, bodyTimeout: 50_000 });
 
 export async function bedrockHeaders() {
   const token = await getTokenProvider({ region: region(), expiresInSeconds: 300 })();

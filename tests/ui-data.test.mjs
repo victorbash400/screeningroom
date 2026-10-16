@@ -246,3 +246,21 @@ test("thread parents and draft scopes must belong to the same conversation", () 
     message: "Saved thread draft parent is invalid.",
   });
 });
+
+test("research chats persist independently alongside legacy workspace chat", () => {
+  const data = fixture();
+  data.conversations = [undefined, "locations", "similar", "performance", "compare"].map((channel) => ({
+    id: `workspace:a:${channel ?? "chat"}`,
+    workspaceId: "a",
+    scope: "workspace",
+    ...(channel ? { channel } : {}),
+    title: channel ?? "Chat",
+    messages: [],
+    draft: channel ?? "Legacy draft",
+  }));
+  assert.deepEqual(validate(data), data);
+  const duplicate = { ...data, conversations: [...data.conversations, { ...data.conversations[1], id: "duplicate" }] };
+  assert.throws(() => validate(duplicate));
+  const invalid = { ...data, conversations: [{ ...data.conversations[0], channel: "unknown" }] };
+  assert.throws(() => validate(invalid));
+});

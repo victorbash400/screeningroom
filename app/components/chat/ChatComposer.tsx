@@ -1,4 +1,4 @@
-import { ArrowUp, Link } from "lucide-react";
+import { ArrowUp, Link, Square } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { FileNode } from "../../lib/types";
 import IconButton from "../controls/IconButton";
@@ -6,6 +6,8 @@ import ReferencePicker from "./ReferencePicker";
 import ReferenceChip from "./ReferenceChip";
 import styles from "./ChatComposer.module.css";
 interface Props {
+  busy: boolean;
+  onStop: () => void;
   initialReferenceId?: string;
   referenceRequest: number;
   draft: string;
@@ -15,6 +17,8 @@ interface Props {
   onSend: (text: string, referenceId?: string) => boolean;
 }
 export default function ChatComposer({
+  busy,
+  onStop,
   draft,
   nodes,
   workspaceName,
@@ -24,7 +28,7 @@ export default function ChatComposer({
   referenceRequest,
 }: Props) {
   const input = useRef<HTMLTextAreaElement>(null);
-  const [text, setText] = useState(draft);
+  const text = draft;
   useLayoutEffect(() => {
     const field = input.current;
     if (!field) return;
@@ -58,8 +62,7 @@ export default function ChatComposer({
   const reference = nodes.find((node) => node.id === referenceId);
   const canSend = Boolean(text.trim() || reference);
   function send() {
-    if (!canSend || !onSend(text.trim(), reference?.id)) return;
-    setText("");
+    if (busy || !canSend || !onSend(text.trim(), reference?.id)) return;
     setReferenceId(undefined);
     if (input.current) input.current.style.height = "auto";
     input.current?.focus();
@@ -92,11 +95,9 @@ export default function ChatComposer({
             aria-label="Message"
             placeholder="Message"
             rows={1}
-            maxLength={4000}
             value={text}
             onChange={(event) => {
               const value = event.target.value;
-              setText(value);
               onDraft(value);
               if (
                 value.endsWith("@") &&
@@ -115,14 +116,14 @@ export default function ChatComposer({
               }
             }}
           />
-          <button
+          {busy ? <IconButton label="Stop response" onClick={onStop}><Square size={16} /></IconButton> : <button
             type="submit"
             aria-label="Send message"
             disabled={!canSend}
             className={styles.send}
           >
             <ArrowUp size={16} />
-          </button>
+          </button>}
         </div>
       </form>
       {picking && (
@@ -138,7 +139,6 @@ export default function ChatComposer({
             setPicking(false);
             if (text.endsWith("@")) {
               const next = text.slice(0, -1);
-              setText(next);
               onDraft(next);
             }
             input.current?.focus();

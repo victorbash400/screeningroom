@@ -34,18 +34,13 @@ async function transaction<T>(
       db.close();
       reject(
         new Error(
-          "Cannot save browser files. Check available storage and retry.",
+          "Cannot access saved browser files.",
         ),
       );
     };
   });
 }
 export const isLocalFile = (content: string) => content.startsWith(prefix);
-export async function storeLocalFile(file: File, scope: string) {
-  const id = crypto.randomUUID();
-  await transaction("readwrite", (store) => store.put({ id, scope, file }));
-  return prefix + id;
-}
 export async function readLocalFile(content: string): Promise<Blob> {
   const value = await transaction("readonly", (store) =>
     store.get(content.slice(prefix.length)),

@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 280px;
+  width: 304px;
   max-width: 100%;
   border-left: 1px solid var(--border);
   flex-shrink: 0;

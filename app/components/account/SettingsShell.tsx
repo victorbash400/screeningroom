@@ -1,7 +1,6 @@
 import { ArrowLeft, PanelLeftOpen } from "lucide-react";
 import { useAccount } from "../../state/AccountContext";
 import AppearanceSettings from "../appearance/AppearanceSettings";
-import Notifications from "../notifications/Notifications";
 import AccountSettings from "./AccountSettings";
 import Connections from "./Connections";
 import ActivitySettings from "../settings/ActivitySettings";
@@ -23,9 +22,7 @@ export default function SettingsShell({ onNavigation }: { onNavigation: () => vo
           ? "Workspaces"
           : account.surface === "appearance"
             ? "Appearance"
-            : account.surface === "notifications"
-              ? "Notifications"
-              : account.surface === "connections"
+            : account.surface === "connections"
                 ? "Connections"
                 : "Account";
   return (
@@ -58,8 +55,6 @@ export default function SettingsShell({ onNavigation }: { onNavigation: () => vo
               <WorkspaceSettings />
             ) : account.surface === "appearance" ? (
               <AppearanceSettings />
-            ) : account.surface === "notifications" ? (
-              <Notifications />
             ) : account.surface === "connections" ? (
               <Connections />
             ) : (

@@ -124,16 +124,7 @@
   right: 4px;
 }
 .column {
-  margin: 0;
-  min-height: 29px;
   background: transparent !important;
-}
-.column .open {
-  height: 29px;
-  padding: 0 6px;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 400;
 }
 .column.selected {
   background: var(--selection) !important;

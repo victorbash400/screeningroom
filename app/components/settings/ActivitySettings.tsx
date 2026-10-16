@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useRoomStore } from "../../state/RoomDataContext";
 import SettingsInlineButton from "./SettingsInlineButton";
 import ActivityRow from "./ActivityRow";
@@ -16,7 +17,7 @@ export default function ActivitySettings() {
           Clear
         </SettingsInlineButton>
       </div>
-      {room.error && <p role="alert">{room.error}</p>}
+      {room.error && <ErrorNotice message={room.error} onDismiss={() => room.setError(null)} />}
       <div className={styles.table}>
         <div className={styles.header}>
           <span>File</span>

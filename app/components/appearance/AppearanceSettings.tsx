@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useAppearance } from "../../state/AppearanceContext";
 import { darkProfiles, lightProfiles } from "../../lib/appearance";
 import type { ThemeProfile } from "../../lib/appearance";
@@ -9,7 +10,7 @@ import ThemeColorControl from "./ThemeColorControl";
 import AppearanceAdvanced from "./AppearanceAdvanced";
 import styles from "./AppearanceSettings.module.css";
 export default function AppearanceSettings() {
-  const { value, dark, update, error } = useAppearance();
+  const { value, dark, update, error, retry } = useAppearance();
   const key = dark ? "dark" : "light";
   const profile = value[key];
   const presets = dark ? darkProfiles : lightProfiles;
@@ -18,7 +19,7 @@ export default function AppearanceSettings() {
   }
   return (
     <div className={styles.settings}>
-      {error && <p role="alert">{error}</p>}
+      {error && <ErrorNotice message={error} onRetry={retry} />}
       <SettingsGroup>
         <SettingsRow label="Mode">
           <ThemeModeControl />

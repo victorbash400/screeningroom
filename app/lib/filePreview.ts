@@ -1,7 +1,8 @@
-import type { FileNode } from "./types";
+import type { FileNode } from "./types.ts";
 import { isTextFile, readTextContent } from "./fileTypes.ts";
 import { parseLink, youtubeVideo } from "./linkFiles.ts";
 import { isLocalFile } from "./localFiles.ts";
+import { isCloudFile } from "./cloudFiles.ts";
 export type Preview =
   | { kind: "text"; text: string }
   | {
@@ -34,19 +35,20 @@ export function filePreview(node: FileNode): Preview {
   }
   if (node.kind !== "file" || !node.content)
     throw new Error("File content is unavailable.");
+  const stored = isLocalFile(node.content) || isCloudFile(node.content);
   const comma = node.content.indexOf(",");
   if (
-    !isLocalFile(node.content) &&
+    !stored &&
     (!node.content.startsWith("data:") || comma < 0)
   )
     throw new Error("File content is invalid.");
-  const header = isLocalFile(node.content)
+  const header = stored
     ? (node.mimeType?.toLowerCase() ?? "")
     : node.content.slice(5, comma).split(";")[0].toLowerCase();
   if (isTextFile(node.name, header))
     return {
       kind: "text",
-      text: isLocalFile(node.content) ? "" : readTextContent(node.content),
+      text: stored ? "" : readTextContent(node.content),
     };
   if (header === "application/pdf")
     return { kind: "pdf", source: node.content };

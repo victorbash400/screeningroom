@@ -5,10 +5,12 @@ import styles from "./PreviewOpenWith.module.css";
 
 export default function PreviewOpenWith({
   source,
+  resolveSource,
   image,
   onExport,
 }: {
   source?: string;
+  resolveSource?: () => Promise<string | undefined>;
   image: boolean;
   onExport?: () => void;
 }) {
@@ -30,6 +32,7 @@ export default function PreviewOpenWith({
       </button>
       {menu && (
         <ContextMenu
+          className={styles.menu}
           {...menu}
           label="Open with"
           onClose={close}
@@ -38,15 +41,17 @@ export default function PreviewOpenWith({
               ? [
                   {
                     label: "Browser",
-                    action: () => {
+                    action: async () => {
+                      const resolved = resolveSource ? await resolveSource() : source;
+                      if (!resolved) return;
                       if (!image) {
-                        window.location.assign(source);
+                        window.location.assign(resolved);
                         return;
                       }
                       const page =
                         document.implementation.createHTMLDocument("");
                       const img = page.createElement("img");
-                      img.src = source;
+                      img.src = resolved;
                       img.style.maxWidth = "100%";
                       img.style.maxHeight = "100vh";
                       page.body.style.margin = "0";

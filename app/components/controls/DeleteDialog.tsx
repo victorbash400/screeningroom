@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef } from "react";
 import styles from "./DeleteDialog.module.css";
 import { useDialogBackdrop } from "../../state/useDialogBackdrop";
@@ -37,9 +38,7 @@ export default function DeleteDialog({
       >
         <span>Delete {name}?</span>
         {error && (
-          <p role="alert" className={styles.error}>
-            {error}
-          </p>
+          <ErrorNotice message={error} />
         )}
         <div className={styles.actions}>
           <button type="button" autoFocus onClick={onClose}>

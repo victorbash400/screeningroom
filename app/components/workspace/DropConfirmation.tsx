@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import { ChevronRight, FolderClosed } from "lucide-react";
 import PillButton from "../controls/PillButton";
@@ -91,7 +92,7 @@ export default function DropConfirmation({
             {request.names.length > 5 && <li>+{request.names.length - 5}</li>}
           </ul>
         )}
-        {(error || failure) && <p role="alert">{failure || error}</p>}
+        {(failure || error) && <ErrorNotice message={(failure || error)!} onDismiss={() => setFailure(null)} />}
         <div className={styles.actions}>
           <PillButton secondary autoFocus disabled={busy} onClick={onClose}>
             Cancel

@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useState } from "react";
 import { useAccount } from "../../state/AccountContext";
 import { ApiError, object } from "../../lib/accountApi";
@@ -10,6 +11,7 @@ interface Health {
   storage: "connected" | "unavailable";
   auth: "configured" | "unavailable";
   bedrock: "configured" | "unavailable";
+  qloo: "configured" | "unavailable";
 }
 function parseHealth(value: unknown): Health {
   const data = object(value),
@@ -19,7 +21,8 @@ function parseHealth(value: unknown): Health {
     !["connected", "unavailable"].includes(String(services.database)) ||
     !["connected", "unavailable"].includes(String(services.storage)) ||
     !["configured", "unavailable"].includes(String(services.auth)) ||
-    !["configured", "unavailable"].includes(String(services.bedrock))
+    !["configured", "unavailable"].includes(String(services.bedrock)) ||
+    !["configured", "unavailable"].includes(String(services.qloo))
   )
     throw new Error("Server returned invalid connection status.");
   return services as unknown as Health;
@@ -76,6 +79,7 @@ export default function Connections() {
             { key: "database", label: "Database" },
             { key: "storage", label: "Storage" },
             { key: "bedrock", label: "Bedrock" },
+            { key: "qloo", label: "Qloo API" },
           ] as const
         ).map(({ key, label }) => (
           <SettingsRow label={label} key={key}>
@@ -93,9 +97,7 @@ export default function Connections() {
           </SettingsRow>
         ))}
       {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
+        <ErrorNotice message={error} onRetry={() => void load()} onDismiss={() => setError(null)} />
       )}
       <div className={styles.actions}>
         <SettingsInlineButton

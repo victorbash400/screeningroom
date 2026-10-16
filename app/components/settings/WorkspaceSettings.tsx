@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useState } from "react";
 import { useRoomStore } from "../../state/RoomDataContext";
 import { useRoomActions } from "../../state/useRoomActions";
@@ -11,7 +12,7 @@ import DeleteDialog from "../controls/DeleteDialog";
 import styles from "./WorkspaceSettings.module.css";
 export default function WorkspaceSettings() {
   const room = useRoomStore();
-  const actions = useRoomActions(room.update, room.setError, room.scope);
+  const actions = useRoomActions(room.update, room.setError, room.save);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<"create" | "rename" | "delete" | null>(
     null,
@@ -70,8 +71,11 @@ export default function WorkspaceSettings() {
         <SettingsInlineButton onClick={() => open("create")}>
           Create workspace
         </SettingsInlineButton>
+        {room.hasLegacy && <SettingsInlineButton onClick={() => { void room.importBrowserData(); }}>
+          Import browser data
+        </SettingsInlineButton>}
       </div>
-      {room.error && !dialog && <p role="alert">{room.error}</p>}
+      {room.error && !dialog && <ErrorNotice message={room.error} onDismiss={() => room.setError(null)} />}
       {(dialog === "rename" || dialog === "create") && (
         <NodeNameDialog
           action={dialog === "rename" ? "Rename" : "Create"}

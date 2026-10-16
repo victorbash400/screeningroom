@@ -1,0 +1,15 @@
+.indicator {
+  display: inline-block;
+  width: var(--loading-size);
+  height: var(--loading-size);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: turn 900ms linear infinite;
+}
+@keyframes turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .indicator { animation-duration: 1800ms; }
+}

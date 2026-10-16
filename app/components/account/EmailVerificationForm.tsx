@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useState } from "react";
 import VerificationCodeInput from "./VerificationCodeInput";
 import AccountSubmitButton from "./AccountSubmitButton";
@@ -42,9 +43,7 @@ export default function EmailVerificationForm({
         }}
       />
       {error && (
-        <p role="alert" className={styles.error}>
-          {error}
-        </p>
+        <ErrorNotice message={error} />
       )}
       <AccountSubmitButton
         label="Verify"

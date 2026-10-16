@@ -1,0 +1,1 @@
+export const similar = "Find comparable films, shows, and cultural references using Qloo search and taste insights. Resolve named entities first and distinguish recommendations from factual similarity claims.";

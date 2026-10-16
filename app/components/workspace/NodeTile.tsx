@@ -1,5 +1,4 @@
 import {
-  ChevronRight,
   Ellipsis,
   FolderClosed,
   FolderOpen,
@@ -10,6 +9,8 @@ import type { RefObject } from "react";
 import { fileIcon } from "../../lib/fileTypes";
 import IconButton from "../controls/IconButton";
 import NodeValues from "./NodeValues";
+import { useAccount } from "../../state/AccountContext";
+import { warmAsset } from "../../lib/assetCache";
 import { useNodeDrag } from "../../state/useNodeDrag";
 import styles from "./NodeTile.module.css";
 interface Props {
@@ -34,6 +35,8 @@ export default function NodeTile({
   onRename,
   onMenu,
 }: Props) {
+  const account = useAccount();
+  const warm = () => { if (account.user && node.content) void warmAsset(account.user.id, node.content); };
   const drag = useNodeDrag(
     node.workspaceId,
     node.kind === "folder" ? node.id : node.parentId,
@@ -49,6 +52,8 @@ export default function NodeTile({
     <div
       {...drag}
       data-node-id={node.id}
+      onPointerEnter={warm}
+      onFocus={warm}
       className={`${styles.row} ${grid ? styles.grid : ""} ${column ? styles.column : ""} ${selected ? styles.selected : ""}`}
       onContextMenu={(event) => {
         event.preventDefault();
@@ -78,10 +83,9 @@ export default function NodeTile({
           }
         }}
       >
-        <Icon size={grid ? 56 : column ? 20 : 24} strokeWidth={1.7} />
+        <Icon size={grid ? 56 : 24} strokeWidth={1.7} />
         <span>{node.name}</span>
         {!grid && !column && <NodeValues node={node} />}
-        {column && node.kind === "folder" && <ChevronRight size={12} />}
       </button>
       {!grid && !column && (
         <div className={styles.menu}>

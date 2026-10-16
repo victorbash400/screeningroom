@@ -46,7 +46,7 @@ export default function WorkspaceBranch({
   const drag = useNodeDrag(workspace.id, null);
   const open = expanded.has(workspace.id);
   const selected = location.workspaceId === workspace.id && !location.folderId;
-  const Icon = location.workspaceId === workspace.id ? FolderOpen : FolderClosed;
+  const Icon = open ? FolderOpen : FolderClosed;
   return (
     <div>
       <div

@@ -33,8 +33,23 @@
 }
 
 @media (hover: hover) {
-  .media[data-playing="true"]:not(:hover):not(:focus-within) > [role="group"] {
+  .media[data-playing="true"]:not([data-buffering="true"]):not(:hover):not(:focus-within) > [role="group"] {
     opacity: 0;
     pointer-events: none;
   }
+}
+
+.buffering {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  pointer-events: none;
+}
+.audioBuffering {
+  composes: buffering;
+  inset: 20px 0 auto;
+  height: 58px;
+  color: var(--ink);
 }

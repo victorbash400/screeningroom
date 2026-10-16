@@ -30,3 +30,19 @@ test("incorrect credentials retain their existing response", async () => {
     error: "Email or password is incorrect, or the session expired.",
   });
 });
+
+test("unexpected service failures keep internal details out of the message", async () => {
+  const response = failure(new Error("Private provider details"));
+  assert.equal(response.status, 503);
+  const payload = await response.json();
+  assert.equal(payload.error, "Screeningroom could not complete the request. Try again.");
+  assert.equal(payload.code, "Error");
+});
+
+test("transport timeouts provide a distinct recovery message", async () => {
+  const response = failure(new Error("Private endpoint", { cause: { code: "UND_ERR_CONNECT_TIMEOUT" } }));
+  assert.equal(response.status, 504);
+  const payload = await response.json();
+  assert.equal(payload.error, "Screeningroom took too long to respond. Try again.");
+  assert.equal(payload.code, "UND_ERR_CONNECT_TIMEOUT");
+});

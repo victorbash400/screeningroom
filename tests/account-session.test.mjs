@@ -97,7 +97,7 @@ test("only a valid server session restores the account", async () => {
   assert.deepEqual(h.render().user, user);
   assert.equal(h.render().ready, true);
 });
-test("failed revalidation removes the previous account", async () => {
+test("transient revalidation failure preserves the verified account", async () => {
   let fail = false;
   const h = setup(() =>
     fail ? response({ error: "Unavailable" }, 503) : response(session()),
@@ -105,7 +105,8 @@ test("failed revalidation removes the previous account", async () => {
   await h.render().load();
   fail = true;
   await h.render().load();
-  assert.equal(h.render().user, null);
+  assert.deepEqual(h.render().user, user);
+  assert.equal(h.render().unavailable, true);
   assert.equal(h.render().error, "Unavailable");
 });
 test("a stale session response cannot reopen the app after sign-out", async () => {
@@ -139,7 +140,7 @@ test("a cross-tab account change closes access before revalidation completes", a
   await flush();
   assert.deepEqual(h.render().user, user);
   deferred = true;
-  h.channels[0].onmessage({ data: "changed" });
+  h.channels[0].onmessage({ data: { type: "signed-in" } });
   assert.equal(h.render().ready, false);
   assert.equal(h.render().user, null);
   release(response({ user: null }));
@@ -148,18 +149,16 @@ test("a cross-tab account change closes access before revalidation completes", a
   assert.equal(h.render().user, null);
   cleanup();
 });
-test("session expiry closes access locally without polling", async () => {
+test("returning to the window schedules no account checks or timers", async () => {
   const h = setup(() => response(session()));
-  await h.render().load();
   h.render();
-  globalThis.sessionHarness.effects[1]();
-  assert.equal(h.timers.length, 1);
-  assert.ok(h.timers[0].delay > 0);
-  const requests = h.requests.length;
-  h.timers[0].callback();
-  assert.equal(h.render().user, null);
-  assert.equal(h.render().error, "Session expired. Sign in again.");
-  assert.equal(h.requests.length, requests);
+  const cleanup = globalThis.sessionHarness.effects[0]();
+  await flush();
+  assert.deepEqual(h.render().user, user);
+  assert.equal(h.listeners.has("focus"), false);
+  assert.equal(h.timers.length, 0);
+  assert.deepEqual(h.requests, ["/api/auth/session"]);
+  cleanup();
 });
 test("failed refresh closes access and does not retry protected requests indefinitely", async () => {
   const h = setup((path) =>
@@ -188,4 +187,110 @@ test("expired or missing server expiry cannot establish a session", () => {
     assert.throws(() => sessionExpiry(value));
   const value = Date.now() + 60_000;
   assert.equal(sessionExpiry(value), value);
+});
+
+test("initial session timeout is unavailable, not a confirmed sign-out", async () => {
+  const h = setup(() => response({ error: "Timeout" }, 504));
+  await h.render().load();
+  assert.equal(h.render().user, null);
+  assert.equal(h.render().unavailable, true);
+  assert.equal(h.render().ready, true);
+  assert.equal(h.render().error, "Timeout");
+});
+test("refresh timeout preserves the account and a later check recovers", async () => {
+  let timeout = false;
+  const h = setup((path) => path === "/api/auth/session" ? response(session()) : path === "/api/auth/refresh"
+    ? (timeout ? response({ error: "Timeout" }, 504) : response(session()))
+    : response({ error: "Expired" }, 401));
+  await h.render().load();
+  timeout = true;
+  await assert.rejects(h.render().request("/api/records"), { message: "Timeout" });
+  assert.deepEqual(h.render().user, user);
+  assert.equal(h.render().unavailable, true);
+  timeout = false;
+  await h.render().load();
+  assert.deepEqual(h.render().user, user);
+  assert.equal(h.render().unavailable, false);
+  assert.equal(h.render().error, null);
+});
+test("a failed protected retry does not sign out a successfully refreshed account", async () => {
+  let attempts = 0;
+  const h = setup((path) => path === "/api/auth/session" || path === "/api/auth/refresh"
+    ? response(session()) : ++attempts === 1 ? response({ error: "Expired" }, 401) : response({ error: "Unavailable" }, 503));
+  await h.render().load();
+  await assert.rejects(h.render().request("/api/records"), { message: "Unavailable" });
+  assert.deepEqual(h.render().user, user);
+});
+test("overlapping explicit checks share one session request", async () => {
+  let release;
+  const h = setup(() => new Promise((resolve) => { release = resolve; }));
+  const first = h.render().load();
+  const second = h.render().load();
+  assert.equal(h.requests.length, 1);
+  release(response(session()));
+  await Promise.all([first, second]);
+  assert.deepEqual(h.render().user, user);
+});
+
+test("concurrent expired requests share one refresh", async () => {
+  let release;
+  let refreshed = false;
+  const h = setup((path) => {
+    if (path === "/api/auth/session") return response(session());
+    if (path === "/api/auth/refresh") return new Promise((resolve) => { release = () => { refreshed = true; resolve(response(session())); }; });
+    return refreshed ? response({ ok: true }) : response({ error: "Expired" }, 401);
+  });
+  await h.render().load();
+  const first = h.render().request("/api/records");
+  const second = h.render().request("/api/notifications");
+  await flush();
+  assert.equal(h.requests.filter((path) => path === "/api/auth/refresh").length, 1);
+  release();
+  await Promise.all([first, second]);
+  assert.deepEqual(h.render().user, user);
+});
+
+test("a confirmed revoked session after refresh still closes access", async () => {
+  const h = setup((path) => path === "/api/auth/session" || path === "/api/auth/refresh" ? response(session()) : response({ error: "Revoked" }, 401));
+  await h.render().load();
+  await assert.rejects(h.render().request("/api/records"), { message: "Revoked" });
+  assert.equal(h.render().user, null);
+  assert.equal(h.render().unavailable, false);
+});
+
+test("profile events sync without clearing the workspace or fetching AWS", async () => {
+  const h = setup(() => response(session()));
+  h.render();
+  const cleanup = globalThis.sessionHarness.effects[0]();
+  await flush();
+  const before = h.requests.length;
+  h.channels[0].onmessage({ data: { type: "profile-updated", user: { ...user, name: "Updated" } } });
+  assert.equal(h.render().user.name, "Updated");
+  assert.equal(h.render().ready, true);
+  assert.equal(h.requests.length, before);
+  h.channels[0].onmessage({ data: { type: "profile-updated", user: { ...user, id: "other", name: "Other" } } });
+  assert.equal(h.render().user.id, user.id);
+  assert.equal(h.render().user.name, "Updated");
+  cleanup();
+});
+test("sign-out events sync immediately without a redundant session request", async () => {
+  const h = setup(() => response(session()));
+  h.render();
+  const cleanup = globalThis.sessionHarness.effects[0]();
+  await flush();
+  const before = h.requests.length;
+  h.channels[0].onmessage({ data: { type: "signed-out" } });
+  assert.equal(h.render().user, null);
+  assert.equal(h.render().ready, true);
+  assert.equal(h.requests.length, before);
+  cleanup();
+});
+test("streaming chat requests use the same refresh flow", async () => {
+  let sent = 0;
+  const h = setup((path) => path === "/api/auth/session" || path === "/api/auth/refresh" ? response(session()) : ++sent === 1 ? response({ error: "Expired" }, 401) : new Response("streamed reply", { headers: { "Content-Type": "text/event-stream" } }));
+  await h.render().load();
+  const result = await h.render().fetch("/api/chat", { method: "POST", body: "{}" });
+  assert.equal(await result.text(), "streamed reply");
+  assert.deepEqual(h.requests, ["/api/auth/session", "/api/chat", "/api/auth/refresh", "/api/chat"]);
+  assert.deepEqual(h.render().user, user);
 });

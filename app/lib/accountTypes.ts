@@ -16,7 +16,6 @@ export type AuthStep =
 export type AccountSurface =
   | "auth"
   | "account"
-  | "notifications"
   | "connections"
   | "storage"
   | "workspaces"

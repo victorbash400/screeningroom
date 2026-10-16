@@ -61,7 +61,15 @@ export function failure(error: unknown) {
   const providerStatus = typeof error === "object" && error !== null && "statusCode" in error && typeof error.statusCode === "number" ? error.statusCode : undefined;
   const cause = error instanceof Error ? error.cause : undefined;
   const causeCode = typeof cause === "object" && cause !== null && "code" in cause && typeof cause.code === "string" ? cause.code : undefined;
-  console.error("Screening Room backend request failed", { name, providerStatus, causeCode });
+  console.error("Screening Room backend request failed", JSON.stringify({ name, providerStatus, causeCode }));
   const transportCode = typeof error === "object" && error !== null && "code" in error && typeof error.code === "string" ? error.code : undefined;
-  return json({ error: "Service unavailable. Try again.", code: transportCode || causeCode || name, ...(process.env.NODE_ENV === "development" ? { providerStatus } : {}) }, 503);
+  const code = transportCode || causeCode || name;
+  const timeout = ["ETIMEDOUT", "ETIMEOUT", "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_HEADERS_TIMEOUT", "TimeoutError"].includes(code);
+  return json({
+    error: timeout
+      ? "Screeningroom took too long to respond. Try again."
+      : "Screeningroom could not complete the request. Try again.",
+    code,
+    ...(process.env.NODE_ENV === "development" ? { providerStatus } : {}),
+  }, timeout ? 504 : 503);
 }

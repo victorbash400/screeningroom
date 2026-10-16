@@ -1,4 +1,8 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
+import type { ImportProgress as Progress } from "../../lib/importFiles";
+import ImportDestination from "./ImportDestination";
+import ImportProgress from "./ImportProgress";
 import { X } from "lucide-react";
 import IconButton from "../controls/IconButton";
 import AppIcon from "../controls/AppIcon";
@@ -7,8 +11,10 @@ import ImportUploadArea from "./ImportUploadArea";
 import ImportSourceTabs, { type ImportSource } from "./ImportSourceTabs";
 import styles from "./ImportDialog.module.css";
 
-export default function ImportDialog({ busy, error, onFiles, onDrop, onLink, onClose }: {
+export default function ImportDialog({ busy, error, destination, progress, onFiles, onDrop, onLink, onClose }: {
   busy: boolean;
+  destination: string[];
+  progress: Progress | null;
   error: string | null;
   onFiles: (files: FileList, folder: boolean) => Promise<boolean>;
   onDrop: (items: DataTransferItemList) => Promise<boolean>;
@@ -30,13 +36,15 @@ export default function ImportDialog({ busy, error, onFiles, onDrop, onLink, onC
         <span>Import</span>
         <IconButton label="Close import" disabled={busy} onClick={onClose}><X /></IconButton>
       </header>
+      <ImportDestination path={destination} />
       <ImportSourceTabs source={source} busy={busy} onChange={setSource} />
       {source === "upload" ? (
         <ImportUploadArea busy={busy} onFiles={onFiles} onDrop={onDrop} onClose={onClose} />
       ) : (
         <ImportLinkForm onImport={(url, name) => { const success = onLink(url, name); if (success) onClose(); return success; }} />
       )}
-      {error && <p className={styles.error} role="alert">{error}</p>}
+      {busy && <ImportProgress progress={progress} />}
+      {error && <ErrorNotice message={error} />}
     </dialog>
   );
 }

@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import type { FileNode } from "../../lib/types";
 import AccountField from "../account/AccountField";
@@ -47,7 +48,7 @@ export default function ShareReferenceDialog({
             onChange={(event) => setMessage(event.target.value)}
             autoFocus
           />
-          {error && <p role="alert">{error}</p>}
+          {error && <ErrorNotice message={error} />}
         </div>
         <div className={styles.actions}>
           <SettingsInlineButton onClick={onClose}>Cancel</SettingsInlineButton>

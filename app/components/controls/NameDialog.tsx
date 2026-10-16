@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import AccountField from "../account/AccountField";
 import PillButton from "./PillButton";
@@ -52,9 +53,7 @@ export default function NameDialog({
           onFocus={(event) => event.target.select()}
         />
         {error && (
-          <p role="alert" className={styles.error}>
-            {error}
-          </p>
+          <ErrorNotice message={error} />
         )}
         <div className={styles.actions}>
           <PillButton secondary onClick={onClose}>

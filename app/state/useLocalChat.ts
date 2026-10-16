@@ -1,24 +1,57 @@
 import { useState } from "react";
-import type { FileNode, RoomData } from "../lib/types";
+import { useAgentReply } from "./useAgentReply";
+import type { ChatChannel, Conversation, FileNode, Message, RoomData } from "../lib/types";
 type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useLocalChat(
   data: RoomData,
   workspaceId: string | null,
   update: Update,
 ) {
+  const agent = useAgentReply(update);
   const [threads, setThreads] = useState<Record<string, string | undefined>>(
     {},
   );
   const [referenceRequest, setReferenceRequest] = useState(0);
   const [referenceId, setReferenceId] = useState<string>();
+  const [channel, setChannel] = useState<ChatChannel>("chat");
+  const selectionKey = `${workspaceId}:${channel}`;
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, string>>({});
-  const conversations = data.conversations.filter(
-    (item) => item.workspaceId === workspaceId,
+  const saved = data.conversations.filter(
+    (item) => item.workspaceId === workspaceId && (item.channel ?? "chat") === channel,
   );
+  function workspaceConversation(targetWorkspaceId: string, targetChannel = channel): Conversation {
+    const existing = data.conversations.find(
+      (item) => item.workspaceId === targetWorkspaceId && item.scope === "workspace" && (item.channel ?? "chat") === targetChannel,
+    );
+    return {
+      ...(existing ?? {
+        id: targetChannel === "chat" ? `workspace:${targetWorkspaceId}` : `workspace:${targetWorkspaceId}:${targetChannel}`,
+        channel: targetChannel,
+        workspaceId: targetWorkspaceId,
+        scope: "workspace" as const,
+        messages: [],
+        draft: "",
+      }),
+      title: "Chats",
+    };
+  }
+  const shared = workspaceId ? workspaceConversation(workspaceId) : undefined;
+  const conversations = shared
+    ? [shared, ...saved.filter((item) => item.scope !== "workspace")]
+    : [];
   const conversation =
-    conversations.find((item) => item.id === selected[workspaceId ?? ""]) ??
-    conversations.at(-1);
+    conversations.find((item) => item.id === selected[selectionKey]) ??
+    shared;
+  function ensureWorkspaceConversation(targetWorkspaceId: string, targetChannel = channel) {
+    if (data.conversations.some((item) => item.workspaceId === targetWorkspaceId && item.scope === "workspace" && (item.channel ?? "chat") === targetChannel))
+      return true;
+    const value = workspaceConversation(targetWorkspaceId, targetChannel);
+    return update((previous) => ({
+      ...previous,
+      conversations: [...previous.conversations, value],
+    }));
+  }
   const thread = conversation?.messages.find(
     (message) => message.id === threads[conversation.id] && !message.replyToId,
   );
@@ -26,7 +59,7 @@ export function useLocalChat(
     if (conversation)
       setThreads((previous) => ({ ...previous, [conversation.id]: id }));
   }
-  function create(targetWorkspaceId = workspaceId, title = "New conversation") {
+  function create(targetWorkspaceId = workspaceId, title = "New chat") {
     if (!targetWorkspaceId) return false;
     const id = crypto.randomUUID();
     const success = update((previous) => ({
@@ -36,6 +69,7 @@ export function useLocalChat(
         {
           id,
           workspaceId: targetWorkspaceId,
+          channel,
           title,
           messages: [],
           draft: "",
@@ -43,34 +77,36 @@ export function useLocalChat(
       ],
     }));
     if (success) {
-      setSelected((previous) => ({ ...previous, [targetWorkspaceId]: id }));
+      setSelected((previous) => ({ ...previous, [`${targetWorkspaceId}:${channel}`]: id }));
       setOpen(true);
     }
     return success;
   }
   function showFor(targetWorkspaceId: string, reference?: string) {
+    setChannel("chat");
     if (conversation?.workspaceId === targetWorkspaceId) openThread();
     setReferenceId(reference);
     setReferenceRequest((previous) => previous + 1);
-    if (
-      data.conversations.some((item) => item.workspaceId === targetWorkspaceId)
-    )
+    if (ensureWorkspaceConversation(targetWorkspaceId, "chat"))
       setOpen(true);
-    else create(targetWorkspaceId);
   }
   function show() {
-    if (conversation) setOpen(true);
-    else create();
+    if (workspaceId && ensureWorkspaceConversation(workspaceId)) setOpen(true);
   }
-  function toggle() {
-    if (open) setOpen(false);
-    else if (conversation) setOpen(true);
-    else create();
+  function toggle(targetChannel: ChatChannel = "chat") {
+    if (open && channel === targetChannel) setOpen(false);
+    else if (workspaceId && ensureWorkspaceConversation(workspaceId, targetChannel)) {
+      setChannel(targetChannel);
+      setReferenceId(undefined);
+      setOpen(true);
+    }
   }
   function select(id: string) {
+    if (id === shared?.id && workspaceId && !ensureWorkspaceConversation(workspaceId))
+      return;
     setThreads((previous) => ({ ...previous, [id]: undefined }));
     if (workspaceId)
-      setSelected((previous) => ({ ...previous, [workspaceId]: id }));
+      setSelected((previous) => ({ ...previous, [selectionKey]: id }));
   }
   function draft(value: string) {
     if (!conversation) return false;
@@ -93,15 +129,15 @@ export function useLocalChat(
       data.conversations.find(
         (item) =>
           item.workspaceId === node.workspaceId &&
-          item.id === selected[node.workspaceId],
+          item.id === selected[`${node.workspaceId}:chat`],
       ) ??
-      data.conversations
-        .filter((item) => item.workspaceId === node.workspaceId)
-        .at(-1);
-    const id = destination?.id ?? crypto.randomUUID();
-    const message = {
+      workspaceConversation(node.workspaceId, "chat");
+    const id = destination.id;
+    if (agent.busy(id)) return false;
+    const message: Message = {
+      role: "user",
       id: crypto.randomUUID(),
-      text,
+      text: text || `Discuss ${node.name}`,
       referenceId: node.id,
       referenceName: node.name,
       referenceKind: node.kind,
@@ -112,7 +148,7 @@ export function useLocalChat(
         throw new Error("Item no longer exists.");
       return {
         ...previous,
-        conversations: destination
+        conversations: previous.conversations.some((item) => item.id === id)
           ? previous.conversations.map((item) =>
               item.id === id
                 ? { ...item, messages: [...item.messages, message] }
@@ -121,9 +157,7 @@ export function useLocalChat(
           : [
               ...previous.conversations,
               {
-                id,
-                workspaceId: node.workspaceId,
-                title: node.name,
+                ...destination,
                 messages: [message],
                 draft: "",
               },
@@ -131,51 +165,43 @@ export function useLocalChat(
       };
     });
     if (success) {
+      setChannel("chat");
       setThreads((previous) => ({ ...previous, [id]: undefined }));
-      setSelected((previous) => ({ ...previous, [node.workspaceId]: id }));
+      setSelected((previous) => ({ ...previous, [`${node.workspaceId}:chat`]: id }));
       setReferenceId(undefined);
       setOpen(true);
+      void agent.reply(id, "chat", [...destination.messages, message], undefined, node, data.nodes);
     }
     return success;
   }
   function send(text: string, referenceId?: string) {
-    if (!conversation) return false;
-    const reference = referenceId
-      ? data.nodes.find((node) => node.id === referenceId)
-      : undefined;
+    if (!conversation || agent.busy(conversation.id)) return false;
+    const reference = referenceId ? data.nodes.find((node) => node.id === referenceId) : undefined;
+    const message: Message = {
+      id: crypto.randomUUID(), role: "user", text: text || (reference ? `Discuss ${reference.name}` : ""),
+      referenceId, referenceName: reference?.name, referenceKind: reference?.kind,
+      replyToId: thread?.id, createdAt: new Date().toISOString(),
+    };
+    if (!message.text.trim()) return false;
     const success = update((previous) => ({
       ...previous,
-      conversations: previous.conversations.map((item) =>
-        item.id === conversation.id
-          ? {
-              ...item,
-              title:
-                item.messages.length || item.title !== "New conversation"
-                  ? item.title
-                  : text.slice(0, 50) || "Conversation",
-              ...(thread
-                ? { threadDrafts: { ...item.threadDrafts, [thread.id]: "" } }
-                : { draft: "" }),
-              messages: [
-                ...item.messages,
-                {
-                  id: crypto.randomUUID(),
-                  text,
-                  referenceId,
-                  referenceName: reference?.name,
-                  referenceKind: reference?.kind,
-                  ...(thread ? { replyToId: thread.id } : {}),
-                  createdAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : item,
-      ),
+      conversations: previous.conversations.map((item) => item.id === conversation.id ? {
+        ...item,
+        title: item.messages.length || item.title !== "New chat" ? item.title : message.text.slice(0, 50),
+        ...(thread ? { threadDrafts: { ...item.threadDrafts, [thread.id]: "" } } : { draft: "" }),
+        messages: [...item.messages, message],
+      } : item),
     }));
-    if (success) setReferenceId(undefined);
+    if (success) {
+      setReferenceId(undefined);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, reference, data.nodes);
+    }
     return success;
   }
   return {
+    channel,
+    error: agent.error,
+    clearError: agent.clearError,
     show,
     thread,
     openThread,
@@ -188,9 +214,13 @@ export function useLocalChat(
     referenceRequest,
     setReferenceId,
     open: open && Boolean(conversation),
-    conversation,
+    conversation: conversation && agent.pending[conversation.id]
+      ? { ...conversation, messages: [...conversation.messages, agent.pending[conversation.id]!] }
+      : conversation,
+    busy: conversation ? agent.busy(conversation.id) : false,
+    stop: () => { if (conversation) agent.stop(conversation.id); },
     conversations,
-    create: (title: string) => create(workspaceId, title || "New conversation"),
+    create: () => create(),
     toggle,
     select,
     draft,

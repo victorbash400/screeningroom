@@ -1,0 +1,1 @@
+export const locations = "Help find screening locations and venues. Ask for a city or coordinates when needed. Use Qloo place or destination results for taste-based discovery; never invent venue availability or booking confirmation.";

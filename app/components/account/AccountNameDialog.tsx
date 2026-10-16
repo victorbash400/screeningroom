@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import { useAccount } from "../../state/AccountContext";
 import AccountField from "./AccountField";
@@ -43,7 +44,7 @@ export default function AccountNameDialog({
           disabled={account.busy}
           onChange={(event) => setName(event.target.value)}
         />
-        {account.error && <p role="alert">{account.error}</p>}
+        {account.error && <ErrorNotice message={account.error} onDismiss={() => account.setError(null)} />}
         <div className={styles.actions}>
           <SettingsInlineButton disabled={account.busy} onClick={onClose}>
             Cancel

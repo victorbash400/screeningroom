@@ -1,27 +1,30 @@
 import {
   ArrowLeft,
   Import,
-  MessageCircle,
+  Info,
   PanelLeft,
   Share2,
 } from "lucide-react";
-import type { FileNode, Workspace, ViewMode } from "../../lib/types";
+import type { ChatChannel, FileNode, Workspace, ViewMode } from "../../lib/types";
 import IconButton from "../controls/IconButton";
 import Breadcrumbs from "./Breadcrumbs";
 import ViewSelector from "./ViewSelector";
+import ResearchTabs from "./ResearchTabs";
 import styles from "./WorkspaceToolbar.module.css";
 interface Props {
   workspace: Workspace;
   path: FileNode[];
   mode: ViewMode;
   chatOpen: boolean;
+  chatChannel: ChatChannel;
   importing: boolean;
   onMode: (value: ViewMode) => void;
   onNavigate: (id: string | null, folderId?: string | null) => void;
   onShare: () => void;
   canShare: boolean;
-  onChat: () => void;
+  onChat: (channel: ChatChannel) => void;
   onImport: () => void;
+  onInfo: () => void;
   onNavigation: () => void;
 }
 export default function WorkspaceToolbar({
@@ -29,6 +32,7 @@ export default function WorkspaceToolbar({
   path,
   mode,
   chatOpen,
+  chatChannel,
   importing,
   onMode,
   onNavigate,
@@ -36,6 +40,7 @@ export default function WorkspaceToolbar({
   canShare,
   onChat,
   onImport,
+  onInfo,
   onNavigation,
 }: Props) {
   return (
@@ -63,6 +68,7 @@ export default function WorkspaceToolbar({
           onNavigate={onNavigate}
         />
       </div>
+      <ResearchTabs selected={chatOpen ? chatChannel : null} onSelect={onChat} />
       <div className={styles.actions}>
         <ViewSelector value={mode} onChange={onMode} />
         <div className={`${styles.group} ${styles.actionGroup}`}>
@@ -72,8 +78,8 @@ export default function WorkspaceToolbar({
           <IconButton label="Share" disabled={!canShare} onClick={onShare}>
             <Share2 />
           </IconButton>
-          <IconButton label="Agent chat" selected={chatOpen} onClick={onChat}>
-            <MessageCircle />
+          <IconButton label="Info" onClick={onInfo}>
+            <Info />
           </IconButton>
         </div>
       </div>

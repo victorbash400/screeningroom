@@ -134,7 +134,7 @@ export default function ProjectBrowser({
           aria-label="Files"
           tabIndex={0}
         >
-          {[null, ...path.map((node) => node.id)].map((parentId, index) => (
+          {[null, ...path.map((node) => node.id)].filter((parentId) => parentId === null || nodes.some((node) => node.parentId === parentId)).map((parentId, index) => (
             <DirectoryDropSurface
               workspaceId={workspaceId}
               parentId={parentId}
@@ -145,6 +145,7 @@ export default function ProjectBrowser({
                 onMenu(event.clientX, event.clientY, parentId);
               }}
             >
+              <DirectoryHeader column />
               {directory(nodes, parentId).map((node) =>
                 tile(node, false, path[index]?.id === node.id),
               )}

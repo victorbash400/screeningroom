@@ -4,6 +4,7 @@ import DropConfirmation, {
   type DropRequest,
 } from "../components/workspace/DropConfirmation";
 import { useRoomData } from "./useRoomData";
+import SessionLoading from "../components/shell/SessionLoading";
 type RoomStore = ReturnType<typeof useRoomData> & {
   dragging: React.RefObject<string | null>;
   confirmDrop: (request: DropRequest) => void;
@@ -25,7 +26,7 @@ export function RoomDataProvider({
   }
   return (
     <RoomDataContext value={{ ...room, dragging, confirmDrop }}>
-      {children}
+      {!room.ready && !room.error ? <SessionLoading /> : children}
       {drop && (
         <DropConfirmation
           request={drop}

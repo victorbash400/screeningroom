@@ -3,116 +3,140 @@ import type { AccountUser, AuthStep } from "../lib/accountTypes";
 import { sessionExpiry } from "../lib/sessionExpiry";
 import { clearAccountData } from "../lib/storage";
 import { clearLocalFiles } from "../lib/localFiles";
-import { ApiError, apiRequest, object, parseUser } from "../lib/accountApi";
+import { ApiError, apiRequest, object, parseUser, refreshAccountSession } from "../lib/accountApi";
 export function useAccountSession() {
   const [user, setUser] = useState<AccountUser | null>(null);
-  const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const generation = useRef(0);
   const [ready, setReady] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const checking = useRef<{ version: number; promise: Promise<void> } | null>(null);
+  const refreshing = useRef<Promise<unknown> | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cleanupId, setCleanupId] = useState<string | null>(null);
   const active = useRef(true);
   const channel = useRef<BroadcastChannel | null>(null);
-  const load = useCallback(async () => {
-    const version = ++generation.current;
-    try {
-      let value: unknown;
-      try {
-        value = await apiRequest("/api/auth/session");
-      } catch (failure) {
-        if (!(failure instanceof ApiError) || failure.status !== 401)
-          throw failure;
-        value = await apiRequest("/api/auth/refresh", { method: "POST" });
-      }
-      const result = object(value);
-      if (active.current && version === generation.current) {
-        const expiry =
-          result.user === null ? null : sessionExpiry(result.expiresAt);
-        setUser(result.user === null ? null : parseUser(result.user));
-        setExpiresAt(expiry);
-        setError(null);
-      }
-    } catch (failure) {
-      if (active.current && version === generation.current) {
-        setUser(null);
-        setExpiresAt(null);
-        setError(
-          failure instanceof Error ? failure.message : "Cannot load account.",
-        );
-      }
-    } finally {
-      if (active.current && version === generation.current) setReady(true);
+  const refreshSession = useCallback(() => {
+    if (!refreshing.current) {
+      refreshing.current = refreshAccountSession()
+        .finally(() => { refreshing.current = null; });
     }
+    return refreshing.current;
   }, []);
+  const load = useCallback(() => {
+    const version = generation.current;
+    if (checking.current?.version === version) return checking.current.promise;
+    const promise = (async () => {
+      try {
+        let value: unknown;
+        try {
+          value = await apiRequest("/api/auth/session");
+        } catch (failure) {
+          if (!(failure instanceof ApiError) || failure.status !== 401) throw failure;
+          value = await refreshSession();
+        }
+        const result = object(value);
+        const nextUser = result.user === null ? null : parseUser(result.user);
+        if (nextUser !== null) sessionExpiry(result.expiresAt);
+        if (active.current && version === generation.current) {
+          setReady(true);
+          if (nextUser === null) generation.current += 1;
+          setUser(nextUser);
+          setUnavailable(false);
+          setError(null);
+        }
+      } catch (failure) {
+        if (active.current && version === generation.current) {
+          setReady(true);
+          const rejected = failure instanceof ApiError && failure.status === 401;
+          if (rejected) {
+            generation.current += 1;
+            setUser(null);
+          }
+          setUnavailable(!rejected);
+          setError(failure instanceof Error ? failure.message : "Cannot load account.");
+        }
+      } finally {
+        if (checking.current?.version === version) checking.current = null;
+      }
+    })();
+    checking.current = { version, promise };
+    return promise;
+  }, [refreshSession]);
   useEffect(() => {
     active.current = true;
     void load();
     const events = new BroadcastChannel("screeningroom-account");
     channel.current = events;
     events.onmessage = (event) => {
-      if (event.data === "changed") {
+      const message: unknown = event.data;
+      if (typeof message !== "object" || message === null || !("type" in message)) return;
+      if (message.type === "signed-out") {
+        generation.current += 1;
+        setUser(null);
+        setReady(true);
+        setUnavailable(false);
+        setError(null);
+      } else if (message.type === "signed-in") {
+        generation.current += 1;
         setReady(false);
         setUser(null);
-        setExpiresAt(null);
         void load();
+      } else if (message.type === "profile-updated" && "user" in message) {
+        try {
+          const profile = parseUser(message.user);
+          setUser((previous) => previous?.id === profile.id ? profile : previous);
+        } catch (failure) {
+          setError(failure instanceof Error ? failure.message : "Invalid account update.");
+        }
       }
     };
-    const visible = () => {
-      if (document.visibilityState === "visible") void load();
-    };
-    window.addEventListener("focus", load);
-    document.addEventListener("visibilitychange", visible);
     return () => {
-      window.removeEventListener("focus", load);
-      document.removeEventListener("visibilitychange", visible);
       active.current = false;
       channel.current = null;
       events.close();
     };
   }, [load]);
-  useEffect(() => {
-    if (expiresAt === null) return;
-    const timeout = window.setTimeout(
-      () => {
-        generation.current += 1;
-        setUser(null);
-        setExpiresAt(null);
-        setReady(true);
-        setError("Session expired. Sign in again.");
-      },
-      Math.max(0, expiresAt - Date.now()),
-    );
-    return () => window.clearTimeout(timeout);
-  }, [expiresAt]);
-  const request = useCallback(async (path: string, init?: RequestInit) => {
+  const fetchAuthenticated = useCallback<typeof fetch>(async (path, init) => {
     const version = generation.current;
+    const send = () => fetch(path, { ...init, credentials: "same-origin", cache: "no-store" });
+    const response = await send();
+    if (version !== generation.current) throw new Error("Account session changed.");
+    if (response.status !== 401) return response;
+    await response.body?.cancel();
     try {
-      return await apiRequest(path, init);
+      const refreshed = object(await refreshSession());
+      if (version !== generation.current) throw new Error("Account session changed.");
+      sessionExpiry(refreshed.expiresAt);
+      setUser(parseUser(refreshed.user));
+      setUnavailable(false);
     } catch (failure) {
-      if (!(failure instanceof ApiError) || failure.status !== 401)
-        throw failure;
-      try {
-        const refreshed = object(
-          await apiRequest("/api/auth/refresh", { method: "POST" }),
-        );
-        if (version !== generation.current)
-          throw new Error("Account session changed.");
-        const expiry = sessionExpiry(refreshed.expiresAt);
-        setUser(parseUser(refreshed.user));
-        setExpiresAt(expiry);
-        return await apiRequest(path, init);
-      } catch (refreshError) {
-        if (version === generation.current) {
+      if (version === generation.current) {
+        if (failure instanceof ApiError && failure.status === 401) {
           generation.current += 1;
           setUser(null);
-          setExpiresAt(null);
-          channel.current?.postMessage("changed");
-        }
-        throw refreshError;
+          setUnavailable(false);
+          channel.current?.postMessage({ type: "signed-out" });
+        } else setUnavailable(true);
+        setError(failure instanceof Error ? failure.message : "Cannot refresh account.");
       }
+      throw failure;
     }
-  }, []);
+    const retried = await send();
+    if (version !== generation.current) {
+      await retried.body?.cancel();
+      throw new Error("Account session changed.");
+    }
+    if (retried.status === 401) {
+      generation.current += 1;
+      setUser(null);
+      setUnavailable(false);
+      channel.current?.postMessage({ type: "signed-out" });
+    }
+    return retried;
+  }, [refreshSession]);
+  const request = useCallback((path: string, init?: RequestInit) =>
+    apiRequest(path, init, fetchAuthenticated), [fetchAuthenticated]);
   async function authenticate(
     step: AuthStep,
     fields: { email: string; password: string; name: string; code: string },
@@ -149,12 +173,12 @@ export function useAccountSession() {
         }),
       );
       if (step === "sign-in") {
-        const expiry = sessionExpiry(result.expiresAt);
+        sessionExpiry(result.expiresAt);
         generation.current += 1;
         setUser(parseUser(result.user));
-        setExpiresAt(expiry);
         setReady(true);
-        channel.current?.postMessage("changed");
+        setUnavailable(false);
+        channel.current?.postMessage({ type: "signed-in" });
         return "done";
       }
       if (step === "sign-up") {
@@ -201,9 +225,9 @@ export function useAccountSession() {
       if (result.ok !== true) throw new Error("Sign out failed.");
       generation.current += 1;
       setUser(null);
-      setExpiresAt(null);
       setReady(true);
-      channel.current?.postMessage("changed");
+      setUnavailable(false);
+      channel.current?.postMessage({ type: "signed-out" });
       return true;
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Sign out failed.");
@@ -242,9 +266,9 @@ export function useAccountSession() {
       await retryCleanup(user.id);
       generation.current += 1;
       setUser(null);
-      setExpiresAt(null);
       setReady(true);
-      channel.current?.postMessage("changed");
+      setUnavailable(false);
+      channel.current?.postMessage({ type: "signed-out" });
       return true;
     } catch (failure) {
       setError(
@@ -265,8 +289,9 @@ export function useAccountSession() {
           body: JSON.stringify({ name }),
         }),
       );
-      setUser(parseUser(result.user));
-      channel.current?.postMessage("changed");
+      const profile = parseUser(result.user);
+      setUser(profile);
+      channel.current?.postMessage({ type: "profile-updated", user: profile });
       return true;
     } catch (failure) {
       setError(
@@ -306,11 +331,13 @@ export function useAccountSession() {
     retryCleanup,
     user,
     ready,
+    unavailable,
     busy,
     error,
     setError,
     load,
     request,
+    fetch: fetchAuthenticated,
     authenticate,
     signOut,
     saveName,

@@ -1,19 +1,22 @@
 .picker {
   width: min(468px, calc(100vw - 40px));
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--panel);
   color: var(--ink);
+  box-shadow: 0 8px 32px #2d2d2b12;
+  outline: none;
 }
 .picker::backdrop {
-  background: #00000052;
+  background: transparent;
+  backdrop-filter: none;
 }
 .picker h2 {
   margin: 0 0 16px;
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
 }
 .content {
   height: min(340px, calc(100dvh - 220px));
@@ -39,11 +42,13 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 0;
 }
 .picker footer {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 24px;
+  margin-top: 16px;
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import InfoDialog from "../workspace/InfoDialog";
+import { folderPath } from "../../lib/storage";
 import { useAccount } from "../../state/AccountContext";
 import { isSettingsSurface } from "../../lib/accountTypes";
 import SettingsShell from "../account/SettingsShell";
@@ -29,6 +32,7 @@ import styles from "./Screeningroom.module.css";
 
 export default function RoomApplication() {
   const app = useScreeningroom();
+  const [infoOpen, setInfoOpen] = useState(false);
   const account = useAccount();
   const settings = isSettingsSurface(account.surface);
   const {
@@ -45,6 +49,7 @@ export default function RoomApplication() {
   const conversation = chat.conversation;
   return (
     <div className={styles.app}>
+      {chat.error && <ErrorNotice message={chat.error} onDismiss={chat.clearError} />}
       {room.error && (
         <ErrorNotice
           message={room.error}
@@ -82,6 +87,7 @@ export default function RoomApplication() {
                 path={path}
                 mode={app.mode}
                 chatOpen={chat.open}
+                chatChannel={chat.channel}
                 importing={app.importing}
                 onMode={app.setMode}
                 onNavigate={app.navigate}
@@ -90,6 +96,7 @@ export default function RoomApplication() {
                   if (app.selected) app.share(app.selected);
                 }}
                 onChat={chat.toggle}
+                onInfo={() => setInfoOpen(true)}
                 onImport={() =>
                   app.requestImport(workspace.id, navigation.location.folderId)
                 }
@@ -157,7 +164,8 @@ export default function RoomApplication() {
                   workspaceName={workspace.name}
                   referenceId={chat.referenceId}
                   referenceRequest={chat.referenceRequest}
-                  key={workspace.id}
+                  key={`${workspace.id}:${chat.channel}`}
+                  label="Chats"
                   conversation={conversation}
                   thread={chat.thread}
                   draft={chat.draftValue}
@@ -166,7 +174,6 @@ export default function RoomApplication() {
                   nodes={nodes}
                   onClose={chat.close}
                   onNew={chat.create}
-                  error={room.error}
                   onSelect={chat.select}
                   onRename={() =>
                     app.showName({
@@ -181,6 +188,8 @@ export default function RoomApplication() {
                   }
                   onDraft={chat.draft}
                   onSend={chat.send}
+                  busy={chat.busy}
+                  onStop={chat.stop}
                   onReference={(id) => {
                     const node = room.data.nodes.find((item) => item.id === id);
                     if (node) {
@@ -203,6 +212,7 @@ export default function RoomApplication() {
           />
         )}
       </div>
+      {infoOpen && <InfoDialog onClose={() => setInfoOpen(false)} />}
       {nameAction?.kind === "workspace" && (
         <NameDialog
           label="Workspace name"
@@ -231,6 +241,11 @@ export default function RoomApplication() {
       {app.importDestination && (
         <ImportDialog
           busy={app.importing}
+          progress={app.importProgress}
+          destination={[
+            room.data.workspaces.find((item) => item.id === app.importDestination?.workspaceId)?.name ?? "",
+            ...folderPath(room.data, app.importDestination.parentId).map((node) => node.name),
+          ]}
           error={room.error}
           onFiles={(files, folder) => app.importFromMenu({ files, folder })}
           onDrop={(items) => app.importFromMenu({ items })}
@@ -298,7 +313,7 @@ export default function RoomApplication() {
           onExport={async () => {
             if (app.menu?.node?.content)
               try {
-                await downloadFile(app.menu.node.name, app.menu.node.content);
+                await downloadFile(app.menu.node.name, app.menu.node.content, account.user?.id);
               } catch (failure) {
                 room.setError(
                   failure instanceof Error

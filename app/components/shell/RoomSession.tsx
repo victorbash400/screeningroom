@@ -5,9 +5,11 @@ import { storageKey } from "../../lib/storage";
 import RoomApplication from "./RoomApplication";
 import SignInDialog from "../account/SignInDialog";
 import ShortcutsDialog from "../account/ShortcutsDialog";
+import SessionLoading from "./SessionLoading";
+import UnavailablePage from "./UnavailablePage";
 import ErrorNotice from "./ErrorNotice";
 import styles from "./RoomSession.module.css";
-export default function RoomSession() {
+export default function RoomSession({ login = false }: { login?: boolean }) {
   const account = useAccount();
   const scope = account.user
     ? `${storageKey}.account.${account.user.id}`
@@ -36,6 +38,7 @@ export default function RoomSession() {
   }, [account.user, account.open]);
   return (
     <div className={styles.session} aria-busy={!account.ready}>
+      {!account.ready && <SessionLoading />}
       {account.user &&
         account.error &&
         account.surface !== "auth" &&
@@ -56,7 +59,10 @@ export default function RoomSession() {
           </div>
         </RoomDataProvider>
       )}
-      {account.ready && !account.user && <SignInDialog required />}
+      {account.ready && !account.user && account.unavailable && !login && (
+        <UnavailablePage message={account.error ?? "Screeningroom is unavailable."} onRetry={() => { void account.load(); }} />
+      )}
+      {account.ready && !account.user && (!account.unavailable || login) && <SignInDialog required showForm={login} />}
       {account.user && account.surface === "auth" && <SignInDialog />}
       {account.user && account.surface === "help" && (
         <ShortcutsDialog onClose={() => account.open(null)} />

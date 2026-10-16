@@ -1,4 +1,4 @@
-import { ArrowLeft, PanelLeft, PanelLeftClose, Users, X } from "lucide-react";
+import { ArrowLeft, PanelLeft, PanelLeftClose, X } from "lucide-react";
 import type { Conversation } from "../../lib/types";
 import IconButton from "../controls/IconButton";
 import ActionMenu from "../controls/ActionMenu";
@@ -10,7 +10,6 @@ export default function ChatHeader({
   onClose,
   onRename,
   onDelete,
-  onAudience,
   threadOpen,
   onBack,
 }: {
@@ -20,7 +19,6 @@ export default function ChatHeader({
   onClose: () => void;
   onRename: () => void;
   onDelete: () => void;
-  onAudience: () => void;
   threadOpen: boolean;
   onBack: () => void;
 }) {
@@ -28,26 +26,23 @@ export default function ChatHeader({
   return (
     <header className={styles.header}>
       <IconButton
-        label={historyOpen ? "Close conversations" : "Conversations"}
+        label={historyOpen ? "Close chats" : "Chats"}
         onClick={onHistory}
       >
         <Icon />
       </IconButton>
       {threadOpen && (
-        <IconButton label="Back to conversation" onClick={onBack}>
+        <IconButton label="Back to chat" onClick={onBack}>
           <ArrowLeft />
         </IconButton>
       )}
-      <span>{conversation.title}</span>
-      <ActionMenu
-        label="Conversation actions"
+      <span>Chats</span>
+      {conversation.scope !== "workspace" && <ActionMenu
+        label="Chat actions"
         onRename={onRename}
         onDelete={onDelete}
-      />
-      <IconButton label="Who can see this conversation" onClick={onAudience}>
-        <Users />
-      </IconButton>
-      <IconButton label="Close conversation" onClick={onClose}>
+      />}
+      <IconButton label="Close chat" onClick={onClose}>
         <X />
       </IconButton>
     </header>

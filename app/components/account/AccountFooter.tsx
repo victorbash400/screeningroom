@@ -1,5 +1,4 @@
 import {
-  Bell,
   CircleHelp,
   LogIn,
   LogOut,
@@ -9,7 +8,6 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useAccount } from "../../state/AccountContext";
-import IconButton from "../controls/IconButton";
 import ContextMenu, { type MenuEntry } from "../controls/ContextMenu";
 import styles from "./AccountFooter.module.css";
 export default function AccountFooter() {
@@ -62,19 +60,6 @@ export default function AccountFooter() {
       >
         <CircleUserRound size={24} strokeWidth={1.8} />
       </button>
-      <div className={styles.bell}>
-        <IconButton
-          label={
-            account.notifications.unread
-              ? `${account.notifications.unread} unread notifications`
-              : "Notifications"
-          }
-          onClick={() => account.open("notifications")}
-        >
-          <Bell />
-        </IconButton>
-        {account.notifications.unread > 0 && <span className={styles.dot} />}
-      </div>
       {position && (
         <ContextMenu
           {...position}

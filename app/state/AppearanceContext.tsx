@@ -3,22 +3,18 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
   useSyncExternalStore,
 } from "react";
 import type { ReactNode } from "react";
-import {
-  appearanceVariables,
-  defaultAppearance,
-  parseAppearance,
-} from "../lib/appearance";
+import { appearanceVariables } from "../lib/appearance";
 import type { Appearance } from "../lib/appearance";
-import { useAccount } from "./AccountContext";
+import { useAccountAppearance } from "./useAccountAppearance";
 const AppearanceContext = createContext<{
   value: Appearance;
   dark: boolean;
   error: string | null;
   update: (value: Appearance) => void;
+  retry: () => void;
 } | null>(null);
 const subscribe = (changed: () => void) => {
   const media = matchMedia("(prefers-color-scheme: dark)");
@@ -26,37 +22,13 @@ const subscribe = (changed: () => void) => {
   return () => media.removeEventListener("change", changed);
 };
 export function AppearanceProvider({ children }: { children: ReactNode }) {
-  const account = useAccount();
-  const key = `screeningroom.appearance.${account.user?.id ?? "local"}`;
-  const [value, setValue] = useState(defaultAppearance);
-  const [error, setError] = useState<string | null>(null);
+  const { value, error, update, retry } = useAccountAppearance();
   const systemDark = useSyncExternalStore(
     subscribe,
     () => matchMedia("(prefers-color-scheme: dark)").matches,
     () => false,
   );
   const dark = value.mode === "system" ? systemDark : value.mode === "dark";
-  useEffect(() => {
-    function load() {
-      try {
-        const raw = localStorage.getItem(key);
-        setValue(raw === null ? defaultAppearance : parseAppearance(raw));
-        setError(null);
-      } catch (failure) {
-        setError(
-          failure instanceof Error
-            ? failure.message
-            : "Cannot load appearance.",
-        );
-      }
-    }
-    load();
-    const sync = (event: StorageEvent) => {
-      if (event.key === key) load();
-    };
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
-  }, [key]);
   useEffect(() => {
     const root = document.documentElement;
     const variables = appearanceVariables(dark ? value.dark : value.light);
@@ -69,21 +41,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       root.style.removeProperty("color-scheme");
     };
   }, [value, dark]);
-  function update(next: Appearance) {
-    try {
-      const raw = JSON.stringify(next);
-      parseAppearance(raw);
-      localStorage.setItem(key, raw);
-      setValue(next);
-      setError(null);
-    } catch (failure) {
-      setError(
-        failure instanceof Error ? failure.message : "Cannot save appearance.",
-      );
-    }
-  }
   return (
-    <AppearanceContext value={{ value, dark, error, update }}>
+    <AppearanceContext value={{ value, dark, error, update, retry }}>
       {children}
     </AppearanceContext>
   );

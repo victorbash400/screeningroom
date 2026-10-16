@@ -1,7 +1,7 @@
 import { UpdateUserAttributesCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { z } from "zod";
 import { identity } from "../../server/aws";
-import { account, accessToken, clearSession, requireUser } from "../../server/auth";
+import { account, accessToken, clearSession, requireSession, requireUser } from "../../server/auth";
 import { name, email } from "../../server/auth-input";
 import { ApiError, body, checkOrigin, failure, json } from "../../server/http";
 import { deleteOwnerAccount } from "../../server/delete-account";
@@ -9,7 +9,7 @@ import { deleteOwnerAccount } from "../../server/delete-account";
 export const maxDuration = 60;
 
 export async function GET() {
-  try { await requireUser(); return json({ user: await account(await accessToken()) }); }
+  try { return json({ user: (await requireSession()).account }); }
   catch (error) { return failure(error); }
 }
 

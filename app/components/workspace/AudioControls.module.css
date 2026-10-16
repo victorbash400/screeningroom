@@ -1,6 +1,7 @@
 .controls {
-  width: 100%;
-  padding: 0 24px 20px;
+  width: calc(100% - 32px);
+  margin: 12px 16px 16px;
+  padding: 8px 0 0;
   box-sizing: border-box;
 }
 .transport {
@@ -10,9 +11,11 @@
   margin-bottom: 18px;
 }
 .play {
+  composes: surface from "./PreviewGlass.module.css";
   grid-column: 2;
-  width: 40px;
-  height: 40px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
 }
 .play svg {
   width: 25px;
@@ -22,7 +25,7 @@
 .volume {
   grid-column: 3;
   justify-self: end;
-  color: var(--muted);
+  color: inherit;
 }
 .controls input {
   display: block;
@@ -35,8 +38,8 @@
   border-radius: 999px;
   background: linear-gradient(
     to right,
-    var(--icon) var(--progress),
-    var(--border) var(--progress)
+    #fff var(--progress),
+    #ffffff40 var(--progress)
   );
   cursor: pointer;
 }
@@ -45,24 +48,36 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--icon);
+  background: #fff;
 }
 .controls input::-moz-range-thumb {
   width: 10px;
   height: 10px;
   border: 0;
   border-radius: 50%;
-  background: var(--icon);
+  background: #fff;
 }
 .controls input:disabled {
   cursor: default;
   opacity: 0.5;
 }
-.time {
+.timeline {
+  composes: surface from "./PreviewGlass.module.css";
   display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  color: var(--muted);
+  align-items: center;
+  gap: 10px;
+  padding: 4px 9px 4px 16px;
+  border-radius: 30px;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
+.timeline input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+.timeline span {
+  white-space: nowrap;
+}
+
+.controls[data-buffering="true"] .transport { visibility: hidden; }

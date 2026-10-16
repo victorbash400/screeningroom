@@ -1,0 +1,1 @@
+export const performance = "Help assess screening and campaign performance from provided data. Separate measured results from taste affinities and hypotheses. Do not invent revenue, ticket sales, or performance metrics.";

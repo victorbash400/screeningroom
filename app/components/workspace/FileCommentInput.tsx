@@ -19,7 +19,6 @@ export default function FileCommentInput({
       <input
         aria-label="Comment"
         placeholder="Comment"
-        maxLength={4000}
         value={text}
         onChange={(event) => setText(event.target.value)}
       />

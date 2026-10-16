@@ -1,15 +1,15 @@
 import { removeRoomItem } from "../lib/removeRoomItem";
 import { parseLink, linkName } from "../lib/linkFiles";
-import { storeLocalFile, removeLocalFiles } from "../lib/localFiles";
+import { uploadCloudFile } from "../lib/cloudFiles";
 import type { Dispatch, SetStateAction } from "react";
-import { prepareImport } from "../lib/importFiles";
+import { prepareImport, type ImportProgress } from "../lib/importFiles";
 import type { ImportEntry } from "../lib/importFiles";
 import type { NameAction, RoomData } from "../lib/types";
 type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useRoomActions(
   update: Update,
   reportError: Dispatch<SetStateAction<string | null>>,
-  scope = "screeningroom.v1",
+  save: () => Promise<boolean>,
 ) {
   function submitName(
     action: NameAction,
@@ -94,27 +94,7 @@ export function useRoomActions(
     return success;
   }
   function remove(target: "workspace" | "node" | "conversation", id: string) {
-    let unused: string[] = [];
-    const success = update((data) => {
-      const next = removeRoomItem(data, target, id);
-      const contents = (value: RoomData) =>
-        value.nodes.flatMap((node) => [
-          ...(node.content ? [node.content] : []),
-          ...(node.versions ?? []).map((version) => version.content),
-        ]);
-      const retained = new Set(contents(next));
-      unused = contents(data).filter((content) => !retained.has(content));
-      return next;
-    });
-    if (success)
-      void removeLocalFiles(unused).catch((failure) => {
-        reportError(
-          failure instanceof Error
-            ? failure.message
-            : "Cannot remove browser file data.",
-        );
-      });
-    return success;
+    return update((data) => removeRoomItem(data, target, id));
   }
   function importLink(
     value: string,
@@ -155,13 +135,16 @@ export function useRoomActions(
     entries: ImportEntry[],
     workspaceId: string,
     parentId: string | null,
+    onProgress?: (progress: ImportProgress) => void,
   ) {
     try {
       const items = await prepareImport(
         entries,
         workspaceId,
         parentId,
-        (file) => storeLocalFile(file, scope),
+        uploadCloudFile,
+        undefined,
+        onProgress,
       );
       const success = update((data) => {
         const names = new Set(
@@ -179,11 +162,7 @@ export function useRoomActions(
         }
         return { ...data, nodes: [...data.nodes, ...items] };
       });
-      if (!success)
-        await removeLocalFiles(
-          items.flatMap((item) => (item.content ? [item.content] : [])),
-        );
-      return success;
+      return success && await save();
     } catch (failure) {
       reportError(
         failure instanceof Error ? failure.message : "Import failed.",
@@ -239,11 +218,11 @@ export function useRoomActions(
       };
     });
   }
-  function saveText(nodeId: string, text: string) {
+  async function saveText(nodeId: string, text: string) {
     const content = `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`;
     const size = new TextEncoder().encode(text).length;
     const createdAt = new Date().toISOString();
-    return update((data) => {
+    const success = update((data) => {
       const node = data.nodes.find((item) => item.id === nodeId);
       if (!node || node.kind !== "file")
         throw new Error("File no longer exists.");
@@ -276,6 +255,7 @@ export function useRoomActions(
         ),
       };
     });
+    return success && await save();
   }
   function comment(nodeId: string, text: string) {
     return update((data) => {

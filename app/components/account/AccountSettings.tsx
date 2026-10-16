@@ -1,3 +1,4 @@
+import ErrorNotice from "../shell/ErrorNotice";
 import { useState } from "react";
 import { useAccount } from "../../state/AccountContext";
 import SettingsGroup from "../settings/SettingsGroup";
@@ -54,7 +55,7 @@ export default function AccountSettings() {
         </SettingsActionRow>
       </SettingsGroup>
       {account.error && !editing && !deleting && (
-        <p role="alert">{account.error}</p>
+        <ErrorNotice message={account.error} onDismiss={() => account.setError(null)} />
       )}
       {deleting && <DeleteAccountDialog onClose={() => setDeleting(false)} />}
       {editing && <AccountNameDialog onClose={() => setEditing(false)} />}

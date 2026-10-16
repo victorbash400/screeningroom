@@ -1,11 +1,12 @@
 # screeningroom
 
-Next.js application with an independent AWS development backend. UI workspaces,
-files and conversations currently remain in browser storage; the cloud endpoints
-are ready for an explicit migration rather than silently replacing local data.
+Next.js application with an independent AWS backend. Account workspaces, folders,
+file cards, document versions, comments, activity, chats and drafts persist through
+`/api/room`. Appearance persists through `/api/appearance`. Cognito authenticates
+server requests using HttpOnly cookies; no browser-stored login tokens are used.
 
-Import accepts files, folders, and HTTP(S) links. Larger files use IndexedDB blob
-storage; workspace metadata and conversations remain in localStorage. Audio/video
+Import accepts files, folders, and HTTP(S) links. Uploaded bytes go to private S3
+objects through short-lived signed URLs, including small and empty files. Audio/video
 use compact playback controls, PDFs use PDF.js, and YouTube links embed the provider
 player. Preview includes Open with for the browser or download. Remote media must
 support browser playback; remote PDFs must permit cross-origin requests. Other
@@ -104,15 +105,29 @@ Passwords and tokens are never stored in browser localStorage or DynamoDB.
 | `GET /api/records?kind=workspace` | kind: `workspace`, `project`, `conversation`; optional cursor | `{records,cursor}` |
 | `PUT /api/records` | `{id,kind,value,expectedVersion}` | `{record}` |
 | `DELETE /api/records` | `{id,kind,version}` | `{ok:true}` |
-| `POST /api/files` | raw file bytes and supported `Content-Type`, maximum 2 MB | `{file:{id,size,contentType}}` |
+| `POST /api/files/upload` | `{size,contentType}` | `{id,url}` for a direct signed S3 upload |
+| `GET /api/room` | — | `{data,revision,imports,mutationId}` |
+| `PUT /api/room` | `{fileId,revision,imports,mutationId}` | `{revision}` after snapshot validation and conditional commit |
+| `GET /api/appearance` | — | `{value,revision}` |
+| `PUT /api/appearance` | `{value,revision}` | `{value,revision}` |
 | `GET /api/files?id=UUID` | — | `{url,expiresIn:60}` for an attachment download |
-| `POST /api/chat` | `{messages:[{role:"user"\|"assistant",content:string}]}` | `{message:{role:"assistant",text}}` |
+| `POST /api/chat` | `{agent?,messages:[{role:"user"\|"assistant",content:string}]}` | AI SDK UI message event stream with text and tool progress |
 | `GET /api/health` | — | `{status,services:{database,storage,auth,bedrock}}` |
 
 Session returns 401 if a refresh cookie remains after the access cookie expires;
 the client may perform one refresh and retry. A genuinely anonymous session returns
 `{user:null}`. Cookies are HttpOnly, SameSite=Lax, and Secure in production.
-No polling or implicit retry loops are implemented.
+The client restores the account once at startup. Returning to the window or
+changing tab visibility does not trigger session requests. Sign-in and sign-out
+sync through explicit BroadcastChannel events; profile updates sync in place
+without closing the workspace. Workspace and appearance data sync through storage
+events. Local workspace writes read the latest saved state before applying edits.
+
+Protected requests, including streaming chat, share one authenticated transport.
+A 401 triggers one shared refresh and one retry of the original request. Network
+failures preserve the last verified account; rejected or revoked credentials still
+require sign-in. Session requests can also be retried explicitly through the
+existing error popup. There are no scheduled session checks or polling loops.
 Sign-in for an unconfirmed email returns HTTP 403 with
 `{error:"Confirm your email before signing in.",code:"EMAIL_UNCONFIRMED"}`.
 The client can reopen confirmation using this code without parsing error text.
@@ -121,8 +136,14 @@ and no custom-message/custom-sender Lambda. AWS's ConfirmSignUp documentation
 shows six-digit confirmation codes, but the pool configuration exposes no
 code-length field and this project has not verified a delivered email code.
 Keep that distinction when implementing a segmented input.
-AWS SDK requests have bounded connect/request timeouts and use IPv4 connections
-to avoid this development Mac's intermittent DNS64 routing failures. Provider
+AWS SDK requests allow 10 seconds to connect and 15 seconds overall. The local
+system resolver intermittently stalled before socket connection and returned
+synthesized IPv6 DNS64 answers for AWS. `app/server/aws-dns.ts` uses bounded IPv4
+DNS resolution, shares in-flight lookups, and caches answers for their DNS TTL
+(capped at 60 seconds). SDK clients and JWT signing-key downloads share this
+resolver. Each SDK client has its own connection pool. No authentication requests
+are automatically retried. Authentication failures log the operation name and
+elapsed time without tokens, credentials, or account data.
 failures remain visible; no substitute data or success responses are returned.
 
 Records use `pk=USER#<Cognito sub>` and `sk=<kind>#<UUID>`. Queries use partition keys,
@@ -132,8 +153,8 @@ conflicts return 409. Pagination cursors are validated against the owner and kin
 JSON bodies are capped at 64 KB. Files belong in S3 rather than DynamoDB.
 Notification creation is server-only; no sample notifications are returned.
 Trash is reversible and preserves read state. Existing records without `trashedAt`
-return `trashedAt:null`. UI All/Unread views exclude trash; the unread badge counts
-only notifications with both `readAt:null` and `trashedAt:null`.
+return `trashedAt:null`. Notification records remain available through the API;
+notification navigation and startup requests are disabled.
 
 Account deletion performs its storage permission preflight before changing data.
 The user approved `s3:ListBucketVersions` and `s3:DeleteObjectVersion` on this
@@ -247,9 +268,8 @@ identity mapping before changing Cognito subjects; otherwise existing DynamoDB/S
 ownership would appear to change. Do not add a second competing cookie/login flow.
 
 Before wider release: test real email confirmation/reset delivery, decide signup
-restrictions and abuse/spend limits, use separate production resources, and migrate
-browser data explicitly. This is a development foundation, not a completed cloud
-workspace migration or production launch.
+restrictions and abuse/spend limits, and use separate production resources.
+This remains a development deployment, not a production launch.
 
 ## UI integration notes
 
@@ -269,16 +289,41 @@ The sign-in welcome uses animated SVG affinity wheels with local portrait and me
 
 `POST /api/auth/demo` returns the dedicated shared demo account’s `DEMO_ACCOUNT_EMAIL` and `DEMO_ACCOUNT_PASSWORD` to fill the sign-in fields, matching Garden. It does not authenticate or set session cookies; users submit Sign in themselves. Only this intentionally shared demo account is exposed by that action. The values belong in ignored environment configuration and must be configured separately for each deployment. The route rejects cross-origin requests, disables caching, and fails explicitly when the account is not configured.
 
-Per-account local data uses `screeningroom.v1.account.<user.id>`. The anonymous
-legacy key is preserved separately. Account switching remounts the workspace.
-Auth, profile, notifications and health use the real backend routes above;
-workspace/file/chat persistence remains local until the explicit cloud merge.
+The backend is authoritative. Browser persistence is read only for migration:
+account-scoped `screeningroom.v1.account.<user.id>` data is imported once per source
+hash after a successful cloud load. Existing localStorage and IndexedDB originals
+are retained. Unassigned legacy `screeningroom.v1` data is imported only through
+**Settings → Workspaces → Import browser data**, so it is not silently assigned to
+whichever account logs in first. Conflicting copies are reported and never overwrite
+cloud items. Run migration in the browser and origin where the files were uploaded.
+Account switching remounts the workspace; signing out waits for pending room saves.
+
+DynamoDB holds the account-owned revision and immutable S3 snapshot pointer. Each
+snapshot contains workspace structure, file references, history, chats, drafts and
+activity; file bytes live in separate S3 objects. This matches the current access
+pattern of loading the account workspace together, avoids DynamoDB's item size limit,
+and commits a complete workspace atomically with a conditional revision write.
+Snapshots and file bytes upload directly to S3; the commit API receives only a
+file reference and revision. There is no application file-size or conversation-count
+cap. S3 enforces its own upload constraints. Older snapshots and
+unreferenced uploads are retained until account deletion; add a reference-aware
+retention job before larger-scale use rather than expiring live objects blindly.
+Appearance is a separate versioned DynamoDB record. There are no browser persistence
+writes for application data and no offline-success fallback.
+
+Changes queue in memory until acknowledged by the server. Failed writes stay visible
+in the existing error popup; Retry merges independent changes and refuses conflicting
+edits to the same item. Pending changes prevent an ordinary tab close without a
+browser warning. Changes confirmed in one tab notify other tabs via BroadcastChannel.
+Other devices load current data on opening or an explicit refresh; no polling or
+cross-device realtime subscription is installed.
 
 ## Checks
 
 ```sh
 pnpm typecheck
 pnpm build
+node --experimental-transform-types --test tests/room-sync.test.mjs tests/cloud-files.test.mjs tests/import-files.test.mjs
 ```
 
 ## Production
@@ -287,3 +332,84 @@ pnpm build
 pnpm build
 pnpm start
 ```
+
+
+### Agent chats
+
+`app/agents` contains the individual chat, locations, performance, similar, and compare
+instructions. Its small registry creates an AI SDK
+`ToolLoopAgent` using the existing Bedrock Mantle `BEDROCK_MODEL_ID` (`zai.glm-5`,
+the same text model as Better Side). The loop is limited to five model steps,
+with no automatic retries or background queue.
+
+`app/tools` contains two read-only Qloo tools: `searchEntities` resolves names to
+entity IDs, and `tasteInsights` requests recommendations using those IDs. Configure
+`QLOO_HACKATHON_API_SERVER_URL` and `QLOO_HACKATHON_API_KEY` in the server environment.
+The key is never returned to the browser. Requests use a 15-second tool timeout;
+the chat route has a 50-second generation deadline. Qloo affinity is not measured
+conversion, box-office performance, venue availability, or legal clearance.
+
+Every chat channel uses the same composer and reference picker. Text-file mentions
+send the file text; folder mentions send immediate child names.
+Other file types send metadata only. References are user-provided context, not
+instructions or tool permissions. There is no PDF, image, or audio analysis yet.
+Conversation context is sent without application-imposed message-count or text
+truncation. Provider context limits surface as errors rather than silently dropping
+messages. Saved conversation history is independent of provider context limits.
+Replies stream into role-aware bubbles, with tool progress, explicit failures,
+and cancellation. Conversation history, replies and drafts save through the same
+account-owned backend as the workspace. In-flight generation remains interruptible;
+this does not add durable agent execution after the client disconnects.
+
+Run `node --experimental-strip-types --test tests/agent-chat.test.mjs` for chat
+history, storage-role validation, streaming, and error handling checks.
+
+Run `node --conditions=react-server --experimental-strip-types --test tests/qloo-tools.test.mjs`
+for Qloo request construction, schema validation, and explicit provider failures.
+
+
+### Startup recovery
+
+If the initial session lookup fails, the app shows a centered 404-style recovery
+surface with Retry and a Sign in link to `/login`. Background failures keep an
+already verified workspace mounted and use the existing popup. Unknown URLs return
+an actual HTTP 404 using the same layout. `/login` opens the existing sign-in form;
+an authenticated user continues to the workspace. Startup connection failures
+remain API 503/504 errors; the 404-style client layout does not relabel them as
+missing routes. While the initial session loads, the centered app mark remains visible.
+
+DNS regression tests: `node --conditions=react-server --experimental-transform-types --test tests/aws-dns.test.mjs`.
+Recovery rendering tests: `node --experimental-transform-types --test tests/session-screen.test.mjs`.
+
+
+### Media delivery and cache
+
+Video and audio mount their player shell immediately and show a spinner until the
+first frame is available. Seeking and stalled playback use native media events to
+show buffering; completion and errors stop the indicator. Startup uses the app
+mark with a spinner beneath it, following Garden's layout.
+
+Private S3 assets stream through `/asset-worker.js` in 1 MiB byte ranges. The worker
+keeps disposable chunks in account-scoped Cache Storage, reuses overlapping reads,
+and refreshes signed URLs on demand. Opening a large video no longer requires a
+complete Blob download. File selection, hover and focus warm the first and final
+chunks (including MP4 footer metadata). Speculative requests run serially and skip
+superseded selections; data-saver mode disables them. Explicit downloads still
+retrieve the complete file. Uploads reuse their original Blob immediately and seed
+the same cache after S3 acknowledges the write.
+
+Sign-out clears the media cache; account changes cannot read another account's
+cached URLs. AWS remains authoritative. Browser storage can be evicted, and HTTPS
+(or localhost) is required for service workers. If workers are unavailable, the
+player uses a fresh signed S3 URL and native HTTP ranges. Cache quota errors evict
+an older chunk; playback continues even if caching is unavailable. No upload-size
+or saved-chat-count limit is added by this cache.
+
+Chat waiting uses a small pulsing dot until text or an active tool call arrives.
+Qloo calls have running, completed, stopped and failed presentation based on SDK
+stream events. Terminal states remove loading animations. Markdown rendering for
+unchanged replies is memoized. Notifications are removed from navigation and no
+longer load during sign-in. Connections lists Qloo API configuration alongside
+Bedrock, authentication, database and storage.
+
+Cache checks: `node --experimental-transform-types --test tests/asset-cache.test.mjs tests/agent-activity.test.mjs`.

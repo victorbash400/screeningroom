@@ -6,13 +6,15 @@ import styles from "./SignInDialog.module.css";
 
 export default function SignInDialog({
   required = false,
+  showForm = false,
 }: {
   required?: boolean;
+  showForm?: boolean;
 }) {
   const account = useAccount();
   const titleId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [formOpen, setFormOpen] = useState(!required || Boolean(account.error));
+  const [formOpen, setFormOpen] = useState(showForm || !required || Boolean(account.error));
   useEffect(() => {
     const previous = document.activeElement;
     dialog.current?.showModal();

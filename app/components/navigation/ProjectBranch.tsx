@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import type { FileNode } from "../../lib/types";
 import type { BranchProps } from "./WorkspaceBranch";
-import { directory, folderPath } from "../../lib/storage";
+import { directory } from "../../lib/storage";
 import { fileIcon } from "../../lib/fileTypes";
 import IconButton from "../controls/IconButton";
 import { useNodeDrag } from "../../state/useNodeDrag";
@@ -38,16 +38,9 @@ export default function ProjectBranch({
   const selected = folder
     ? location.folderId === node.id
     : selectedId === node.id;
-  const inPath =
-    location.folderId !== null &&
-    nodes.some(
-      (item) => item.id === location.folderId && item.kind === "folder",
-    ) &&
-    folderPath(
-      { version: 1, nodes, workspaces: [], conversations: [] },
-      location.folderId,
-    ).some((item) => item.id === node.id);
-  const Icon = !folder ? fileIcon(node.name, node.sourceUrl, node.mimeType) : inPath ? FolderOpen : FolderClosed;
+  const Icon = !folder
+    ? fileIcon(node.name, node.sourceUrl, node.mimeType)
+    : open ? FolderOpen : FolderClosed;
   const children = folder ? directory(nodes, node.id) : [];
   return (
     <div>

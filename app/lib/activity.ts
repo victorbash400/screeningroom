@@ -1,5 +1,5 @@
 import type { ActivityEntry, RoomData } from "./types";
-import { folderPath } from "./storage";
+import { folderPath } from "./storage.ts";
 export function recordActivity(previous: RoomData, next: RoomData): RoomData {
   const entries: ActivityEntry[] = [];
   const oldNodes = new Map(previous.nodes.map((node) => [node.id, node]));

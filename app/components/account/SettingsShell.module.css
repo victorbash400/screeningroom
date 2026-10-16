@@ -39,7 +39,7 @@
 }
 @media (max-width: 799px) {
   .main {
-    padding: 24px 20px;
+    padding-inline: 20px;
   }
 }
 @media (max-height: 599px) {
@@ -50,7 +50,6 @@
 }
 @media (max-width: 520px) {
   .main {
-    padding: 20px 14px;
   }
   .content header > button {
     display: inline-flex;
@@ -86,4 +85,8 @@
 @keyframes reveal {
   from { opacity: 0; transform: translateX(6px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main, .surface { animation: none; }
 }

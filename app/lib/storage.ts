@@ -132,6 +132,7 @@ export function parseData(raw: string): RoomData {
     }
   }
   const conversations = new Set<string>();
+  const workspaceConversations = new Set<string>();
   for (const item of value.conversations) {
     if (
       !record(item) ||
@@ -140,10 +141,18 @@ export function parseData(raw: string): RoomData {
       !workspaces.has(item.workspaceId) ||
       !text(item.title) ||
       !text(item.draft) ||
+      (item.scope !== undefined && item.scope !== "workspace") ||
+      (item.channel !== undefined && !["chat", "locations", "similar", "performance", "compare", "cvr", "compliance"].includes(item.channel as string)) ||
       !Array.isArray(item.messages) ||
       conversations.has(item.id)
     )
       throw new Error("Saved conversation data is invalid.");
+    if (item.scope === "workspace") {
+      const key = JSON.stringify([item.workspaceId, item.channel ?? "chat"]);
+      if (workspaceConversations.has(key))
+        throw new Error("Saved workspace conversations are duplicated.");
+      workspaceConversations.add(key);
+    }
     if (
       item.threadDrafts !== undefined &&
       (!record(item.threadDrafts) ||
@@ -158,6 +167,10 @@ export function parseData(raw: string): RoomData {
         !text(message.id) ||
         !text(message.text) ||
         !date(message.createdAt) ||
+        (message.role !== undefined && message.role !== "user" && message.role !== "assistant") ||
+        (message.status !== undefined && !["streaming", "complete", "stopped", "failed"].includes(message.status as string)) ||
+        (message.error !== undefined && !text(message.error)) ||
+        (message.tools !== undefined && (!Array.isArray(message.tools) || message.tools.some((tool) => !record(tool) || !text(tool.id) || !text(tool.name) || !["running", "done", "failed"].includes(tool.state as string)))) ||
         (message.referenceId !== undefined &&
           (!text(message.referenceId) ||
             (nodes.has(message.referenceId)
@@ -203,11 +216,6 @@ export function parseData(raw: string): RoomData {
       throw new Error("Saved thread draft parent is invalid.");
   }
   return value as unknown as RoomData;
-}
-
-export function readData(key = storageKey): RoomData {
-  const raw = localStorage.getItem(key);
-  return raw === null ? emptyData : parseData(raw);
 }
 
 export function folderPath(data: RoomData, folderId: string | null) {

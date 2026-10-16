@@ -5,6 +5,7 @@ import AudioControls from "./AudioControls";
 export default function MediaControls({
   media,
   playing,
+  buffering,
   current,
   duration,
   muted,
@@ -13,6 +14,7 @@ export default function MediaControls({
 }: {
   media: RefObject<HTMLMediaElement | null>;
   playing: boolean;
+  buffering: boolean;
   current: number;
   duration: number;
   muted: boolean;
@@ -44,7 +46,8 @@ export default function MediaControls({
   if (!video)
     return (
       <AudioControls
-        playing={playing}
+        buffering={buffering}
+      playing={playing}
         muted={muted}
         current={current}
         duration={duration}
@@ -57,6 +60,7 @@ export default function MediaControls({
     );
   return (
     <VideoControls
+      buffering={buffering}
       playing={playing}
       muted={muted}
       current={current}

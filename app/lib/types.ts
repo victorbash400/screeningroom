@@ -28,6 +28,11 @@ export interface FileNode {
   size?: number;
 }
 export interface Message {
+  role?: "user" | "assistant";
+  status?: "streaming" | "complete" | "stopped" | "failed";
+  error?: string;
+  waiting?: boolean;
+  tools?: { id: string; name: string; state: "running" | "done" | "failed" }[];
   replyToId?: string;
   id: string;
   text: string;
@@ -36,7 +41,10 @@ export interface Message {
   referenceName?: string;
   referenceKind?: "file" | "folder";
 }
+export type ChatChannel = "chat" | "locations" | "similar" | "performance" | "compare";
 export interface Conversation {
+  channel?: ChatChannel;
+  scope?: "workspace";
   threadDrafts?: Record<string, string>;
   id: string;
   workspaceId: string;

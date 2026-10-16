@@ -1,3 +1,5 @@
+import ErrorNotice from "../shell/ErrorNotice";
+import { useAccountNotifications } from "../../state/useAccountNotifications";
 import { useState } from "react";
 import { useAccount } from "../../state/AccountContext";
 import SettingsGroup from "../settings/SettingsGroup";
@@ -8,7 +10,7 @@ import NotificationRow from "./NotificationRow";
 import styles from "./Notifications.module.css";
 export default function Notifications() {
   const account = useAccount();
-  const { notifications } = account;
+  const notifications = useAccountNotifications(account.user?.id, account.request);
   const [filter, setFilter] = useState<NotificationFilter>("all");
   const [oldest, setOldest] = useState(false);
   const items = notifications.items
@@ -41,9 +43,7 @@ export default function Notifications() {
       {(notifications.error || items.length > 0) && (
         <SettingsGroup>
           {notifications.error && (
-            <div role="alert" className={styles.error}>
-              {notifications.error}
-            </div>
+            <ErrorNotice message={notifications.error} onRetry={() => void notifications.load()} />
           )}
           {items.map((item) => (
             <NotificationRow

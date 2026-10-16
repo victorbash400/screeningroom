@@ -67,7 +67,7 @@
   height: 46px;
 }
 .transport button:hover {
-  background-color: #ffffff30;
+  background-color: #17171780;
 }
 .transport button > svg {
   width: 25px;
@@ -162,3 +162,5 @@
     transition: none;
   }
 }
+
+.controls[data-buffering="true"] .transport { visibility: hidden; }

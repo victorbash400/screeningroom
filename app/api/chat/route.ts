@@ -1,22 +1,28 @@
-import { generateText } from "ai";
 import { z } from "zod";
+import { createAgent } from "../../agents";
 import { requireUser } from "../../server/auth";
-import { chatModel } from "../../server/bedrock";
-import { ApiError, body, checkOrigin, failure, json } from "../../server/http";
+import { ApiError, body, checkOrigin, failure } from "../../server/http";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const inputSchema = z.object({ messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1).max(12_000) }).strict()).min(1).max(40) }).strict();
+const inputSchema = z.object({
+  agent: z.enum(["chat", "locations", "performance", "similar", "compare"]).default("chat"),
+  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1) }).strict()).min(1),
+}).strict();
 
 export async function POST(request: Request) {
   try {
     checkOrigin(request);
     await requireUser();
-    const input = await body(request, inputSchema, 64_000);
+    const input = await body(request, inputSchema, Number.POSITIVE_INFINITY);
     if (input.messages.at(-1)?.role !== "user") throw new ApiError(400, "The last message must be from the user.");
-    const result = await generateText({ model: await chatModel(), system: "You are Screening Room's assistant. Help the user work with their projects and screening plans. Be concise and direct. You have no access to workspace files, external tools, or actions unless their content is explicitly provided. Never claim you changed data or used tools.", messages: input.messages, maxOutputTokens: 2048, maxRetries: 0, abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(50_000)]) });
-    if (!result.text.trim()) throw new Error("Bedrock returned no chat text.");
-    return json({ message: { role: "assistant", text: result.text } });
+    const agent = await createAgent(input.agent);
+    const result = await agent.stream({ messages: input.messages, abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(50_000)]) });
+    return result.toUIMessageStreamResponse({
+      sendReasoning: false,
+      headers: { "Cache-Control": "no-store" },
+      onError: () => "Agent response failed. Try sending again.",
+    });
   } catch (error) { return failure(error); }
 }

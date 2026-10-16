@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { NameAction, FileNode, ViewMode } from "../lib/types";
-import { pickedEntries, readDroppedItems } from "../lib/importFiles";
-import { isLocalFile, readLocalFile } from "../lib/localFiles";
-import { readTextContent } from "../lib/fileTypes";
+import { pickedEntries, readDroppedItems, type ImportProgress } from "../lib/importFiles";
+import { useAccount } from "./AccountContext";
+import { warmAsset } from "../lib/assetCache";
+import { readFileBlob } from "../lib/cloudFiles";
 import { folderPath } from "../lib/storage";
 import { useRoomStore } from "./RoomDataContext";
 import { useRoomNavigation } from "./useRoomNavigation";
@@ -13,8 +14,9 @@ import { useLocalChat } from "./useLocalChat";
 
 export function useScreeningroom() {
   const room = useRoomStore();
+  const account = useAccount();
   const navigation = useRoomNavigation(room.data);
-  const actions = useRoomActions(room.update, room.setError, room.scope);
+  const actions = useRoomActions(room.update, room.setError, room.save);
   const { location } = navigation;
   const workspace = room.data.workspaces.find(
     (item) => item.id === location.workspaceId,
@@ -75,8 +77,12 @@ export function useScreeningroom() {
     parentId: string | null;
   } | null>(null);
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
   const chat = useLocalChat(room.data, workspace?.id ?? null, room.update);
   const selected = nodes.find((node) => node.id === selection);
+  useEffect(() => {
+    if (account.user && selected?.content) void warmAsset(account.user.id, selected.content);
+  }, [account.user?.id, selected?.content]);
   function navigate(
     workspaceId: string | null,
     folderId: string | null = null,
@@ -167,16 +173,10 @@ export function useScreeningroom() {
   }
   async function editFile(node: FileNode) {
     try {
-      if ((node.size ?? 0) > 1024 * 1024)
-        throw new Error(
-          "The text editor supports files up to 1 MiB. Use Export for larger files.",
-        );
       if (!node.content) throw new Error("File content is unavailable.");
-      const text = isLocalFile(node.content)
-        ? new TextDecoder("utf-8", { fatal: true }).decode(
-            await (await readLocalFile(node.content)).arrayBuffer(),
-          )
-        : readTextContent(node.content);
+      const text = new TextDecoder("utf-8", { fatal: true }).decode(
+        await (await readFileBlob(node.content, account.user?.id)).arrayBuffer(),
+      );
       setEditing({ node, text });
       room.setError(null);
     } catch (failure) {
@@ -191,12 +191,14 @@ export function useScreeningroom() {
   }
   async function importFromMenu(source: { files: FileList; folder: boolean } | { items: DataTransferItemList }) {
     if (!importDestination || importing) return false;
+    setImportProgress(null);
     setImporting(true);
     try {
       return await actions.importEntries(
         "items" in source ? await readDroppedItems(source.items) : pickedEntries(source.files, source.folder),
         importDestination.workspaceId,
         importDestination.parentId,
+        setImportProgress,
       );
     } catch (failure) {
       room.setError(
@@ -268,6 +270,7 @@ export function useScreeningroom() {
     selected,
     setSelection,
     importing,
+    importProgress,
     chat,
     navigate,
     openNode,

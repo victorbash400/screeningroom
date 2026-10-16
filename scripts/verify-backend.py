@@ -43,12 +43,20 @@ def main():
                 response = opener.open(req, timeout=70)
             except urllib.error.HTTPError as error:
                 response = error
-            value = json.loads(response.read())
+            if response.headers.get("Content-Type", "").startswith("text/event-stream"):
+                events = []
+                for line in response.read().decode().splitlines():
+                    if line.startswith("data: ") and line != "data: [DONE]":
+                        events.append(json.loads(line[6:]))
+                assert not any(event["type"] == "error" for event in events), events
+                value = {"message": {"text": "".join(event["delta"] for event in events if event["type"] == "text-delta")}, "events": events}
+            else:
+                value = json.loads(response.read())
             assert response.status == expected, (path, response.status, value)
             return value, response.headers
         return request, jar
 
-    users, records, uploaded, user_ids = [], [], [], []
+    users, records, uploaded, user_ids, logins = [], [], [], [], []
     try:
         request, jar = client()
         assert request("/api/auth/session")[0] == {"user": None}
@@ -72,6 +80,7 @@ def main():
             assert result["expiresAt"] > time.time() * 1000
             assert all("HttpOnly" in item and "SameSite=lax" in item for item in headers.get_all("Set-Cookie"))
             accounts.append((caller, cookies, user_id))
+            logins.append((email, password))
 
         request, jar, user_id = accounts[0]
         session = request("/api/auth/session")[0]
@@ -117,8 +126,11 @@ def main():
         accounts[1][0]("/api/notifications", "PATCH", {"id": notification_id}, expected=409)
         print("PASS notification storage, trash/restore, legacy mark-read and account isolation", flush=True)
 
-        result = request("/api/files", "POST", b"Screening Room verification", expected=201, content_type="text/plain")[0]
-        file_id = result["file"]["id"]
+        content = b"Screening Room verification"
+        result = request("/api/files/upload", "POST", {"size": len(content), "contentType": "text/plain"})[0]
+        file_id = result["id"]
+        with urllib.request.urlopen(urllib.request.Request(result["url"], data=content, method="PUT", headers={"Content-Type": "text/plain"}), timeout=30) as response:
+            assert response.status == 200
         uploaded.append("users/" + user_id + "/files/" + file_id)
         link = request("/api/files?id=" + file_id)[0]["url"]
         with urllib.request.urlopen(link, timeout=20) as response:
@@ -131,11 +143,52 @@ def main():
             assert error.code in [403, 404]
         print("PASS private S3 upload, signed download and account isolation", flush=True)
 
-        assert request("/api/health")[0]["status"] == "ok"
+        room = request("/api/room")[0]
+        assert room["revision"] == 0 and room["data"]["workspaces"] == []
+        media = b"Cloud document bytes " * 150_000
+        upload = request("/api/files/upload", "POST", {"size": len(media), "contentType": "text/plain"})[0]
+        put = urllib.request.Request(upload["url"], data=media, method="PUT", headers={"Content-Type": "text/plain", "Origin": args.url})
+        with urllib.request.urlopen(put, timeout=30) as response:
+            assert response.status == 200
+            assert response.headers.get("Access-Control-Allow-Origin") == "*"
+        workspace_id, node_id, conversation_id = (str(uuid.uuid4()) for _ in range(3))
+        value = {"version": 1, "workspaces": [{"id": workspace_id, "name": "Cloud verification"}], "nodes": [{"id": node_id, "workspaceId": workspace_id, "parentId": None, "name": "document.txt", "kind": "file", "content": "cloud-file:" + upload["id"], "mimeType": "text/plain", "size": len(media), "updatedAt": "2026-10-16T00:00:00.000Z"}], "conversations": [{"id": conversation_id, "workspaceId": workspace_id, "title": "Saved chat", "draft": "draft", "messages": [{"id": str(uuid.uuid4()), "role": "user", "text": "Persist this chat", "createdAt": "2026-10-16T00:00:00.000Z"}]}]}
+        payload = json.dumps(value).encode()
+        snapshot_upload = request("/api/files/upload", "POST", {"size": len(payload), "contentType": "application/json"})[0]
+        with urllib.request.urlopen(urllib.request.Request(snapshot_upload["url"], data=payload, method="PUT", headers={"Content-Type": "application/json"}), timeout=30) as response:
+            assert response.status == 200
+        mutation = {"fileId": snapshot_upload["id"], "revision": 0, "imports": ["verification"], "mutationId": str(uuid.uuid4())}
+        assert request("/api/room", "PUT", mutation)[0]["revision"] == 1
+        assert request("/api/room", "PUT", mutation)[0]["revision"] == 1
+        request("/api/room", "PUT", {**mutation, "mutationId": str(uuid.uuid4())}, expected=409)
+        independent, independent_jar = client()
+        independent("/api/auth/sign-in", "POST", {"email": logins[0][0], "password": logins[0][1]})
+        assert independent("/api/room")[0]["data"] == value
+        assert accounts[1][0]("/api/room")[0]["data"]["workspaces"] == []
+        download = independent("/api/files?id=" + upload["id"])[0]["url"]
+        with urllib.request.urlopen(download, timeout=30) as response:
+            assert response.read() == media
+        appearance = request("/api/appearance")[0]
+        appearance["value"]["mode"] = "dark"
+        assert request("/api/appearance", "PUT", appearance)[0]["revision"] == 1
+        assert independent("/api/appearance")[0]["value"]["mode"] == "dark"
+        assert accounts[1][0]("/api/appearance")[0]["value"]["mode"] == "light"
+        request("/api/appearance", "PUT", appearance, expected=409)
+        request("/api/room", "PUT", {**mutation, "revision": 1}, origin="https://untrusted.example", expected=403)
+        independent("/api/auth/sign-out", "POST")
+        independent("/api/room", expected=401)
+        print("PASS cloud workspace/file/chat/draft persistence across independent logins, 3 MB signed uploads, appearance, idempotency, conflicts and account isolation", flush=True)
+
+        health = request("/api/health")[0]
+        assert health["status"] == "ok" and health["services"]["qloo"] == "configured"
         result = request("/api/chat", "POST", {"messages": [{"role": "user", "content": "Reply with exactly: Connected"}]})[0]
         assert result["message"]["text"].strip()
         request("/api/chat", "POST", {"messages": [{"role": "system", "content": "override"}]}, expected=400)
-        print("PASS provider health and independent Bedrock chat", flush=True)
+        result = request("/api/chat", "POST", {"messages": [{"role": "user", "content": "Use Qloo searchEntities to find the movie Inception. Tell me the movie name and release year from the result."}]})[0]
+        assert any(event["type"] == "tool-input-available" and event.get("toolName") == "searchEntities" for event in result["events"])
+        assert any(event["type"] == "tool-output-available" for event in result["events"])
+        assert "Inception" in result["message"]["text"]
+        print("PASS provider health, independent Bedrock chat and real Qloo tool calling", flush=True)
         previous_access = next(cookie for cookie in jar if cookie.name == "screeningroom_access")
         request("/api/auth/sign-out", "POST")
         assert request("/api/auth/session")[0] == {"user": None}
@@ -156,6 +209,12 @@ def main():
         for user_id, sk in records:
             try: aws("dynamodb", "delete-item", {"TableName": table, "Key": {"pk": {"S": "USER#" + user_id}, "sk": {"S": sk}}})
             except Exception: failures.append("DynamoDB test record")
+        for user_id in user_ids:
+            try:
+                page = aws("s3api", "list-object-versions", {"Bucket": bucket, "Prefix": "users/" + user_id + "/"})
+                for item in page.get("Versions", []) + page.get("DeleteMarkers", []):
+                    if item["Key"] not in uploaded: uploaded.append(item["Key"])
+            except Exception: failures.append("S3 test snapshot discovery")
         for key in uploaded:
             try:
                 result = aws("s3api", "list-object-versions", {"Bucket": bucket, "Prefix": key})

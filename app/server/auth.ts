@@ -1,12 +1,16 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { SimpleJwksCache } from "aws-jwt-verify/jwk";
+import { fetch as fetchSigningKeys } from "aws-jwt-verify/https";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { FetchError, JwtBaseError, WaitPeriodNotYetEndedJwkError } from "aws-jwt-verify/error";
 import { GetUserCommand, type AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider";
 import { identity } from "./aws";
 import { authConfig } from "./config";
 import { ApiError } from "./http";
+import { awsLookup } from "./aws-dns";
+import { authOperation } from "./auth-operation";
 import { assertAccountActive } from "./account-state";
 
 export const accessCookie = "screeningroom_access";
@@ -21,19 +25,28 @@ export async function accessToken() {
 }
 
 export async function requireUser(allowDeleting = false) {
+  return (await requireSession(allowDeleting)).user;
+}
+
+export async function requireSession(allowDeleting = false) {
   const config = authConfig();
-  verifier ??= CognitoJwtVerifier.create({ userPoolId: config.poolId, tokenUse: "access", clientId: config.clientId });
+  verifier ??= CognitoJwtVerifier.create(
+    { userPoolId: config.poolId, tokenUse: "access", clientId: config.clientId },
+    { jwksCache: new SimpleJwksCache({ fetcher: {
+      fetch: (uri) => fetchSigningKeys(uri, { lookup: awsLookup, autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 250, timeout: 5_000, responseTimeout: 15_000 }),
+    } }) },
+  );
   const token = await accessToken();
   let user;
-  try { user = await verifier.verify(token); }
+  try { user = await authOperation("verify-signature", () => verifier!.verify(token)); }
   catch (error) {
     if (error instanceof FetchError || error instanceof WaitPeriodNotYetEndedJwkError) throw error;
     if (error instanceof JwtBaseError) throw new ApiError(401, "Session expired. Sign in again.");
     throw error;
   }
-  await identity().send(new GetUserCommand({ AccessToken: token }));
-  if (!allowDeleting) await assertAccountActive(user.sub);
-  return user;
+  const profile = await authOperation("cognito-get-user", () => account(token));
+  if (!allowDeleting) await authOperation("dynamodb-account-state", () => assertAccountActive(user.sub));
+  return { user, account: profile };
 }
 
 export async function account(token: string): Promise<Account> {

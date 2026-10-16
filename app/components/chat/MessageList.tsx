@@ -9,6 +9,7 @@ function sameGroup(first?: Message, second?: Message) {
   const a = new Date(first.createdAt),
     b = new Date(second.createdAt);
   return (
+    (first.role ?? "user") === (second.role ?? "user") &&
     a.toDateString() === b.toDateString() &&
     Math.abs(a.getTime() - b.getTime()) < 300_000
   );
@@ -37,7 +38,7 @@ export default function MessageList({
   useEffect(() => {
     if (atBottom.current && list.current)
       list.current.scrollTop = list.current.scrollHeight;
-  }, [messages.length]);
+  }, [messages]);
   return (
     <div
       ref={list}
@@ -58,7 +59,6 @@ export default function MessageList({
             message={message}
             reference={nodes.find((node) => node.id === message.referenceId)}
             groupStart={!sameGroup(items[index - 1], message)}
-            groupEnd={!sameGroup(message, items[index + 1])}
             onReference={onReference}
             hasReplies={!threadId && replyParents.has(message.id)}
             onReply={() => onReply(threadId ?? message.id)}

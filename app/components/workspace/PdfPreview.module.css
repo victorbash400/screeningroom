@@ -1,4 +1,5 @@
 .preview {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -10,3 +11,5 @@
   padding: 16px;
   font-size: 12px;
 }
+
+.preview > [role="progressbar"] { margin: auto; }

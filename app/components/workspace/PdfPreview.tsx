@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist";
 import PdfPage from "./PdfPage";
+import LoadingIndicator from "../controls/LoadingIndicator";
 import PdfToolbar from "./PdfToolbar";
 import styles from "./PdfPreview.module.css";
 export default function PdfPreview({ source }: { source: string }) {
@@ -39,7 +40,7 @@ export default function PdfPreview({ source }: { source: string }) {
     <div className={styles.preview} aria-busy={!document && !error}>
       {error ? (
         <p role="alert">{error}</p>
-      ) : (
+      ) : !document ? <LoadingIndicator label="Loading PDF" /> : (
         document && (
           <>
             <PdfToolbar
