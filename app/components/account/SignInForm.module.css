@@ -1,0 +1,94 @@
+.surface {
+  width: 340px;
+  max-width: 100%;
+  margin: auto;
+}
+.surface header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 44px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.surface header > :first-child {
+  width: 22px;
+  height: 22px;
+}
+.surface form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -4px;
+}
+.links button,
+.link {
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.links button:hover {
+  color: var(--ink);
+}
+.back {
+  align-self: center;
+  min-height: 32px;
+  padding: 0 12px;
+  margin-top: -8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.back:hover {
+  background: #f4f2ef;
+  color: var(--ink);
+}
+.back:disabled,
+.link:disabled,
+.links button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.error {
+  margin: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fcf1ec;
+  color: #a13c2b;
+  font-size: 12px;
+}
+.demo {
+  width: 100%;
+  min-height: 42px;
+  margin-top: -8px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+.demo:hover {
+  background: #f6f4f1;
+}
+.demo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.surface > .back {
+  display: block;
+  margin: 12px auto 0;
+}

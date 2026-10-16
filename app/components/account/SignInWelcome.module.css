@@ -1,0 +1,108 @@
+.welcome {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  transition:
+    opacity 300ms ease,
+    transform 700ms cubic-bezier(0.22, 0.8, 0.22, 1);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.brand svg,
+.brand img {
+  width: 23px;
+  height: 23px;
+}
+.intro h1 {
+  margin: 0;
+  font-size: clamp(27px, 3vw, 42px);
+  line-height: 1.16;
+  font-weight: 450;
+  letter-spacing: -1.4px;
+}
+.intro p {
+  margin: 18px 0 30px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.signIn {
+  min-width: 118px;
+  height: 42px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 24px;
+  color: #fff;
+  background: #292827;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 160ms;
+}
+.signIn:hover {
+  background: #484541;
+}
+.demo {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 12px;
+  margin-top: 7px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.demo:hover {
+  color: var(--ink);
+}
+.signIn:disabled,
+.demo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.signIn:focus-visible,
+.demo:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+.welcome[data-dismissed] {
+  pointer-events: none;
+}
+.welcome[data-dismissed] .intro {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+@media (max-width: 600px) {
+  .intro {
+    padding: 24px;
+  }
+  .intro h1 {
+    font-size: 27px;
+    letter-spacing: -0.85px;
+  }
+  .brand {
+    margin-bottom: 28px;
+  }
+  .intro p {
+    font-size: 12px;
+    margin-top: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    transition: opacity 120ms;
+  }
+}

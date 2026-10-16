@@ -265,6 +265,10 @@ app icon, and Lucide Folder/FolderOpen for folders. Inbox, Invitations and nativ
 traffic lights are omitted. Root plus opens the creation menu; each folder's
 three-dot menu creates nested folders/files. Files have no creation controls.
 
+The sign-in welcome uses animated SVG affinity wheels with local portrait and media tiles. Sign in rolls the artwork away and reveals the existing account form. Portrait layouts place the wheels above and below the controls; reduced-motion preferences stop continuous rotation.
+
+`POST /api/auth/demo` signs into a dedicated confirmed Cognito account using server-only `DEMO_ACCOUNT_EMAIL` and `DEMO_ACCOUNT_PASSWORD`. The button uses the same HttpOnly session cookies as email/password sign-in. These values belong in ignored environment configuration and must be configured separately for each deployment. The route rejects cross-origin requests and fails explicitly when the account is not configured.
+
 Per-account local data uses `screeningroom.v1.account.<user.id>`. The anonymous
 legacy key is preserved separately. Account switching remounts the workspace.
 Auth, profile, notifications and health use the real backend routes above;

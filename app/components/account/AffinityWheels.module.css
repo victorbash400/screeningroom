@@ -1,0 +1,62 @@
+.wheels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.left,
+.right {
+  transition:
+    transform 1000ms cubic-bezier(0.65, 0, 0.2, 1),
+    opacity 700ms ease;
+  transform-box: view-box;
+  transform-origin: center;
+}
+.connections {
+  transition: opacity 250ms ease;
+}
+.wheels[data-dismissed] .left {
+  transform: translateX(-45%) rotate(-14deg);
+  opacity: 0;
+}
+.wheels[data-dismissed] .right {
+  transform: translateX(45%) rotate(14deg);
+  opacity: 0;
+}
+.wheels[data-dismissed] .connections {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .left,
+  .right {
+    transition: opacity 120ms;
+  }
+  .wheels[data-dismissed] .left,
+  .wheels[data-dismissed] .right {
+    transform: none;
+  }
+  .connections,
+  .connections path {
+    transition: none;
+  }
+}
+.wheels:not([data-ready]) {
+  opacity: 0;
+}
+@media (max-width: 999px) {
+  .connections {
+    display: none;
+  }
+  .wheels[data-dismissed] .left {
+    transform: translateY(-45%) rotate(-14deg);
+  }
+  .wheels[data-dismissed] .right {
+    transform: translateY(45%) rotate(14deg);
+  }
+}
+@media (max-height: 480px) {
+  .wheels {
+    display: none;
+  }
+}
