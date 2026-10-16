@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { RoomSync } from '../app/lib/roomSync.ts';
-import { mergeRoom } from '../app/lib/roomMerge.ts';
+import { mergeRoom, RoomConflictError } from '../app/lib/roomMerge.ts';
 import { emptyData } from '../app/lib/storage.ts';
 const data = (workspaces = []) => ({...emptyData, workspaces});
 const workspace = (id, name = id) => ({id, name});
@@ -25,6 +25,62 @@ function backend() {
 }
 const store = (server) => new RoomSync(server.request, async value=>value, server.uploadSnapshot);
 async function settle(sync) { await new Promise(resolve=>setImmediate(resolve)); await sync.flush(); }
+test('sync check detects another browser without modifying or saving this browser', async () => {
+  const server=backend(),a=store(server),b=store(server); await a.load(); await b.load();
+  assert.equal(b.syncStatus.state,'synced');
+  a.update(()=>data([workspace('a')])); await settle(a);
+  const writes=server.writes.length;
+  await b.checkSync();
+  assert.equal(b.syncStatus.state,'behind');
+  assert.equal(b.syncStatus.localRevision,0);
+  assert.equal(b.syncStatus.remoteRevision,1);
+  assert.deepEqual(b.data,data());
+  assert.equal(server.writes.length,writes);
+  await b.retry();
+  assert.equal(b.syncStatus.state,'synced');
+  assert.deepEqual(b.data,a.data);
+});
+test('sync check distinguishes mergeable edits from same-item conflicts',async()=>{
+  const server=backend(),a=store(server),b=store(server);await a.load();await b.load();
+  a.update(()=>data([workspace('a')]));await settle(a);
+  b.update(()=>data([workspace('b')]));await settle(b);await b.checkSync();
+  assert.equal(b.syncStatus.state,'diverged');
+  assert.equal(b.syncStatus.conflicts.length,0);
+  await b.retry();
+  assert.equal(b.syncStatus.state,'synced');
+  assert.deepEqual(new Set(b.data.workspaces.map(x=>x.id)),new Set(['a','b']));
+  await a.load();
+  a.update(()=>data([workspace('a','Remote'),workspace('b','Remote B')]));await settle(a);
+  b.update(()=>data([workspace('a','Local'),workspace('b','Local B')]));await settle(b);
+  await b.checkSync();
+  assert.equal(b.syncStatus.state,'conflict');
+  assert.deepEqual(b.syncStatus.conflicts.map(x=>x.name),['Local','Local B']);
+  await b.retry();
+  assert.equal(b.syncStatus.state,'conflict');
+  assert.equal(b.data.workspaces[0].name,'Local');
+  assert.equal(server.snapshot.data.workspaces[0].name,'Remote');
+  assert.throws(()=>mergeRoom(data([workspace('a')]),data([workspace('a','L')]),data([workspace('a','R')])),RoomConflictError);
+});
+test('failed status checks never claim success or erase local work',async()=>{
+  const server=backend(); let offline=false;
+  const sync=new RoomSync((path,init)=>{if(offline)throw new Error('Offline');return server.request(path,init);},async value=>value,server.uploadSnapshot);
+  await sync.load();offline=true;
+  await sync.checkSync();
+  assert.equal(sync.syncStatus.state,'error');assert.equal(sync.syncStatus.error,'Offline');
+  assert.equal(sync.ready,true);assert.deepEqual(sync.data,data());
+  offline=false;await sync.checkSync();assert.equal(sync.syncStatus.state,'synced');
+});
+test('an in-flight status check is deduplicated and never polls',async()=>{
+  const server=backend();let reads=0,release;let blocked=false;
+  const wait=new Promise(resolve=>{release=resolve;});
+  const sync=new RoomSync(async(path,init)=>{reads++;if(blocked)await wait;return server.request(path,init);},async value=>value,server.uploadSnapshot);
+  await sync.load();blocked=true;
+  const checking=sync.checkSync();await sync.checkSync();
+  assert.equal(sync.syncStatus.state,'checking');assert.equal(reads,2);
+  release();await checking;
+  assert.equal(sync.syncStatus.state,'synced');
+  await new Promise(resolve=>setImmediate(resolve));assert.equal(reads,2);
+});
 test('a new browser restores the same account data from the backend', async()=>{
  const server=backend(), first=store(server); await first.load();
  assert.equal(first.update(previous=>({...previous,workspaces:[workspace('a')]})),true);

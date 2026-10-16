@@ -2,6 +2,7 @@ import { object } from "./accountApi.ts";
 import { emptyData, parseData } from "./storage.ts";
 import { mergeRoom } from "./roomMerge.ts";
 import { recordActivity } from "./activity.ts";
+import { roomSyncStatus } from "./roomSyncStatus.ts";
 import type { RoomData } from "./types.ts";
 export type RoomRequest = (path: string, init?: RequestInit) => Promise<unknown>;
 export interface RoomSnapshot { data: RoomData; revision: number; imports: string[] }
@@ -22,6 +23,10 @@ export class RoomSync {
   private writeFailed = false;
   private mutationId = crypto.randomUUID();
   private listeners = new Set<() => void>();
+  private remote: RoomSnapshot | null = null;
+  private checkedAt: string | null = null;
+  private checking = false;
+  private checkError: string | null = null;
   constructor(private request: RoomRequest, private upload: (data: RoomData, signal: AbortSignal) => Promise<RoomData>, private uploadSnapshot: (data: RoomData, signal: AbortSignal) => Promise<string>, private committed: () => void = () => {}) {}
   activate() { if (this.controller.signal.aborted) this.controller = new AbortController(); }
   dispose() { this.controller.abort(); }
@@ -35,6 +40,11 @@ export class RoomSync {
       const remote = parseRoomSnapshot(await this.request("/api/room", { signal }));
       signal.throwIfAborted();
       if (generation !== this.loadVersion || this.writing) return;
+      if (!this.remote || remote.revision >= this.remote.revision) {
+        this.remote = remote;
+        this.checkedAt = new Date().toISOString();
+        this.checkError = null;
+      }
       const desired = this.data;
       const local = this.dirty ? await this.upload(desired, signal) : desired;
       signal.throwIfAborted();
@@ -86,6 +96,9 @@ export class RoomSync {
         signal.throwIfAborted();
         if (!Number.isSafeInteger(result.revision)) throw new Error("Server did not confirm the workspace save.");
         this.snapshot = { data: normalized, revision: Number(result.revision), imports: this.snapshot.imports };
+        if (!this.remote || this.remote.revision <= this.snapshot.revision) this.remote = this.snapshot;
+        this.checkedAt = new Date().toISOString();
+        this.checkError = null;
         this.mutationId = crypto.randomUUID();
         this.dirty = this.data !== desired;
         if (!this.dirty) this.data = normalized;
@@ -105,5 +118,28 @@ export class RoomSync {
     return !this.unsaved;
   }
   async retry() { if (!this.writing) await this.load(); }
+  async checkSync() {
+    if (this.checking) return;
+    this.checking = true;
+    this.checkError = null;
+    this.emit();
+    const signal = this.controller.signal;
+    try {
+      const remote = parseRoomSnapshot(await this.request("/api/room", { signal }));
+      signal.throwIfAborted();
+      if (remote.revision >= Math.max(this.snapshot.revision, this.remote?.revision ?? 0)) {
+        this.remote = remote;
+        this.checkedAt = new Date().toISOString();
+      }
+    } catch (error) {
+      if (!signal.aborted) this.checkError = error instanceof Error ? error.message : "Cannot check sync. Try again.";
+    } finally { this.checking = false; this.emit(); }
+  }
+  get syncStatus() {
+    return roomSyncStatus(this.snapshot, this.data, this.remote, {
+      ready: this.ready, checking: this.checking, saving: this.writing, unsaved: this.dirty,
+      checkedAt: this.checkedAt, error: this.checkError,
+    });
+  }
   get unsaved() { return this.dirty || this.writing; }
 }

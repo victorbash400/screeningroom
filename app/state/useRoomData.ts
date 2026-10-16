@@ -26,6 +26,7 @@ export function useRoomData(scope: string) {
     const id = Array.from(new Uint8Array(bytes), (value) => value.toString(16).padStart(2, "0")).join("");
     await sync.import(parseData(raw), id);
   }, [sync]);
+  const checkSync = useCallback(() => sync.checkSync(), [sync]);
   useEffect(() => account.beforeSignOut(() => sync.saveBeforeLeaving()), [account.beforeSignOut, sync]);
   useEffect(() => {
     let active = true;
@@ -43,7 +44,9 @@ export function useRoomData(scope: string) {
     window.addEventListener("beforeunload", leaving);
     return () => { active = false; sync.dispose(); unsubscribe(); channel.close(); window.removeEventListener("beforeunload", leaving); };
   }, [sync, scope, importBrowserData]);
-  return { data: sync.data, ready: sync.ready, error, setError, update: sync.update.bind(sync), reload: () => { void sync.retry(); }, hasLegacy, save: () => sync.saveBeforeLeaving(), importBrowserData: async () => {
+  return { data: sync.data, ready: sync.ready, error, setError, syncStatus: sync.syncStatus,
+    checkSync, syncNow: () => sync.retry(),
+    update: sync.update.bind(sync), reload: () => { void sync.retry(); }, hasLegacy, save: () => sync.saveBeforeLeaving(), importBrowserData: async () => {
     try { await importBrowserData(); setHasLegacy(false); }
     catch (error) { setError(error instanceof Error ? error.message : "Cannot import browser data."); }
   }, scope };

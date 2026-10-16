@@ -9,6 +9,7 @@ import {
 import { useCallback, useState } from "react";
 import { useAccount } from "../../state/AccountContext";
 import ContextMenu, { type MenuEntry } from "../controls/ContextMenu";
+import SyncButton from "../navigation/SyncButton";
 import styles from "./AccountFooter.module.css";
 export default function AccountFooter({ onNavigate }: { onNavigate?: () => void }) {
   const account = useAccount();
@@ -69,6 +70,7 @@ export default function AccountFooter({ onNavigate }: { onNavigate?: () => void 
           entries={entries}
         />
       )}
+      <SyncButton />
     </footer>
   );
 }
