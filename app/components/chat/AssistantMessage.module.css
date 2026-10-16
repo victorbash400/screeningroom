@@ -1,0 +1,5 @@
+.content {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}

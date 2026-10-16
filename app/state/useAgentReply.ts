@@ -1,7 +1,7 @@
-import { getToolName, isToolUIPart } from "ai";
 import { useAccount } from "./AccountContext";
 import { useEffect, useRef, useState } from "react";
-import { waitingForAnswer } from "../lib/agentActivity";
+import { finishReply } from "../lib/messageBlocks";
+import { agentBlocks, waitingForAnswer } from "../lib/agentActivity";
 import { chatReference } from "../lib/chatReference";
 import { chatHistory, streamAgentReply } from "../lib/agentChat";
 import type { ChatChannel, FileNode, Message, RoomData } from "../lib/types";
@@ -31,20 +31,17 @@ export function useAgentReply(update: Update) {
         current = {
           ...current,
           waiting: waitingForAnswer(message),
-          text: message.parts.filter((part) => part.type === "text").map((part) => part.text).join(""),
-          tools: message.parts.flatMap((part) => {
-            if (!isToolUIPart(part)) return [];
-            return [{ id: part.toolCallId, name: getToolName(part), state: part.state === "output-available" ? "done" as const : part.state === "output-error" ? "failed" as const : "running" as const }];
-          }),
+          blocks: agentBlocks(message),
+          text: message.parts.filter((part) => part.type === "text").map((part) => part.text).join("\n\n"),
         };
         setPending((previous) => ({ ...previous, [conversationId]: current }));
       }, account.fetch);
-      current = { ...current, status: "complete", waiting: false };
+      current = finishReply(current, "complete");
     } catch (error) {
       if (!controllers.current.has(conversationId)) return;
       const stopped = controller.signal.aborted;
       const message = stopped ? "Response stopped." : error instanceof Error ? error.message : "Agent response failed. Try sending again.";
-      current = { ...current, status: stopped ? "stopped" : "failed", error: stopped ? undefined : message, waiting: false };
+      current = finishReply(current, stopped ? "stopped" : "failed", stopped ? undefined : message);
       if (!stopped) setError(message);
     } finally {
       if (controllers.current.get(conversationId) === controller) {

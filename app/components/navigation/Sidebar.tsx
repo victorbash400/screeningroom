@@ -121,7 +121,7 @@ export default function Sidebar({
             onNavigate={(id) => { account.open(null); onNavigate(id); }}
             onOpenNode={(node) => { account.open(null); onOpenNode(node); }} />
           <nav ref={scroll} className={`${styles.navigation} ${edges.edges}`}>
-            {settings ? <SettingsSidebar /> : <div className={styles.entries}>
+            {settings ? <SettingsSidebar onSelect={onClose} /> : <div className={styles.entries}>
             <div className={styles.section}>
               <button onClick={() => onNavigate(null)}>Workspaces</button>
               <IconButton
@@ -151,7 +151,7 @@ export default function Sidebar({
             ))}
             </div>}
           </nav>
-          <AccountFooter />
+          <AccountFooter onNavigate={onClose} />
         </div>
       </aside>
     </>

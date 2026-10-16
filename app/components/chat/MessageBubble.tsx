@@ -1,7 +1,5 @@
 import { useCallback, useState } from "react";
-import ChatLoadingIndicator from "./ChatLoadingIndicator";
-import MessageText from "./MessageText";
-import ToolCallIndicator from "./ToolCallIndicator";
+import AssistantMessage from "./AssistantMessage";
 import ContextMenu from "../controls/ContextMenu";
 import { FolderClosed } from "lucide-react";
 import { fileIcon } from "../../lib/fileTypes";
@@ -30,7 +28,7 @@ export default function MessageBubble({
   const Icon = referenceKind === "folder" ? FolderClosed : fileIcon(referenceName ?? "", reference?.sourceUrl, reference?.mimeType);
   const tools = message.tools;
   const waiting = message.status === "streaming" && message.waiting;
-  if (!message.text && !referenceName && !tools?.length && !waiting) return null;
+  if (!message.text && !referenceName && !tools?.length && !message.blocks?.length && !waiting) return null;
   return (
     <div
       className={`${styles.row} ${groupStart ? styles.start : ""} ${message.role === "assistant" ? styles.assistant : ""}`}
@@ -55,9 +53,7 @@ export default function MessageBubble({
         }}
         className={styles.bubble}
       >
-        {tools?.map((tool) => <ToolCallIndicator key={tool.id} tool={tool} status={message.status} />)}
-        {message.text && (message.role === "assistant" ? <MessageText text={message.text} /> : <div>{message.text}</div>)}
-        {waiting && <ChatLoadingIndicator />}
+        {message.role === "assistant" ? <AssistantMessage message={message} /> : message.text && <div>{message.text}</div>}
         {referenceId && referenceName && (
           <button
             className={styles.reference}

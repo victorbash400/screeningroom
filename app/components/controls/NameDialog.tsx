@@ -21,13 +21,16 @@ export default function NameDialog({
   error,
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const previousFocus = useRef(typeof document !== "undefined" ? document.activeElement : null);
   const backdrop = useDialogBackdrop(onClose);
   const [name, setName] = useState(initial);
   useEffect(() => {
-    const previous = document.activeElement;
     dialog.current?.showModal();
     return () => {
-      if (previous instanceof HTMLElement) previous.focus();
+      queueMicrotask(() => {
+        const previous = previousFocus.current;
+        if (previous instanceof HTMLElement && previous.isConnected) previous.focus();
+      });
     };
   }, []);
   return (

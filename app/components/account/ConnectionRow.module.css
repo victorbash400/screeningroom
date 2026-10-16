@@ -1,0 +1,11 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 80px;
+  min-height: 18px;
+  font-size: 12px;
+}
+.status[data-error="true"] { color: var(--danger); }
+
+.check { min-width: 62px; }

@@ -2,11 +2,9 @@ import ErrorNotice from "../shell/ErrorNotice";
 import { useState } from "react";
 import { useRoomStore } from "../../state/RoomDataContext";
 import { useRoomActions } from "../../state/useRoomActions";
-import { fileSize } from "../../lib/fileTypes";
 import SettingsGroup from "./SettingsGroup";
-import SettingsRow from "./SettingsRow";
 import SettingsInlineButton from "./SettingsInlineButton";
-import WorkspaceSettingsRow from "./WorkspaceSettingsRow";
+import WorkspaceSettingsSection from "./WorkspaceSettingsSection";
 import NodeNameDialog from "../controls/NodeNameDialog";
 import DeleteDialog from "../controls/DeleteDialog";
 import styles from "./WorkspaceSettings.module.css";
@@ -17,15 +15,11 @@ export default function WorkspaceSettings() {
   const [dialog, setDialog] = useState<"create" | "rename" | "delete" | null>(
     null,
   );
-  const selected =
-    room.data.workspaces.find((workspace) => workspace.id === selectedId) ??
-    room.data.workspaces[0];
-  const nodes = room.data.nodes.filter(
-    (node) => node.workspaceId === selected?.id,
-  );
-  const files = nodes.filter((node) => node.kind === "file");
-  function open(next: typeof dialog) {
+  const selected = room.data.workspaces.find((workspace) => workspace.id === selectedId);
+  const missing = (dialog === "rename" || dialog === "delete") && !selected;
+  function open(next: typeof dialog, id?: string) {
     room.setError(null);
+    if (id) setSelectedId(id);
     setDialog(next);
   }
   return (
@@ -33,41 +27,17 @@ export default function WorkspaceSettings() {
       {room.data.workspaces.length > 0 && (
         <SettingsGroup>
           {room.data.workspaces.map((workspace) => (
-            <WorkspaceSettingsRow
+            <WorkspaceSettingsSection
               key={workspace.id}
               workspace={workspace}
-              selected={selected?.id === workspace.id}
-              onSelect={() => setSelectedId(workspace.id)}
+              nodes={room.data.nodes.filter((node) => node.workspaceId === workspace.id)}
+              onRename={() => open("rename", workspace.id)}
+              onDelete={() => open("delete", workspace.id)}
             />
           ))}
-          {selected && (
-            <SettingsRow label="Workspace">
-              <SettingsInlineButton onClick={() => open("rename")}>
-                Rename…
-              </SettingsInlineButton>
-              <SettingsInlineButton onClick={() => open("delete")}>
-                Delete…
-              </SettingsInlineButton>
-            </SettingsRow>
-          )}
         </SettingsGroup>
       )}
-      {selected && (
-        <SettingsGroup>
-          <SettingsRow label="Local files">
-            <span>
-              {fileSize(files.reduce((sum, file) => sum + (file.size ?? 0), 0))}
-            </span>
-          </SettingsRow>
-          <SettingsRow label="Files">
-            <span>{files.length}</span>
-          </SettingsRow>
-          <SettingsRow label="Folders">
-            <span>{nodes.length - files.length}</span>
-          </SettingsRow>
-        </SettingsGroup>
-      )}
-      <div>
+      <div className={styles.actions}>
         <SettingsInlineButton onClick={() => open("create")}>
           Create workspace
         </SettingsInlineButton>
@@ -76,7 +46,8 @@ export default function WorkspaceSettings() {
         </SettingsInlineButton>}
       </div>
       {room.error && !dialog && <ErrorNotice message={room.error} onDismiss={() => room.setError(null)} />}
-      {(dialog === "rename" || dialog === "create") && (
+      {missing && <ErrorNotice message="Workspace no longer exists." onDismiss={() => setDialog(null)} />}
+      {(dialog === "create" || (dialog === "rename" && selected)) && (
         <NodeNameDialog
           action={dialog === "rename" ? "Rename" : "Create"}
           initial={dialog === "rename" ? selected?.name : ""}

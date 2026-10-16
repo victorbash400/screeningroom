@@ -1,21 +1,27 @@
-import { DescribeTableCommand } from "@aws-sdk/client-dynamodb";
-import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { requireUser } from "../../server/auth";
-import { database, storage } from "../../server/aws";
-import { env } from "../../server/config";
-import { failure, json } from "../../server/http";
+import { connectionStatus } from "../../server/connections";
+import { connectionServices } from "../../lib/connections";
+import type { ConnectionId, ConnectionStatus } from "../../lib/connections";
+import { ApiError, failure, json } from "../../server/http";
 
-export async function GET() {
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+export async function GET(request: Request) {
   try {
     const user = await requireUser();
-    const results = await Promise.allSettled([
-      database().send(new DescribeTableCommand({ TableName: env("DYNAMODB_TABLE_NAME") })),
-      storage().send(new ListObjectsV2Command({ Bucket: env("S3_BUCKET_NAME"), Prefix: `users/${user.sub}/`, MaxKeys: 1 })),
-    ]);
-    for (const [index, result] of results.entries()) {
-      if (result.status === "rejected") console.error("Screening Room health check failed", { service: index === 0 ? "database" : "storage", name: result.reason instanceof Error ? result.reason.name : "UnknownError" });
-    }
-    const services = { database: results[0].status === "fulfilled" ? "connected" : "unavailable", storage: results[1].status === "fulfilled" ? "connected" : "unavailable", auth: "configured", qloo: process.env.QLOO_HACKATHON_API_KEY && process.env.QLOO_HACKATHON_API_SERVER_URL ? "configured" : "unavailable", bedrock: process.env.BEDROCK_PROJECT_ID && process.env.BEDROCK_MODEL_ID && process.env.BEDROCK_BASE_URL ? "configured" : "unavailable" };
+    const service = new URL(request.url).searchParams.get("service");
+    if (service && !connectionServices.some((item) => item.id === service)) throw new ApiError(400, "Unknown connection.");
+    const checks = service ? connectionServices.filter((item) => item.id === service) : connectionServices;
+    const services: Partial<Record<ConnectionId, ConnectionStatus>> = {};
+    const signal = AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]);
+    await Promise.all(checks.map(async ({ id }) => {
+      try { services[id] = await connectionStatus(id, user.sub, Boolean(service), signal); }
+      catch (error) {
+        services[id] = "unavailable";
+        console.error("Connection check failed", { service: id, name: error instanceof Error ? error.name : "UnknownError" });
+      }
+    }));
     const ok = !Object.values(services).includes("unavailable");
     return json({ status: ok ? "ok" : "degraded", services }, ok ? 200 : 503);
   } catch (error) { return failure(error); }

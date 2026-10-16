@@ -356,8 +356,12 @@ instructions or tool permissions. There is no PDF, image, or audio analysis yet.
 Conversation context is sent without application-imposed message-count or text
 truncation. Provider context limits surface as errors rather than silently dropping
 messages. Saved conversation history is independent of provider context limits.
-Replies stream into role-aware bubbles, with tool progress, explicit failures,
-and cancellation. Conversation history, replies and drafts save through the same
+Replies retain ordered text/tool blocks from the SDK stream through backend
+storage and replay. Tool calls stay between the text that precedes and follows
+them, using a stable terminal icon and event-driven running/error/stopped states.
+React Markdown with GFM renders tables, links and lists. Older saved replies keep
+their legacy text/tool representation because their original ordering was not
+stored. Cancellation settles pending tools without inventing a successful result. Conversation history, replies and drafts save through the same
 account-owned backend as the workspace. In-flight generation remains interruptible;
 this does not add durable agent execution after the client disconnects.
 
@@ -413,3 +417,20 @@ longer load during sign-in. Connections lists Qloo API configuration alongside
 Bedrock, authentication, database and storage.
 
 Cache checks: `node --experimental-transform-types --test tests/asset-cache.test.mjs tests/agent-activity.test.mjs`.
+
+
+### Settings interaction and proportions
+
+Connections always renders its five service rows, even while status loads. Each
+row owns its Check/Retry action and pending state. `GET /api/health` reads current
+AWS status and provider configuration; `?service=auth|database|storage|bedrock|qloo`
+checks only that service. Explicit Bedrock checks generate a short response and
+explicit Qloo checks perform a search. Opening Settings does not automatically
+invoke those paid/external provider probes. No polling is used.
+
+Workspace disclosure rows expand their own statistics and Rename/Delete actions.
+They toggle independently and identify their controlled section accessibly.
+The existing boxes are preserved. Settings content grows from its existing
+760px desktop width up to 1040px on wider screens. Chat uses 36% of available
+workspace width with a 480px desktop minimum, and overlays the content when the
+workspace is too narrow to keep both regions usable.

@@ -8,3 +8,5 @@
   font-size: 12px;
   color: var(--danger);
 }
+
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }

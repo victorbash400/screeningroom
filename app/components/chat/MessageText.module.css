@@ -1,4 +1,4 @@
-.text { white-space: normal; }
+.text { min-width: 0; white-space: normal; }
 .text p { margin: 0 0 8px; white-space: pre-wrap; }
 .text > :last-child { margin-bottom: 0; }
 .text ul, .text ol { margin: 8px 0; padding-left: 20px; }
@@ -10,3 +10,8 @@
 .text code { font-size: 0.9em; }
 .text blockquote { margin: 8px 0; padding-left: 12px; color: var(--muted); }
 .text hr { display: none; }
+
+.text table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.text th, .text td { padding: 5px 12px 5px 0; text-align: left; vertical-align: top; }
+.text th { font-weight: 600; }
+.text input[type="checkbox"] { accent-color: var(--ink); }

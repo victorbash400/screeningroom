@@ -3,21 +3,22 @@ import type { Workspace } from "../../lib/types";
 import styles from "./WorkspaceSettingsRow.module.css";
 export default function WorkspaceSettingsRow({
   workspace,
-  selected,
-  onSelect,
+  expanded,
+  controls,
+  onToggle,
 }: {
   workspace: Workspace;
-  selected: boolean;
-  onSelect: () => void;
+  expanded: boolean;
+  controls: string;
+  onToggle: () => void;
 }) {
-  const Icon = selected ? FolderOpen : FolderClosed;
-  const Chevron = selected ? ChevronDown : ChevronRight;
+  const Icon = expanded ? FolderOpen : FolderClosed;
+  const Chevron = expanded ? ChevronDown : ChevronRight;
   return (
-    <button className={styles.row} aria-expanded={selected} onClick={onSelect}>
+    <button className={styles.row} aria-expanded={expanded} aria-controls={controls} onClick={onToggle}>
       <Icon size={24} strokeWidth={1.7} />
       <span className={styles.name}>
         {workspace.name}
-        <span>Local</span>
       </span>
       <Chevron size={16} />
     </button>

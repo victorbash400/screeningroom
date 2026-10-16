@@ -10,7 +10,7 @@ import { useCallback, useState } from "react";
 import { useAccount } from "../../state/AccountContext";
 import ContextMenu, { type MenuEntry } from "../controls/ContextMenu";
 import styles from "./AccountFooter.module.css";
-export default function AccountFooter() {
+export default function AccountFooter({ onNavigate }: { onNavigate?: () => void }) {
   const account = useAccount();
   const [position, setPosition] = useState<{ x: number; y: number } | null>(
     null,
@@ -22,14 +22,14 @@ export default function AccountFooter() {
     {
       label: "Settings",
       icon: Settings,
-      action: () => account.open("account"),
+      action: () => { account.open("account"); onNavigate?.(); },
     },
     {
       label: "Connections",
       icon: Plug,
-      action: () => account.open("connections"),
+      action: () => { account.open("connections"); onNavigate?.(); },
     },
-    { label: "Help", icon: CircleHelp, action: () => account.open("help") },
+    { label: "Help", icon: CircleHelp, action: () => { account.open("help"); onNavigate?.(); } },
     account.user
       ? {
           label: "Sign out",

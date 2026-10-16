@@ -79,7 +79,7 @@ export default function ChatComposer({
         {reference && (
           <ReferenceChip
             node={reference}
-            onRemove={() => setReferenceId(undefined)}
+            onRemove={() => { setReferenceId(undefined); input.current?.focus(); }}
           />
         )}
         <div className={styles.row}>

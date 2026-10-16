@@ -27,12 +27,22 @@ export interface FileNode {
   mimeType?: string;
   size?: number;
 }
+export interface MessageTool {
+  id: string;
+  name: string;
+  error?: string;
+  state: "running" | "done" | "failed" | "stopped";
+}
+export type MessageBlock =
+  | { id: string; kind: "text"; text: string }
+  | { id: string; kind: "tool"; tool: MessageTool };
 export interface Message {
   role?: "user" | "assistant";
   status?: "streaming" | "complete" | "stopped" | "failed";
   error?: string;
   waiting?: boolean;
-  tools?: { id: string; name: string; state: "running" | "done" | "failed" }[];
+  tools?: MessageTool[];
+  blocks?: MessageBlock[];
   replyToId?: string;
   id: string;
   text: string;

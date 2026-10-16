@@ -1,0 +1,11 @@
+.details { padding: 0 0 16px 36px; }
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px 0;
+}
+@media (max-width: 520px) {
+  .details { padding-left: 0; }
+}

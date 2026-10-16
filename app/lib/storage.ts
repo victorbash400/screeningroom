@@ -1,3 +1,4 @@
+import { validMessageBlocks, validMessageTools } from "./messageBlocks.ts";
 import type { RoomData } from "./types";
 import { parseLink } from "./linkFiles.ts";
 
@@ -170,7 +171,8 @@ export function parseData(raw: string): RoomData {
         (message.role !== undefined && message.role !== "user" && message.role !== "assistant") ||
         (message.status !== undefined && !["streaming", "complete", "stopped", "failed"].includes(message.status as string)) ||
         (message.error !== undefined && !text(message.error)) ||
-        (message.tools !== undefined && (!Array.isArray(message.tools) || message.tools.some((tool) => !record(tool) || !text(tool.id) || !text(tool.name) || !["running", "done", "failed"].includes(tool.state as string)))) ||
+        (message.blocks !== undefined && (!validMessageBlocks(message.blocks) || message.blocks.filter((block) => block.kind === "text").map((block) => block.text).join("\n\n") !== message.text)) ||
+        (message.tools !== undefined && !validMessageTools(message.tools)) ||
         (message.referenceId !== undefined &&
           (!text(message.referenceId) ||
             (nodes.has(message.referenceId)
