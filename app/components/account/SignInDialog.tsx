@@ -81,10 +81,7 @@ export default function SignInDialog({
               <AppIcon />
               <span>Screeningroom</span>
             </header>
-            <SignInIntro
-              title={labels[step]}
-              explain={step === "sign-in" || step === "sign-up"}
-            />
+            <SignInIntro title={labels[step]} />
             {step === "confirm" ? (
               <EmailVerificationForm
                 email={fields.email}
@@ -217,7 +214,6 @@ export default function SignInDialog({
             )}
           </div>
         </div>
-        <div className={styles.image} aria-hidden="true" />
       </div>
     </dialog>
   );
