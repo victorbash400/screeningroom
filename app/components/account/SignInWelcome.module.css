@@ -17,25 +17,36 @@
     transform 700ms cubic-bezier(0.22, 0.8, 0.22, 1);
 }
 .intro h1 {
-  margin: 0;
+  margin: 0 0 24px;
   color: var(--ink);
   font-size: clamp(42px, 5vw, 68px);
   line-height: 1.08;
   letter-spacing: -2.8px;
   font-weight: 450;
 }
+.intro h2 {
+  max-width: 380px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.55px;
+  text-wrap: balance;
+}
 .intro p {
-  max-width: 340px;
-  margin: 22px 0 32px;
+  max-width: 390px;
+  margin: 16px 0 28px;
   color: var(--muted);
-  font-size: 20px;
-  line-height: 1.45;
-  letter-spacing: -0.35px;
+  font-size: 14px;
+  line-height: 1.65;
+  text-wrap: balance;
 }
 .signIn {
   min-width: 118px;
   height: 42px;
   padding: 0 24px;
+  flex-shrink: 0;
   border: 0;
   border-radius: 24px;
   color: #fff;
@@ -67,19 +78,30 @@
     padding: 24px;
   }
   .intro h1 {
+    margin-bottom: 22px;
     font-size: clamp(34px, 9.7vw, 44px);
     letter-spacing: -1.5px;
   }
+  .intro h2 {
+    max-width: 280px;
+    font-size: 20px;
+    line-height: 1.4;
+    letter-spacing: -0.35px;
+  }
   .intro p {
-    max-width: 260px;
-    margin: 18px 0 28px;
-    font-size: 17px;
-    line-height: 1.45;
+    max-width: 290px;
+    margin: 14px 0 24px;
+    font-size: 13px;
+    line-height: 1.6;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .intro {
-    transition: opacity 120ms;
+@media (max-height: 650px) {
+  .intro h1 {
+    margin-bottom: 18px;
+  }
+  .intro p {
+    margin-top: 12px;
+    margin-bottom: 22px;
   }
 }
 @media (max-height: 650px) and (min-width: 1000px) {
@@ -87,8 +109,9 @@
     font-size: 48px;
     letter-spacing: -2px;
   }
-  .intro p {
-    margin: 18px 0 26px;
-    font-size: 18px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    transition: opacity 120ms;
   }
 }

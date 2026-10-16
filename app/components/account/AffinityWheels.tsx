@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import styles from "./AffinityWheels.module.css";
 import AffinityCard from "./AffinityCard";
-import AffinityConnections from "./AffinityConnections";
 import { affinityCardCount, affinityLayout } from "../../lib/affinityLayout";
 import { affinityPeople, affinityMedia } from "../../lib/affinityAssets";
 import { useAffinityAnimation } from "../../state/useAffinityAnimation";
@@ -33,9 +32,6 @@ export default function AffinityWheels({ dismissed }: { dismissed: boolean }) {
       aria-hidden="true"
       data-dismissed={dismissed || undefined}
     >
-      <g className={styles.connections}>
-        <AffinityConnections />
-      </g>
       {[affinityPeople, affinityMedia].map((assets, side) => (
         <g key={side} className={side ? styles.right : styles.left}>
           {indexes.map((index) => (

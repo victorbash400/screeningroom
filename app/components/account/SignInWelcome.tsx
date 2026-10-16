@@ -15,7 +15,11 @@ export default function SignInWelcome({
       <AffinityWheels dismissed={dismissed} />
       <div className={styles.intro} inert={dismissed} aria-hidden={dismissed}>
         <h1>Screeningroom</h1>
-        <p>Find the right audience for what you create.</p>
+        <h2>Find the right audience for what you create.</h2>
+        <p>
+          Analyze your media, understand audience preferences, explore potential
+          markets, and make informed decisions using cultural intelligence.
+        </p>
         <button
           className={styles.signIn}
           disabled={account.busy}

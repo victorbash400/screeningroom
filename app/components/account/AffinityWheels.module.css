@@ -13,18 +13,12 @@
   transform-box: view-box;
   transform-origin: center;
 }
-.connections {
-  transition: opacity 250ms ease;
-}
 .wheels[data-dismissed] .left {
   transform: translateX(-45%) rotate(-14deg);
   opacity: 0;
 }
 .wheels[data-dismissed] .right {
   transform: translateX(45%) rotate(14deg);
-  opacity: 0;
-}
-.wheels[data-dismissed] .connections {
   opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -35,10 +29,6 @@
   .wheels[data-dismissed] .left,
   .wheels[data-dismissed] .right {
     transform: none;
-  }
-  .connections,
-  .connections path {
-    transition: none;
   }
 }
 .wheels:not([data-ready]) {
