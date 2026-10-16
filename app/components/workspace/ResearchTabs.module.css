@@ -60,6 +60,20 @@
   margin-left: 6px;
   opacity: 1;
 }
+@container workspace (min-width: 980px) {
+  .label {
+    grid-template-columns: 1fr;
+    margin-left: 6px;
+    opacity: 1;
+  }
+}
+@container workspace (min-width: 520px) and (max-width: 959px) {
+  .label {
+    grid-template-columns: 1fr;
+    margin-left: 6px;
+    opacity: 1;
+  }
+}
 @container workspace (max-width: 959px) {
   .position {
     grid-column: 1 / -1;
