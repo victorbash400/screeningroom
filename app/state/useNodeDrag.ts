@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { DragEvent } from "react";
 import type { FileNode } from "../lib/types";
 import { useRoomStore } from "./RoomDataContext";
+import { readDroppedItems } from "../lib/importFiles";
+import { folderPath } from "../lib/storage";
 import { useRoomActions } from "./useRoomActions";
 export function useNodeDrag(
   workspaceId: string,
@@ -11,6 +13,17 @@ export function useNodeDrag(
   const room = useRoomStore();
   const actions = useRoomActions(room.update, room.setError, room.scope);
   const [over, setOver] = useState(false);
+  const externalTarget = !node || node.kind === "folder";
+  function destinationPath() {
+    const workspace = room.data.workspaces.find(
+      (item) => item.id === workspaceId,
+    );
+    if (!workspace) throw new Error("Workspace no longer exists.");
+    return [
+      workspace.name,
+      ...folderPath(room.data, destination).map((item) => item.name),
+    ];
+  }
   function accepts() {
     const dragged = room.data.nodes.find(
       (item) => item.id === room.dragging.current,
@@ -46,6 +59,13 @@ export function useNodeDrag(
       setOver(false);
     },
     onDragOver(event: DragEvent<HTMLElement>) {
+      if (externalTarget && event.dataTransfer.types.includes("Files")) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = "copy";
+        setOver(true);
+        return;
+      }
       if (!accepts()) return;
       event.preventDefault();
       event.stopPropagation();
@@ -59,14 +79,43 @@ export function useNodeDrag(
       )
         setOver(false);
     },
-    onDrop(event: DragEvent<HTMLElement>) {
+    async onDrop(event: DragEvent<HTMLElement>) {
       setOver(false);
+      if (externalTarget && event.dataTransfer.types.includes("Files")) {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+          const entries = await readDroppedItems(event.dataTransfer.items);
+          room.confirmDrop({
+            kind: "import",
+            names: entries.map((entry) =>
+              entry.kind === "folder" ? entry.name : entry.file.name,
+            ),
+            destination: destinationPath(),
+            run: () => actions.importEntries(entries, workspaceId, destination),
+          });
+        } catch (failure) {
+          room.setError(
+            failure instanceof Error ? failure.message : "Import failed.",
+          );
+        }
+        return;
+      }
       if (!accepts()) return;
       event.preventDefault();
       event.stopPropagation();
       const id = room.dragging.current;
       room.dragging.current = null;
-      if (id) actions.move(id, destination);
+      if (id) {
+        const dragged = room.data.nodes.find((item) => item.id === id);
+        if (!dragged) return;
+        room.confirmDrop({
+          kind: "move",
+          names: [dragged.name],
+          destination: destinationPath(),
+          run: () => actions.move(id, destination),
+        });
+      }
     },
   };
 }

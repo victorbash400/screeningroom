@@ -62,7 +62,7 @@ export default function FileOpenDialog({
   return (
     <dialog
       ref={dialog}
-      className={`${styles.dialog} ${preview?.kind === "audio" ? styles.compact : ""} ${preview?.kind === "video" || preview?.kind === "youtube" ? styles.video : ""}`}
+      className={`${styles.dialog} ${preview?.kind === "audio" ? styles.compact : ""} ${preview?.kind === "video" || preview?.kind === "youtube" ? styles.video : ""} ${preview?.kind === "video" ? styles.immersive : ""}`}
       style={{ "--media-ratio": aspectRatio } as CSSProperties}
       aria-label={`Preview ${node.name}`}
       onCancel={onClose}

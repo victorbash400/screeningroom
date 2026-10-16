@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { HTMLAttributes } from "react";
+import { folderPath } from "../../lib/storage";
 import { readDroppedItems } from "../../lib/importFiles";
 import { useRoomStore } from "../../state/RoomDataContext";
 import { useRoomActions } from "../../state/useRoomActions";
@@ -61,7 +62,21 @@ export default function DirectoryDropSurface({
         setBusy(true);
         try {
           const entries = await readDroppedItems(event.dataTransfer.items);
-          await actions.importEntries(entries, workspaceId, parentId);
+          const workspace = room.data.workspaces.find(
+            (item) => item.id === workspaceId,
+          );
+          if (!workspace) throw new Error("Workspace no longer exists.");
+          room.confirmDrop({
+            kind: "import",
+            names: entries.map((entry) =>
+              entry.kind === "folder" ? entry.name : entry.file.name,
+            ),
+            destination: [
+              workspace.name,
+              ...folderPath(room.data, parentId).map((item) => item.name),
+            ],
+            run: () => actions.importEntries(entries, workspaceId, parentId),
+          });
         } catch (failure) {
           room.setError(
             failure instanceof Error ? failure.message : "Import failed.",

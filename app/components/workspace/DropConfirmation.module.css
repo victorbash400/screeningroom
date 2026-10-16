@@ -1,0 +1,59 @@
+.dialog {
+  width: min(380px, calc(100vw - 40px));
+  box-sizing: border-box;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: #00000052;
+}
+.dialog h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.destination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.destination > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.destination > svg {
+  flex-shrink: 0;
+}
+.dialog ul {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  max-height: 140px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+.dialog li {
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+.dialog p {
+  color: var(--danger);
+  font-size: 12px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
