@@ -102,11 +102,11 @@
 }
 .rounded > div {
   border-radius: 30px;
-  border-color: #dcd8d2;
-  background: #f8f7f4;
+  border-color: #dedede;
+  background: #fff;
 }
 .rounded > div:focus-within {
-  border-color: #8a8176;
+  border-color: #262626;
 }
 .rounded input {
   height: 58px;
@@ -114,12 +114,12 @@
   font-size: 14px;
 }
 .rounded input::placeholder {
-  color: #827b73;
+  color: #737373;
 }
 .rounded .icon {
-  color: #716a61;
-  background: #eae7e1;
+  color: #525252;
+  background: #f2f2f2;
 }
 .rounded input:autofill {
-  box-shadow: 0 0 0 100px #f8f7f4 inset;
+  box-shadow: 0 0 0 100px #fff inset;
 }

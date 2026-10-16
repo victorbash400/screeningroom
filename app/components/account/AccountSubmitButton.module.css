@@ -17,11 +17,11 @@
 }
 .light {
   height: 42px;
-  background: #222226;
+  background: #262626;
   color: #fff;
 }
 .light:disabled {
-  background: #e3e3e6;
+  background: #e5e5e5;
   color: #737373;
 }
 
