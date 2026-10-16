@@ -1,24 +1,28 @@
-import { BookOpen, Clapperboard, Music2 } from "lucide-react";
+import { BookOpen, Clapperboard, Music2, Camera, Gamepad2 } from "lucide-react";
+
+import type { AffinityAsset } from "../../lib/affinityAssets";
 
 export default function AffinityCard({
   asset,
   width,
   cropId,
 }: {
-  asset: string;
+  asset: AffinityAsset;
   width: number;
   cropId: string;
 }) {
-  const type = asset.startsWith("film-")
-    ? "film"
-    : asset.startsWith("album-")
-      ? "album"
-      : asset.startsWith("book-")
-        ? "book"
-        : "person";
-  const height = width * (type === "film" ? 0.75 : type === "album" ? 1 : 1.24);
+  const type = asset.kind;
+  const height = width;
   const Icon =
-    type === "film" ? Clapperboard : type === "album" ? Music2 : BookOpen;
+    type === "film"
+      ? Clapperboard
+      : type === "music"
+        ? Music2
+        : type === "photo"
+          ? Camera
+          : type === "game"
+            ? Gamepad2
+            : BookOpen;
   const iconSize = width < 80 ? 12 : 16;
   return (
     <g data-card>
@@ -34,7 +38,7 @@ export default function AffinityCard({
         </clipPath>
       </defs>
       <image
-        href={`/auth/${asset}.webp`}
+        href={asset.src}
         x={-width / 2}
         y={-height / 2}
         width={width}

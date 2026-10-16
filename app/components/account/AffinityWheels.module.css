@@ -45,9 +45,6 @@
   opacity: 0;
 }
 @media (max-width: 999px) {
-  .connections {
-    display: none;
-  }
   .wheels[data-dismissed] .left {
     transform: translateY(-45%) rotate(-14deg);
   }

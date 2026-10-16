@@ -28,3 +28,5 @@ next-env.d.ts
 *.[mM][dD][xX]
 !/README.md
 .vercel
+
+/public/individual-image-pack/

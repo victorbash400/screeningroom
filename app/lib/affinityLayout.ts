@@ -1,4 +1,4 @@
-export const affinityCardCount = 12;
+export const affinityCardCount = 16;
 export function affinityLayout(width: number, height: number) {
   const compact = width < 1000;
   const radius = compact ? width * 0.68 : Math.min(height * 0.61, width * 0.32);
@@ -22,7 +22,7 @@ export function affinityPosition(
   const angle =
     (index / affinityCardCount) * Math.PI * 2 + phase * (right ? -1 : 1);
   if (compact) {
-    const reach = Math.min(height * 0.14, 145);
+    const reach = Math.min(height * (height < 700 ? 0.1 : 0.14), 145);
     return {
       x: width / 2 + Math.sin(angle) * radius * (right ? -1 : 1),
       y: right
