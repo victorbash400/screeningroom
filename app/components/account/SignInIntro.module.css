@@ -1,0 +1,17 @@
+.intro {
+  margin-bottom: 28px;
+}
+.intro h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+}
+.intro p {
+  max-width: 300px;
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}

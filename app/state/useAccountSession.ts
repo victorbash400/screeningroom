@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AccountUser, AuthStep } from "../lib/accountTypes";
+import { sessionExpiry } from "../lib/sessionExpiry";
 import { clearAccountData } from "../lib/storage";
 import { clearLocalFiles } from "../lib/localFiles";
 import { ApiError, apiRequest, object, parseUser } from "../lib/accountApi";
 export function useAccountSession() {
   const [user, setUser] = useState<AccountUser | null>(null);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const generation = useRef(0);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -12,6 +15,7 @@ export function useAccountSession() {
   const active = useRef(true);
   const channel = useRef<BroadcastChannel | null>(null);
   const load = useCallback(async () => {
+    const version = ++generation.current;
     try {
       let value: unknown;
       try {
@@ -22,17 +26,23 @@ export function useAccountSession() {
         value = await apiRequest("/api/auth/refresh", { method: "POST" });
       }
       const result = object(value);
-      if (active.current) {
+      if (active.current && version === generation.current) {
+        const expiry =
+          result.user === null ? null : sessionExpiry(result.expiresAt);
         setUser(result.user === null ? null : parseUser(result.user));
+        setExpiresAt(expiry);
         setError(null);
       }
     } catch (failure) {
-      if (active.current)
+      if (active.current && version === generation.current) {
+        setUser(null);
+        setExpiresAt(null);
         setError(
           failure instanceof Error ? failure.message : "Cannot load account.",
         );
+      }
     } finally {
-      if (active.current) setReady(true);
+      if (active.current && version === generation.current) setReady(true);
     }
   }, []);
   useEffect(() => {
@@ -41,15 +51,42 @@ export function useAccountSession() {
     const events = new BroadcastChannel("screeningroom-account");
     channel.current = events;
     events.onmessage = (event) => {
-      if (event.data === "changed") void load();
+      if (event.data === "changed") {
+        setReady(false);
+        setUser(null);
+        setExpiresAt(null);
+        void load();
+      }
     };
+    const visible = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    window.addEventListener("focus", load);
+    document.addEventListener("visibilitychange", visible);
     return () => {
+      window.removeEventListener("focus", load);
+      document.removeEventListener("visibilitychange", visible);
       active.current = false;
       channel.current = null;
       events.close();
     };
   }, [load]);
+  useEffect(() => {
+    if (expiresAt === null) return;
+    const timeout = window.setTimeout(
+      () => {
+        generation.current += 1;
+        setUser(null);
+        setExpiresAt(null);
+        setReady(true);
+        setError("Session expired. Sign in again.");
+      },
+      Math.max(0, expiresAt - Date.now()),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [expiresAt]);
   const request = useCallback(async (path: string, init?: RequestInit) => {
+    const version = generation.current;
     try {
       return await apiRequest(path, init);
     } catch (failure) {
@@ -59,15 +96,21 @@ export function useAccountSession() {
         const refreshed = object(
           await apiRequest("/api/auth/refresh", { method: "POST" }),
         );
+        if (version !== generation.current)
+          throw new Error("Account session changed.");
+        const expiry = sessionExpiry(refreshed.expiresAt);
         setUser(parseUser(refreshed.user));
+        setExpiresAt(expiry);
+        return await apiRequest(path, init);
       } catch (refreshError) {
-        if (refreshError instanceof ApiError && refreshError.status === 401) {
+        if (version === generation.current) {
+          generation.current += 1;
           setUser(null);
+          setExpiresAt(null);
           channel.current?.postMessage("changed");
         }
         throw refreshError;
       }
-      return apiRequest(path, init);
     }
   }, []);
   async function authenticate(
@@ -106,7 +149,11 @@ export function useAccountSession() {
         }),
       );
       if (step === "sign-in") {
+        const expiry = sessionExpiry(result.expiresAt);
+        generation.current += 1;
         setUser(parseUser(result.user));
+        setExpiresAt(expiry);
+        setReady(true);
         channel.current?.postMessage("changed");
         return "done";
       }
@@ -152,7 +199,10 @@ export function useAccountSession() {
         await apiRequest("/api/auth/sign-out", { method: "POST" }),
       );
       if (result.ok !== true) throw new Error("Sign out failed.");
+      generation.current += 1;
       setUser(null);
+      setExpiresAt(null);
+      setReady(true);
       channel.current?.postMessage("changed");
       return true;
     } catch (failure) {
@@ -190,7 +240,10 @@ export function useAccountSession() {
       if (result.deleted !== true)
         throw new Error("Account deletion was not confirmed.");
       await retryCleanup(user.id);
+      generation.current += 1;
       setUser(null);
+      setExpiresAt(null);
+      setReady(true);
       channel.current?.postMessage("changed");
       return true;
     } catch (failure) {

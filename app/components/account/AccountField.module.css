@@ -38,6 +38,11 @@
   color: var(--muted);
   cursor: pointer;
 }
+.field input:autofill {
+  box-shadow: 0 0 0 100px var(--panel) inset;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+}
 
 .dark {
   color: #e7ece1;

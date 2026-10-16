@@ -5,6 +5,7 @@ import json
 import secrets
 import subprocess
 import tempfile
+import time
 import urllib.error
 import urllib.request
 import uuid
@@ -68,18 +69,21 @@ def main():
             caller, cookies = (request, jar) if index == 0 else client()
             result, headers = caller("/api/auth/sign-in", "POST", {"email": email, "password": password})
             assert result["user"]["id"] == user_id
+            assert result["expiresAt"] > time.time() * 1000
             assert all("HttpOnly" in item and "SameSite=lax" in item for item in headers.get_all("Set-Cookie"))
             accounts.append((caller, cookies, user_id))
 
         request, jar, user_id = accounts[0]
-        assert request("/api/auth/session")[0]["user"]["id"] == user_id
+        session = request("/api/auth/session")[0]
+        assert session["user"]["id"] == user_id
+        assert session["expiresAt"] > time.time() * 1000
         assert request("/api/account", "PATCH", {"name": "Updated verification"})[0]["user"]["name"] == "Updated verification"
         assert request("/api/account")[0]["user"]["name"] == "Updated verification"
-        request("/api/auth/refresh", "POST")
+        assert request("/api/auth/refresh", "POST")[0]["expiresAt"] > time.time() * 1000
         for cookie in list(jar):
             if cookie.name == "screeningroom_access": jar.clear(cookie.domain, cookie.path, cookie.name)
         request("/api/auth/session", expected=401)
-        request("/api/auth/refresh", "POST")
+        assert request("/api/auth/refresh", "POST")[0]["expiresAt"] > time.time() * 1000
         print("PASS Cognito sign-in, secure cookie attributes, account, refresh and reload recovery", flush=True)
 
         record_id = str(uuid.uuid4())

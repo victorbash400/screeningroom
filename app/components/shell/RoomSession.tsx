@@ -11,7 +11,7 @@ export default function RoomSession() {
   const account = useAccount();
   const scope = account.user
     ? `${storageKey}.account.${account.user.id}`
-    : storageKey;
+    : null;
   const previousScope = useRef<string | null>(null);
   useLayoutEffect(() => {
     if (!account.ready) return;
@@ -36,7 +36,8 @@ export default function RoomSession() {
   }, [account.user, account.open]);
   return (
     <div className={styles.session} aria-busy={!account.ready}>
-      {account.error &&
+      {account.user &&
+        account.error &&
         account.surface !== "auth" &&
         account.surface !== "account" && (
           <ErrorNotice
@@ -48,15 +49,16 @@ export default function RoomSession() {
             onDismiss={() => account.setError(null)}
           />
         )}
-      {account.ready && (
+      {account.ready && account.user && scope && (
         <RoomDataProvider key={scope} scope={scope}>
           <div className={styles.room}>
             <RoomApplication />
           </div>
         </RoomDataProvider>
       )}
-      {account.surface === "auth" && <SignInDialog />}
-      {account.surface === "help" && (
+      {account.ready && !account.user && <SignInDialog required />}
+      {account.user && account.surface === "auth" && <SignInDialog />}
+      {account.user && account.surface === "help" && (
         <ShortcutsDialog onClose={() => account.open(null)} />
       )}
     </div>
