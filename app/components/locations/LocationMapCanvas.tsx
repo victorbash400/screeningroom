@@ -6,15 +6,13 @@ import { areaBoundary, type LocationInterest } from "../../lib/locationInterest"
 import LocationMapOptions from "./LocationMapOptions";
 import MapAttribution from "./MapAttribution";
 import styles from "./LocationMapCanvas.module.css";
-import glass from "../workspace/PreviewGlass.module.css";
 import { cleanMapStyle } from "./mapStyle";
 import { useMapScene } from "./useMapScene";
 import type { MapScene } from "../../lib/mapScene";
 
 setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
 
-export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onLandmarks, onThreeD, onSetLocation, onSearchArea, searching, searchError }: {
-  onSetLocation: () => void; onSearchArea: () => void; searching: boolean; searchError: string;
+export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onLandmarks, onThreeD }: {
   onLandmarks: (enabled: boolean) => void;
   onThreeD: (enabled: boolean) => void;
   visible: boolean;
@@ -117,9 +115,8 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}
-    {error && <div className={`${styles.error} ${glass.surface}`} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
-    <LocationMapOptions onSetLocation={onSetLocation} onSearchArea={onSearchArea} searching={searching} searchError={searchError}
-      area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
+    {error && <div className={styles.error} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
+    <LocationMapOptions landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCenter={() => { const center = map.current?.getCenter(); if (center) select(center.lng, center.lat); }} />
     <MapAttribution />

@@ -1,8 +1,5 @@
-.window { position: fixed; z-index: 8; display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel); }
+.window { position: fixed; z-index: 8; display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid #dedfe1; border-radius: 14px; overflow: hidden; background: white; color: #2d2d2b; }
 .window[hidden] { display: none; }
-.header { position: absolute; top: 10px; left: 12px; right: 12px; z-index: 3; display: flex; align-items: center; gap: 4px; padding: 3px; border-radius: 22px; }
-.handle { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: inherit; border-radius: 50%; cursor: grab; touch-action: none; }
-.handle:active { cursor: grabbing; }
-.handle svg { width: 17px; height: 17px; }
 .resize { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; padding: 2px; display: flex; border: 0; background: transparent; color: #535b65; border-radius: 50%; cursor: nwse-resize; touch-action: none; }
 .resize svg { width: 14px; height: 14px; }
+.resize:focus-visible { outline: 2px solid #9aa3ac; outline-offset: 2px; }

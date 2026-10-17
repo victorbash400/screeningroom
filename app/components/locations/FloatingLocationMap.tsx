@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
-import { GripHorizontal, MoveDiagonal2 } from "lucide-react";
+import { MoveDiagonal2 } from "lucide-react";
 import type { LocationInterest } from "../../lib/locationInterest";
 import type { MapScene } from "../../lib/mapScene";
 import { mapPresentationSchema } from "../../lib/mapScene";
 import { defaultLocationInterest } from "../../lib/locationInterest";
 import { useAccount } from "../../state/AccountContext";
-import glass from "../workspace/PreviewGlass.module.css";
-import LocationSearch from "./LocationSearch";
+import MapSearchControls from "./MapSearchControls";
 import LocationMapCanvas from "./LocationMapCanvas";
 import { useMapFrame } from "./useMapFrame";
 import styles from "./FloatingLocationMap.module.css";
@@ -22,7 +21,6 @@ export default function FloatingLocationMap({ anchor, open, area = defaultLocati
 }) {
   const { frame, start, adjust } = useMapFrame(anchor);
   const account = useAccount();
-  const search = useRef<HTMLInputElement>(null);
   const request = useRef<AbortController | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
@@ -50,12 +48,9 @@ export default function FloatingLocationMap({ anchor, open, area = defaultLocati
   if (!frame) return null;
   return createPortal(<section role="region" aria-label="Audience map" hidden={!open} className={styles.window}
     style={{ left: frame.x, top: frame.y, width: frame.width, height: frame.height }}>
-    <header className={`${styles.header} ${glass.surface}`}>
-      <button type="button" title="Move map" aria-label="Move map" className={styles.handle} onPointerDown={(event) => start(event, "move")}
-        onKeyDown={(event) => { if (adjust(event.key, "move")) event.preventDefault(); }}><GripHorizontal /></button>
-      <LocationSearch inputRef={search} onSelect={(place) => onArea({ ...area, ...place })} />
-    </header>
-    <LocationMapCanvas searching={searching} searchError={searchError} onSearchArea={() => void searchArea()} onSetLocation={() => { search.current?.focus(); search.current?.select(); }}
+    <MapSearchControls area={area} onArea={onArea} searching={searching} error={searchError} onSearchArea={() => void searchArea()}
+      onMove={(event) => start(event, "move")} onMoveKey={(event) => { if (adjust(event.key, "move")) event.preventDefault(); }} />
+    <LocationMapCanvas
       visible={open} scene={scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />
     <button type="button" className={styles.resize} aria-label="Resize map" onPointerDown={(event) => start(event, "resize")}
