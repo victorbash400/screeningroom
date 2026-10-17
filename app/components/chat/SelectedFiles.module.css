@@ -1,4 +1,7 @@
-.tray { align-self: center; width: calc(100% - 16px); box-sizing: border-box; margin-top: -10px; padding: 18px 12px 10px; border-radius: 0 0 16px 16px; background: var(--hover); }
-.label { display: block; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 110px; margin-top: 8px; overflow-y: auto; }
-.chips > div { margin: 0; background: var(--panel); }
+.tray { position: relative; align-self: center; width: calc(100% - 16px); box-sizing: border-box; margin-bottom: -10px; padding: 6px 8px 16px; border-radius: 14px 14px 0 0; background: var(--hover); }
+.chips { display: flex; gap: 6px; min-width: 0; }
+.chips[data-overflow="true"] { padding-right: 44px; }
+.chips[data-expanded="true"] { flex-wrap: wrap; max-height: 96px; overflow-y: auto; }
+.chips > div { flex: 0 1 auto; min-width: 0; margin: 0; background: var(--panel); }
+.expand { position: absolute; top: 6px; right: 8px; display: flex; align-items: center; justify-content: center; gap: 2px; min-width: 24px; height: 24px; padding: 0 2px; border: 0; border-radius: 5px; background: transparent; color: var(--icon); font-size: 11px; cursor: pointer; }
+.expand:hover { background: var(--selection); }

@@ -14,7 +14,7 @@ export default function ReferenceChip({
   return (
     <div className={styles.chip}>
       <Icon size={18} />
-      <span>{node.name}</span>
+      <span title={node.name}>{node.name}</span>
       <IconButton label={`Remove ${node.name}`} onClick={onRemove}>
         <X />
       </IconButton>

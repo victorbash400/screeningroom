@@ -68,6 +68,9 @@ export default function ChatComposer({
   return (
     <>
       <div className={styles.shell}>
+      <SelectedFiles nodes={references} onRemove={(id) => {
+        setReferenceIds(referenceIds.filter((value) => value !== id)); input.current?.focus();
+      }} />
       <form
         className={styles.composer}
         onSubmit={(event) => {
@@ -116,9 +119,6 @@ export default function ChatComposer({
           </button>}
         </div>
       </form>
-      <SelectedFiles nodes={references} onSelect={() => setPicking(true)} onRemove={(id) => {
-        setReferenceIds(referenceIds.filter((value) => value !== id)); input.current?.focus();
-      }} />
       </div>
       {picking && (
         <ReferencePicker

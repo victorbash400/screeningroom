@@ -3,15 +3,19 @@
   align-items: center;
   gap: 6px;
   align-self: flex-start;
-  max-width: 100%;
+  max-width: 144px;
+  min-width: 0;
+  height: 24px;
   box-sizing: border-box;
-  margin-bottom: 10px;
-  padding-left: 10px;
-  border-radius: 9px;
+  margin: 0;
+  padding-left: 6px;
+  border-radius: 6px;
   background: var(--hover);
-  font-size: 12px;
+  font-size: 11px;
 }
 .chip span {
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -19,3 +23,7 @@
 .chip svg {
   flex-shrink: 0;
 }
+
+.chip > svg { width: 14px; height: 14px; }
+.chip > button { width: 22px; height: 24px; }
+.chip > button svg { width: 13px; height: 13px; }
