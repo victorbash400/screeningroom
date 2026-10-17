@@ -1,5 +1,5 @@
 import type { ChatChannel } from "../../lib/types";
-import { ChartNoAxesColumnIncreasing, Columns2, MapPin, MessageCircle, ScanSearch } from "lucide-react";
+import { ChartNoAxesColumnIncreasing, MapPin, MessageCircle, ScanSearch } from "lucide-react";
 import IconButton from "../controls/IconButton";
 import styles from "./ResearchTabs.module.css";
 
@@ -8,7 +8,6 @@ const tabs = [
   { channel: "locations", label: "Places", icon: MapPin, style: styles.location },
   { channel: "similar", label: "Similar", icon: ScanSearch, style: styles.similar },
   { channel: "performance", label: "Performance", icon: ChartNoAxesColumnIncreasing, style: styles.performance },
-  { channel: "compare", label: "Compare", icon: Columns2, style: styles.compare },
 ] as const;
 
 export default function ResearchTabs({ selected, onSelect }: {

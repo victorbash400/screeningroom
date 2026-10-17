@@ -1,5 +1,6 @@
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import type { MessageBlock } from "./types.ts";
+import { similarResultsSchema } from "./similarResults.ts";
 
 export function agentBlocks(message: UIMessage): MessageBlock[] {
   return message.parts.flatMap((part, index): MessageBlock[] => {
@@ -9,6 +10,7 @@ export function agentBlocks(message: UIMessage): MessageBlock[] {
       id: `tool:${part.toolCallId}`, kind: "tool",
       tool: {
         id: part.toolCallId, name: getToolName(part),
+        ...(getToolName(part) === "findSimilar" && part.state === "output-available" ? { results: similarResultsSchema.parse(part.output) } : {}),
         ...(part.state === "output-error" ? { error: part.errorText } : part.state === "output-denied" ? { error: "Tool call denied." } : {}),
         state: part.state === "output-available" ? "done" : part.state === "output-error" || part.state === "output-denied" ? "failed" : "running",
       },

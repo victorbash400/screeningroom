@@ -9,6 +9,7 @@ const entity = z.object({
   properties: z.object({
     address: z.string().optional(), description: z.string().optional(),
     release_year: z.number().optional(), website: z.string().optional(),
+    image: z.object({ url: z.string() }).nullish(),
     geocode: z.unknown().optional(),
   }).optional(),
   query: z.unknown().optional(),

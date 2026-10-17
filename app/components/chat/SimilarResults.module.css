@@ -1,0 +1,10 @@
+.results { display: flex; flex-direction: column; gap: 14px; margin: 8px 0; min-width: 0; }
+.card { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.card > img { width: 64px; height: 88px; object-fit: cover; flex-shrink: 0; border-radius: 6px; background: var(--hover); }
+.details { flex: 1; min-width: 0; font-size: 12px; }
+.title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.title strong { font-size: 13px; font-weight: 500; }
+.title > span { color: var(--muted); }
+.details p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 5px 0; color: var(--icon); line-height: 1.5; }
+.details a { display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; color: var(--icon); text-decoration: none; }
+.details a:hover { text-decoration: underline; }
