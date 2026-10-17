@@ -1,8 +1,12 @@
-import type { StyleSpecification } from "maplibre-gl";
+import type { ExpressionSpecification, StyleSpecification } from "maplibre-gl";
 
 export function cleanMapStyle(style: StyleSpecification): StyleSpecification {
   return { ...style, layers: style.layers.filter((layer) => layer.type !== "raster").map((layer) => {
     const source = "source-layer" in layer ? layer["source-layer"] : undefined;
+    if (layer.type === "symbol" && source === "poi" && layer.layout?.["icon-image"]) return { ...layer,
+      layout: { ...layer.layout, "icon-image": ["match", ["get", "class"], ["atm", "recycling"], "", layer.layout["icon-image"] as string | ExpressionSpecification] },
+      paint: { ...layer.paint, "text-color": "#7b8490", "text-halo-color": "#ffffff", "text-halo-width": 1 },
+    };
     if (layer.type === "background") return { ...layer, paint: { ...layer.paint, "background-color": "#f4f5f7" } };
     if (layer.type === "fill") {
       const color = source === "water" ? "#e0e8ed" : source === "building" ? "#e7e9ee"

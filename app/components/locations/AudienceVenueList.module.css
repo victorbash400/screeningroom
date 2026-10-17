@@ -1,0 +1,12 @@
+.list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+.venue { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.place { display: flex; align-items: flex-start; gap: 8px; flex: 1; min-width: 0; padding: 2px 0; border: 0; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.place > svg { flex-shrink: 0; margin-top: 2px; color: var(--icon); }
+.place > span { min-width: 0; }
+.place strong { display: block; font-size: 12px; font-weight: 500; line-height: 1.5; }
+.place small { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--muted); font-size: 10px; line-height: 1.5; margin-top: 2px; }
+.venue a { display: flex; padding: 4px; color: var(--muted); border-radius: 4px; }
+.affinity { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.expand { border: 0; padding: 6px 8px; background: var(--hover); color: var(--ink); border-radius: 7px; font: inherit; font-size: 12px; cursor: pointer; }
+.list::-webkit-scrollbar { width: 5px; }
+.list::-webkit-scrollbar-thumb { border-radius: 5px; background: var(--border); }

@@ -21,7 +21,7 @@ const entity = z.object({
 const searchResponse = z.object({ results: z.array(entity) });
 const insightsResponse = z.object({ success: z.literal(true), results: z.object({ entities: z.array(entity) }) });
 
-export async function qlooRequest(path: "/search" | "/v2/insights", parameters: Record<string, string>, signal?: AbortSignal) {
+export async function qlooJson(path: "/search" | "/v2/insights" | "/v2/tags", parameters: Record<string, string>, signal?: AbortSignal) {
   const base = new URL(env("QLOO_HACKATHON_API_SERVER_URL"));
   if (base.protocol !== "https:" || base.username || base.password) throw new Error("Configure a secure Qloo API URL.");
   const url = new URL(path, base);
@@ -32,7 +32,11 @@ export async function qlooRequest(path: "/search" | "/v2/insights", parameters: 
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
   });
   if (!response.ok) throw new Error(`Qloo request failed (${response.status}).`);
-  const value: unknown = await response.json();
+  return response.json() as Promise<unknown>;
+}
+
+export async function qlooRequest(path: "/search" | "/v2/insights", parameters: Record<string, string>, signal?: AbortSignal) {
+  const value = await qlooJson(path, parameters, signal);
   if (path === "/search") {
     const parsed = searchResponse.safeParse(value);
     if (parsed.success) return parsed.data.results;

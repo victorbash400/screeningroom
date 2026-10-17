@@ -434,3 +434,38 @@ The existing boxes are preserved. Settings content grows from its existing
 760px desktop width up to 1040px on wider screens. Chat uses 36% of available
 workspace width with a 480px desktop minimum, and overlays the content when the
 workspace is too narrow to keep both regions usable.
+
+### Audience data and map widgets
+
+Audience uses the existing Vercel AI SDK/Bedrock model. It receives the selected
+location/radius/venue filters, visible map places, and validated results from
+previous replies. Tools return structured widgets; no model-generated HTML,
+text-to-JSON recovery, or file-analysis changes are introduced.
+
+- Geographic discovery uses Qloo by default. For a dedicated venue catalogue,
+  set `VENUE_DATA_PROVIDER=geoapify` and add `GEOAPIFY_API_KEY` server-side.
+  Geoapify supplies cinema/theatre category searches by circle and proximity (live music/concert halls remain Qloo tools), caches results for
+  one hour, and retains provider attribution. Configuration selects the source;
+  failures do not silently switch providers. No public Nominatim integration is
+  shipped because its service policy is unsuitable for this product's scale.
+- Qloo supplies taste-ranked venues, genre-tag lookup, audience age/gender
+  affinity indices, and geographic affinity cells. An index is not an audience
+  percentage. Empty heatmap coverage is reported honestly; missing coverage is
+  not a zero population. Independent queries' scores are not interchangeable.
+- WorldPop's [Global2 API](https://api.worldpop.org/v2/) supplies dated modeled
+  resident population and age/sex estimates for the selected circle. The default
+  data year is 2025 and is shown in the widget. Calculations return a job; the
+  user explicitly loads its result, or asks the agent to load that known job.
+  There are no polling loops. A pending job is never presented as a count.
+
+Venue lists and heatmaps update map layers from their validated tool output.
+Venue clusters count returned venue records, not people. Clicking a venue opens
+its detail card; changing the search origin is a separate action. Inline venue
+links focus the matching returned record. Widgets and map scenes persist with
+chat messages, including WorldPop results loaded after the original reply.
+
+The agent asks one relevant question when media/venue intent is ambiguous and
+asks before expanding a search with no results. Agreed area changes update the
+composer location, radius control, and map together. Tool output parsing is
+cached for completed stream calls, and full heatmap cells stay out of model
+follow-up context while remaining available to the map.

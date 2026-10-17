@@ -8,8 +8,9 @@ import { chatReference } from "../lib/chatReference";
 import { chatHistory, streamAgentReply } from "../lib/agentChat";
 import type { LocationInterest } from "../lib/locationInterest";
 import { getToolName, isToolUIPart } from "ai";
-import { mapPresentationSchema, type MapScene } from "../lib/mapScene";
-import type { ChatChannel, FileNode, Message, RoomData } from "../lib/types";
+import { audienceMapUpdate } from "../lib/audienceMapUpdate";
+import type { MapScene } from "../lib/mapScene";
+import type { ChatChannel, FileNode, Message, MessageTool, RoomData } from "../lib/types";
 
 type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useAgentReply(update: Update) {
@@ -18,23 +19,26 @@ export function useAgentReply(update: Update) {
   const nameChat = useChatTitle(update, setError);
   const controllers = useRef(new Map<string, AbortController>());
   const [pending, setPending] = useState<Record<string, Message | undefined>>({});
+  const [pendingAreas, setPendingAreas] = useState<Record<string, LocationInterest | undefined>>({});
   const [pendingMaps, setPendingMaps] = useState<Record<string, MapScene | undefined>>({});
   useEffect(() => {
     const active = controllers.current;
     return () => { for (const controller of active.values()) controller.abort(); active.clear(); };
   }, []);
 
-  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, reference?: FileNode | FileNode[], nodes: FileNode[] = [], locationInterest?: LocationInterest) {
+  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, reference?: FileNode | FileNode[], nodes: FileNode[] = [], locationInterest?: LocationInterest, initialScene?: MapScene) {
     if (controllers.current.has(conversationId)) return;
     setError(null);
     const controller = new AbortController();
     controllers.current.set(conversationId, controller);
     let current: Message = { id: crypto.randomUUID(), role: "assistant", text: "", createdAt: new Date().toISOString(), replyToId: threadId, status: "streaming", waiting: true };
     let mapScene: MapScene | undefined;
+    let locationArea: LocationInterest | undefined;
     setPending((previous) => ({ ...previous, [conversationId]: current }));
     try {
       const history = chatHistory(messages, threadId);
       const mapCalls = new Set<string>();
+      const completedTools = new Map<string, MessageTool>();
       if (reference && history.length) {
         const references = Array.isArray(reference) ? reference : [reference];
         const context = await Promise.all(references.map((node) => chatReference(node, nodes, account.user?.id)));
@@ -43,20 +47,26 @@ export function useAgentReply(update: Update) {
       await streamAgentReply(channel, history, controller.signal, (message) => {
         if (controllers.current.get(conversationId) !== controller) return;
         for (const part of message.parts) {
-          if (!isToolUIPart(part) || getToolName(part) !== "showMapLocations" || part.state !== "output-available" || mapCalls.has(part.toolCallId)) continue;
-          const presentation = mapPresentationSchema.parse(part.output);
-          mapScene = { id: part.toolCallId, presentation };
-          setPendingMaps((previous) => ({ ...previous, [conversationId]: mapScene }));
+          if (!isToolUIPart(part) || part.state !== "output-available" || mapCalls.has(part.toolCallId)) continue;
+          const change = audienceMapUpdate(getToolName(part), part.output, part.toolCallId, mapScene);
+          if (change.area) {
+            locationArea = change.area;
+            setPendingAreas((previous) => ({ ...previous, [conversationId]: locationArea }));
+          }
+          if (change.scene) {
+            mapScene = change.scene;
+            setPendingMaps((previous) => ({ ...previous, [conversationId]: mapScene }));
+          }
           mapCalls.add(part.toolCallId);
         }
         current = {
           ...current,
           waiting: waitingForAnswer(message),
-          blocks: agentBlocks(message),
+          blocks: agentBlocks(message, completedTools),
           text: message.parts.filter((part) => part.type === "text").map((part) => part.text).join("\n\n"),
         };
         setPending((previous) => ({ ...previous, [conversationId]: current }));
-      }, account.fetch, locationInterest);
+      }, account.fetch, locationInterest, initialScene);
       current = finishReply(current, "complete");
     } catch (error) {
       if (!controllers.current.has(conversationId)) return;
@@ -70,10 +80,11 @@ export function useAgentReply(update: Update) {
         const saved = update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => {
           if (item.id !== conversationId) return item;
           shouldName = isFirstChatReply(messages, current) && canNameChat(item, messages[0].id);
-          return { ...item, ...(mapScene ? { mapScene } : {}), messages: [...item.messages, current] };
+          return { ...item, ...(locationArea ? { locationInterest: locationArea } : {}), ...(mapScene ? { mapScene } : {}), messages: [...item.messages, current] };
         }) }));
         controllers.current.delete(conversationId);
         if (saved) {
+          setPendingAreas((previous) => ({ ...previous, [conversationId]: undefined }));
           setPendingMaps((previous) => ({ ...previous, [conversationId]: undefined }));
           setPending((previous) => ({ ...previous, [conversationId]: undefined }));
           if (shouldName) void nameChat(conversationId, messages[0].id, messages[0].text, current.text);
@@ -91,6 +102,7 @@ export function useAgentReply(update: Update) {
     controller?.abort();
     setPending((previous) => ({ ...previous, [id]: undefined }));
     setPendingMaps((previous) => ({ ...previous, [id]: undefined }));
+    setPendingAreas((previous) => ({ ...previous, [id]: undefined }));
   }
-  return { discard, reply, pending, pendingMaps, error, clearError: () => setError(null), busy: (id: string) => controllers.current.has(id), stop: (id: string) => controllers.current.get(id)?.abort() };
+  return { discard, reply, pendingAreas, pending, pendingMaps, error, clearError: () => setError(null), busy: (id: string) => controllers.current.has(id), stop: (id: string) => controllers.current.get(id)?.abort() };
 }

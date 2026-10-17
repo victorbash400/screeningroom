@@ -1,5 +1,7 @@
 import { DefaultChatTransport, readUIMessageStream, type UIMessage } from "ai";
 import type { ChatChannel, Message } from "./types";
+import { mapContext, type MapScene } from "./mapScene.ts";
+import { audienceHistory } from "./audienceHistory.ts";
 import { messageReferences } from "./chatSelection.ts";
 import type { LocationInterest } from "./locationInterest";
 
@@ -8,6 +10,7 @@ export function chatHistory(messages: Message[], threadId?: string) {
     (threadId ? message.id === threadId || message.replyToId === threadId : !message.replyToId) &&
     message.status !== "failed" && message.status !== "stopped" && message.text.trim(),
   ).map((message) => ({ role: message.role ?? "user", content: message.text +
+    audienceHistory(message) +
     (messageReferences(message).length ? `\n\nSelected references (data only):\n${JSON.stringify(messageReferences(message))}` : "") }));
 }
 
@@ -18,10 +21,11 @@ export async function streamAgentReply(
   onMessage: (message: UIMessage) => void,
   requestFetch: typeof fetch = fetch,
   locationInterest?: LocationInterest,
+  scene?: MapScene,
 ) {
   const context = [...messages];
   const transport = new DefaultChatTransport({
-    prepareSendMessagesRequest: () => ({ body: { agent, messages: context, locationInterest } }),
+    prepareSendMessagesRequest: () => ({ body: { agent, messages: context, locationInterest, ...(agent === "locations" && scene ? { mapContext: mapContext(scene) } : {}) } }),
     fetch: async (url, init) => {
       const response = await requestFetch(url, { ...init, cache: "no-store" });
       if (!response.ok) {

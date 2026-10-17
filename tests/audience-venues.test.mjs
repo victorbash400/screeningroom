@@ -31,7 +31,7 @@ test("venue search uses the chosen area and exact category filters, with optiona
     assert.equal(requested.searchParams.get("filter.location.radius"), "12000");
     assert.equal(requested.searchParams.get("filter.tags"), "urn:tag:category:place:live_music_venue,urn:tag:category:place:concert_hall");
     assert.equal(requested.searchParams.get("signal.interests.entities"), "artist");
-    assert.deepEqual(result.locations, [{ name: "Concert hall", latitude: -1.28, longitude: 36.82 }]);
+    assert.deepEqual(result.locations, [{ id: "venue", name: "Concert hall", latitude: -1.28, longitude: 36.82, category: "Venue", source: "Qloo" }]);
     await audienceVenues({ ...area, venueTypes: [] });
     assert.equal(requested.searchParams.has("signal.interests.entities"), false);
     assert.equal(requested.searchParams.get("filter.tags").split(",").length, 4);
@@ -65,6 +65,6 @@ test("venue filters still return map pins when optional provider text fields are
       properties: { description: null, address: null, website: null },
     }] } });
     const result = await audienceVenues({ ...defaultLocationInterest, venueTypes: ["theatre"] });
-    assert.deepEqual(result.locations, [{ name: "Theatre", latitude: -1.28, longitude: 36.82 }]);
+    assert.deepEqual(result.locations, [{ id: "venue", name: "Theatre", latitude: -1.28, longitude: 36.82, category: "Theatres", source: "Qloo" }]);
   } finally { globalThis.fetch = original; }
 });

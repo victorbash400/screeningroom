@@ -1,3 +1,4 @@
+import type { AudienceWidget } from "../lib/audienceWidget";
 import { useState } from "react";
 import { useAgentReply } from "./useAgentReply";
 import { selectedReferences } from "../lib/chatSelection";
@@ -199,11 +200,16 @@ export function useLocalChat(
     }));
     if (success) {
       setReferenceId(undefined);
-      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined, conversation.mapScene);
     }
     return success;
   }
   return {
+    setAudienceWidget: (toolId: string, widget: AudienceWidget) => conversation ? update((previous) => ({
+      ...previous, conversations: previous.conversations.map((item) => item.id !== conversation.id ? item : { ...item,
+        messages: item.messages.map((message) => ({ ...message, blocks: message.blocks?.map((block) => block.kind === "tool" && block.tool.id === toolId ? { ...block, tool: { ...block.tool, widget } } : block) })),
+      }),
+    })) : false,
     setMapScene: (mapScene: MapScene) => conversation ? update((previous) => ({
       ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, mapScene } : item),
     })) : false,
@@ -228,6 +234,7 @@ export function useLocalChat(
     open: open && Boolean(conversation),
     conversation: conversation ? {
       ...conversation,
+      locationInterest: agent.pendingAreas[conversation.id] ?? conversation.locationInterest,
       mapScene: agent.pendingMaps[conversation.id] ?? conversation.mapScene,
       messages: agent.pending[conversation.id] ? [...conversation.messages, agent.pending[conversation.id]!] : conversation.messages,
     } : undefined,

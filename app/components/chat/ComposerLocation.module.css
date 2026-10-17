@@ -1,0 +1,5 @@
+.location { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0; max-width: 65%; padding: 5px 2px; border: 0; border-radius: 5px; background: transparent; color: var(--icon); font: inherit; font-size: 11px; cursor: pointer; text-align: left; }
+.location svg { flex-shrink: 0; }
+.location span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.location:hover { color: var(--ink); }
+.location:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

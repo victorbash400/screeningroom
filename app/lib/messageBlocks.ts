@@ -1,4 +1,5 @@
 import type { Message, MessageBlock, MessageTool } from "./types.ts";
+import { audienceWidgetSchema } from "./audienceWidget.ts";
 import { similarResultsSchema } from "./similarResults.ts";
 
 export function messageBlocks(message: Message): MessageBlock[] {
@@ -27,6 +28,7 @@ function validMessageTool(value: unknown): value is MessageTool {
   const tool = value as Record<string, unknown>;
   return typeof tool.id === "string" && Boolean(tool.id) && typeof tool.name === "string" && Boolean(tool.name) &&
     (tool.error === undefined || typeof tool.error === "string") &&
+    (tool.widget === undefined || audienceWidgetSchema.safeParse(tool.widget).success) &&
     (tool.results === undefined || similarResultsSchema.safeParse(tool.results).success) &&
     typeof tool.state === "string" && ["running", "done", "failed", "stopped"].includes(tool.state);
 }

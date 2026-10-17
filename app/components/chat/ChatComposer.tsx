@@ -6,7 +6,11 @@ import IconButton from "../controls/IconButton";
 import ReferencePicker from "./ReferencePicker";
 import SelectedFiles from "./SelectedFiles";
 import styles from "./ChatComposer.module.css";
+import type { LocationInterest } from "../../lib/locationInterest";
+import ComposerLocation from "./ComposerLocation";
 interface Props {
+  area?: LocationInterest;
+  onLocation?: () => void;
   busy: boolean;
   onStop: () => void;
   initialReferenceId?: string;
@@ -19,6 +23,7 @@ interface Props {
   onSend: (text: string, referenceIds?: string[]) => boolean;
 }
 export default function ChatComposer({
+  area, onLocation,
   busy,
   onStop,
   draft,
@@ -109,6 +114,7 @@ export default function ChatComposer({
           <button type="button" className={styles.select} onClick={() => setPicking(true)} aria-haspopup="dialog">
             <Plus size={19} />Select
           </button>
+          {area && onLocation && <ComposerLocation area={area} onClick={onLocation} />}
           {busy ? <IconButton label="Stop response" onClick={onStop}><Square size={16} /></IconButton> : <button
             type="submit"
             aria-label="Send message"

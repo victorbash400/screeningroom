@@ -1,0 +1,10 @@
+.profile { display: flex; flex-direction: column; gap: 8px; }
+.profile + .profile { margin-top: 18px; }
+.profile > strong { font-size: 11px; font-weight: 500; margin-bottom: 3px; }
+.row { display: grid; grid-template-columns: 98px minmax(30px, 1fr) 42px; gap: 8px; align-items: center; font-size: 11px; }
+.row > span { color: var(--muted); }
+.row output { text-align: right; font-variant-numeric: tabular-nums; color: var(--icon); }
+.track { position: relative; height: 9px; border-radius: 3px; background: var(--hover); }
+.track::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--border); }
+.track i { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: #6e96a2; }
+.track i[data-negative="true"] { background: #bba38e; }

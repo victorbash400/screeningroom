@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { defaultLocationInterest } from "../../lib/locationInterest";
+import type { AudienceWidget } from "../../lib/audienceWidget";
+import { AudienceMapProvider } from "../locations/AudienceMapContext";
+import { useAudienceMapActions } from "../locations/useAudienceMapActions";
 import type { LocationInterest } from "../../lib/locationInterest";
 import type { Conversation, FileNode, Message, Workspace } from "../../lib/types";
 import ChatHeader from "./ChatHeader";
@@ -12,6 +16,7 @@ import type { MapScene } from "../../lib/mapScene";
 import styles from "./ChatDrawer.module.css";
 const FloatingLocationMap = dynamic(() => import("../locations/FloatingLocationMap"), { ssr: false });
 interface Props {
+  onAudienceWidget: (toolId: string, widget: AudienceWidget) => boolean;
   onMapScene: (scene: MapScene) => boolean;
   onLocationInterest: (area?: LocationInterest) => boolean;
   busy: boolean;
@@ -36,6 +41,7 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
+  onAudienceWidget,
   onMapScene,
   onLocationInterest,
   busy,
@@ -80,7 +86,9 @@ export default function ChatDrawer({
     input?.focus();
     queueMicrotask(() => input?.setSelectionRange(prompt.length, prompt.length));
   }
+  const mapActions = useAudienceMapActions(conversation, busy, onSend, onMapScene, onAudienceWidget, setMapOpen);
   return (
+    <AudienceMapProvider value={mapActions}>
     <aside
       ref={drawer}
       className={styles.drawer}
@@ -127,6 +135,8 @@ export default function ChatDrawer({
           onReference={onReference}
         />}
         <ChatComposer
+          area={channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined}
+          onLocation={channel === "locations" ? () => setMapOpen(true) : undefined}
           busy={busy}
           onStop={onStop}
           workspaces={workspaces}
@@ -162,5 +172,6 @@ export default function ChatDrawer({
         )}
       </div>
     </aside>
+    </AudienceMapProvider>
   );
 }
