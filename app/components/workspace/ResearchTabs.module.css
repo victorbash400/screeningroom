@@ -50,32 +50,8 @@
   min-width: 0;
   overflow: hidden;
 }
-.tab:hover .label,
-.tab:focus-visible .label {
-  grid-template-columns: 1fr;
-  margin-left: 6px;
-  opacity: 1;
-}
-@container workspace (min-width: 980px) {
-  .label {
-    grid-template-columns: 1fr;
-    margin-left: 6px;
-    opacity: 1;
-  }
-}
-@container workspace (min-width: 520px) and (max-width: 959px) {
-  .label {
-    grid-template-columns: 1fr;
-    margin-left: 6px;
-    opacity: 1;
-  }
-}
-@media (hover: none) {
-  .tab[aria-pressed="true"] .label {
-    grid-template-columns: 1fr;
-    margin-left: 6px;
-    opacity: 1;
-  }
+@container workspace (min-width: 1180px) {
+  .label { grid-template-columns: 1fr; margin-left: 6px; opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .label,

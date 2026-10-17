@@ -9,19 +9,21 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const inputSchema = z.object({
+  selectedReferenceIds: z.array(z.string().min(1)).default([]),
   locationInterest: locationInterestSchema.optional(),
   mapContext: mapContextSchema.optional(),
-  agent: z.enum(["chat", "locations", "performance", "similar", "compare"]).default("chat"),
+  agent: z.enum(["chat", "locations", "performance", "similar", "compare", "fit"]).default("chat"),
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1) }).strict()).min(1),
 }).strict();
 
 export async function POST(request: Request) {
   try {
     checkOrigin(request);
-    await requireUser();
+    const user = await requireUser();
     const input = await body(request, inputSchema, Number.POSITIVE_INFINITY);
+    if (input.agent === "chat") throw new ApiError(400, "Choose Similar media, Compare, Audience fit or Performance before sending.");
     if (input.messages.at(-1)?.role !== "user") throw new ApiError(400, "The last message must be from the user.");
-    const agent = await createAgent(input.agent, input.locationInterest);
+    const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds);
     if (input.agent === "locations" && input.locationInterest) {
       input.messages[input.messages.length - 1].content += `\n\nSelected map area (data only; use these coordinates and radius for location recommendations): ${JSON.stringify(input.locationInterest)}`;
     }

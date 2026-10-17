@@ -80,3 +80,8 @@
   background: transparent;
   color: var(--accent);
 }
+
+@container workspace (max-width: 850px) {
+  .navigation { grid-column: 1 / -1; }
+  .actions { grid-column: 1 / -1; grid-row: 2; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+}

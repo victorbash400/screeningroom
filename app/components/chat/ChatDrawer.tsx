@@ -6,6 +6,9 @@ import { AudienceMapProvider } from "../locations/AudienceMapContext";
 import { useAudienceMapActions } from "../locations/useAudienceMapActions";
 import type { LocationInterest } from "../../lib/locationInterest";
 import type { Conversation, FileNode, Message, Workspace } from "../../lib/types";
+import { channelLabel, workflowFor, type MediaWorkflow } from "../../lib/mediaWorkflows";
+import { messageReferences } from "../../lib/chatSelection";
+import MediaWorkflowStarter from "./MediaWorkflowStarter";
 import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
@@ -16,6 +19,7 @@ import type { MapScene } from "../../lib/mapScene";
 import styles from "./ChatDrawer.module.css";
 const FloatingLocationMap = dynamic(() => import("../locations/FloatingLocationMap"), { ssr: false });
 interface Props {
+  onWorkflow: (channel: MediaWorkflow) => void;
   onAudienceWidget: (toolId: string, widget: AudienceWidget) => boolean;
   onMapScene: (scene: MapScene) => boolean;
   onLocationInterest: (area?: LocationInterest) => boolean;
@@ -41,6 +45,7 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
+  onWorkflow,
   onAudienceWidget,
   onMapScene,
   onLocationInterest,
@@ -66,7 +71,9 @@ export default function ChatDrawer({
   referenceRequest,
 }: Props) {
   const channel = conversation.channel ?? "chat";
-  const label = channel === "locations" ? "Audience" : "Chats";
+  const label = channelLabel(channel);
+  const workflow = workflowFor(channel);
+  const [pickerRequest, setPickerRequest] = useState(0);
   const drawer = useRef<HTMLElement>(null);
   const previousFocus = useRef(
     typeof document !== "undefined" ? document.activeElement : null,
@@ -125,7 +132,7 @@ export default function ChatDrawer({
       <div className={styles.body}>
         {conversation.messages.length === 0 && !thread ? (
           channel === "locations" ? <AudienceStarter onSelect={() => startChat("Help me find an audience for ")} />
-            : <ChatStarters onSelect={startChat} />
+            : workflow ? <MediaWorkflowStarter workflow={workflow.channel} onSelect={() => setPickerRequest((value) => value + 1)} /> : <ChatStarters onSelect={onWorkflow} />
         ) : <MessageList
           key={`messages-${conversation.id}-${thread?.id ?? "main"}`}
           messages={conversation.messages}
@@ -134,7 +141,11 @@ export default function ChatDrawer({
           nodes={nodes}
           onReference={onReference}
         />}
-        <ChatComposer
+        {channel !== "chat" ? <ChatComposer
+          pickerRequest={pickerRequest}
+          placeholder={workflow?.placeholder}
+          onOpenReference={onReference}
+          initialReferenceIds={messageReferences(conversation.messages.findLast((message) => message.role !== "assistant") ?? { id: "", text: "", createdAt: "" }).map((reference) => reference.id)}
           area={channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined}
           onLocation={channel === "locations" ? () => setMapOpen(true) : undefined}
           busy={busy}
@@ -148,7 +159,7 @@ export default function ChatDrawer({
           nodes={nodes}
           onDraft={onDraft}
           onSend={onSend}
-        />
+        /> : conversation.messages.length > 0 ? <ChatStarters onSelect={onWorkflow} /> : null}
         {historyOpen && (
           <>
             <button

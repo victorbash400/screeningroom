@@ -21,7 +21,7 @@ const entity = z.object({
 const searchResponse = z.object({ results: z.array(entity) });
 const insightsResponse = z.object({ success: z.literal(true), results: z.object({ entities: z.array(entity) }) });
 
-export async function qlooJson(path: "/search" | "/v2/insights" | "/v2/tags", parameters: Record<string, string>, signal?: AbortSignal) {
+export async function qlooJson(path: "/search" | "/entities" | "/v2/analysis/compare" | "/v2/insights" | "/v2/tags", parameters: Record<string, string>, signal?: AbortSignal) {
   const base = new URL(env("QLOO_HACKATHON_API_SERVER_URL"));
   if (base.protocol !== "https:" || base.username || base.password) throw new Error("Configure a secure Qloo API URL.");
   const url = new URL(path, base);

@@ -162,6 +162,7 @@ export default function RoomApplication() {
             chat={
               chat.open && conversation ? (
                 <ChatDrawer
+                  onWorkflow={chat.chooseWorkflow}
                   onMapScene={chat.setMapScene}
                   onAudienceWidget={chat.setAudienceWidget}
                   onLocationInterest={chat.setLocationInterest}
@@ -195,8 +196,8 @@ export default function RoomApplication() {
                   onReference={(id) => {
                     const node = room.data.nodes.find((item) => item.id === id);
                     if (node) {
-                      chat.close();
-                      app.selectNode(node);
+                      if (node.kind === "file") app.setPreviewing(node);
+                      else app.navigate(node.workspaceId, node.id);
                     } else room.setError("Item no longer exists.");
                   }}
                 />

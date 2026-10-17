@@ -9,6 +9,10 @@ import styles from "./ChatComposer.module.css";
 import type { LocationInterest } from "../../lib/locationInterest";
 import ComposerLocation from "./ComposerLocation";
 interface Props {
+  pickerRequest?: number;
+  placeholder?: string;
+  initialReferenceIds?: string[];
+  onOpenReference?: (id: string) => void;
   area?: LocationInterest;
   onLocation?: () => void;
   busy: boolean;
@@ -23,6 +27,7 @@ interface Props {
   onSend: (text: string, referenceIds?: string[]) => boolean;
 }
 export default function ChatComposer({
+  pickerRequest, placeholder, initialReferenceIds, onOpenReference,
   area, onLocation,
   busy,
   onStop,
@@ -55,11 +60,12 @@ export default function ChatComposer({
     observer.observe(field);
     return () => observer.disconnect();
   }, [text]);
-  const [referenceIds, setReferenceIds] = useState<string[]>(initialReferenceId ? [initialReferenceId] : []);
+  const [referenceIds, setReferenceIds] = useState<string[]>(initialReferenceId ? [initialReferenceId] : initialReferenceIds ?? []);
   useEffect(() => {
     if (initialReferenceId) setReferenceIds((previous) => [...new Set([...previous, initialReferenceId])]);
   }, [initialReferenceId, referenceRequest]);
   const [picking, setPicking] = useState(false);
+  useEffect(() => { if (pickerRequest) setPicking(true); }, [pickerRequest]);
   useEffect(() => {
     if (!picking) queueMicrotask(() => input.current?.focus());
   }, [picking]);
@@ -73,7 +79,7 @@ export default function ChatComposer({
   return (
     <>
       <div className={styles.shell}>
-      <SelectedFiles workspaceName={workspaces.find((workspace) => workspace.id === workspaceId)?.name ?? workspaceId} nodes={references} onRemove={(id) => {
+      <SelectedFiles workspaceName={workspaces.find((workspace) => workspace.id === workspaceId)?.name ?? workspaceId} nodes={references} onOpen={onOpenReference} onRemove={(id) => {
         setReferenceIds(referenceIds.filter((value) => value !== id)); input.current?.focus();
       }} />
       <form
@@ -87,7 +93,7 @@ export default function ChatComposer({
             ref={input}
             autoFocus
             aria-label="Message"
-            placeholder="Message"
+            placeholder={placeholder ?? "Message"}
             rows={1}
             value={text}
             onChange={(event) => {

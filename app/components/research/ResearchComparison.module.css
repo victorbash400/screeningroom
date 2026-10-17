@@ -1,0 +1,20 @@
+.scroll { width: 100%; overflow: auto; max-height: 360px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.scroll table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+.scroll th, .scroll td { padding: 9px 12px; min-width: 100px; vertical-align: top; font-weight: 400; }
+.scroll tbody th { color: var(--muted); }
+.scroll td { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.scroll small { display: block; color: var(--muted); font-size: 9px; margin-top: 3px; }
+.subject { display: flex; flex-direction: column; gap: 4px; min-width: 90px; max-width: 160px; }
+.subject img { width: 48px; height: 64px; object-fit: cover; border-radius: 5px; }
+.subject strong { font-weight: 500; }
+.tags { margin: 10px 12px 0; font-size: 10px; color: var(--muted); }
+.tags summary { cursor: pointer; }
+.tags > div { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+.tags span { padding: 3px 6px; background: var(--hover); border-radius: 5px; }
+.scroll::-webkit-scrollbar { height: 5px; width: 5px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+
+.scroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.scroll tbody th { position: sticky; left: 0; background: var(--surface); }
+.scroll thead th:first-child { left: 0; z-index: 2; }

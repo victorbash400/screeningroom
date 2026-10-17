@@ -22,10 +22,11 @@ export async function streamAgentReply(
   requestFetch: typeof fetch = fetch,
   locationInterest?: LocationInterest,
   scene?: MapScene,
+  selectedReferenceIds: string[] = [],
 ) {
   const context = [...messages];
   const transport = new DefaultChatTransport({
-    prepareSendMessagesRequest: () => ({ body: { agent, messages: context, locationInterest, ...(agent === "locations" && scene ? { mapContext: mapContext(scene) } : {}) } }),
+    prepareSendMessagesRequest: () => ({ body: { agent, messages: context, selectedReferenceIds, locationInterest, ...(agent === "locations" && scene ? { mapContext: mapContext(scene) } : {}) } }),
     fetch: async (url, init) => {
       const response = await requestFetch(url, { ...init, cache: "no-store" });
       if (!response.ok) {

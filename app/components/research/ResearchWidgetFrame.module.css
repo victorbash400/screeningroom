@@ -1,0 +1,9 @@
+.frame { min-width: 0; margin: 9px 0 13px; padding: 12px 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.frame > header { padding: 0 12px 12px; font-size: 12px; font-weight: 550; }
+.frame > footer { padding: 10px 12px 0; color: var(--muted); font-size: 10px; }
+.frame > details { padding: 10px 12px 0; font-size: 11px; line-height: 1.6; }
+.frame summary { display: flex; align-items: center; gap: 5px; list-style: none; cursor: pointer; color: var(--muted); width: fit-content; }
+.frame summary::-webkit-details-marker { display: none; }
+.frame summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.frame details[open] summary svg { transform: rotate(180deg); }
+.frame details p { margin: 10px 0 0; }

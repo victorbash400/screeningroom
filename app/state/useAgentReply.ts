@@ -4,16 +4,16 @@ import { canNameChat, isFirstChatReply } from "../lib/chatTitle";
 import { useEffect, useRef, useState } from "react";
 import { finishReply } from "../lib/messageBlocks";
 import { agentBlocks, waitingForAnswer } from "../lib/agentActivity";
-import { chatReference } from "../lib/chatReference";
+import { messageReferences } from "../lib/chatSelection";
 import { chatHistory, streamAgentReply } from "../lib/agentChat";
 import type { LocationInterest } from "../lib/locationInterest";
 import { getToolName, isToolUIPart } from "ai";
 import { audienceMapUpdate } from "../lib/audienceMapUpdate";
 import type { MapScene } from "../lib/mapScene";
-import type { ChatChannel, FileNode, Message, MessageTool, RoomData } from "../lib/types";
+import type { ChatChannel, Message, MessageTool, RoomData } from "../lib/types";
 
 type Update = (change: (data: RoomData) => RoomData) => boolean;
-export function useAgentReply(update: Update) {
+export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<boolean>) {
   const account = useAccount();
   const [error, setError] = useState<string | null>(null);
   const nameChat = useChatTitle(update, setError);
@@ -26,7 +26,7 @@ export function useAgentReply(update: Update) {
     return () => { for (const controller of active.values()) controller.abort(); active.clear(); };
   }, []);
 
-  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, reference?: FileNode | FileNode[], nodes: FileNode[] = [], locationInterest?: LocationInterest, initialScene?: MapScene) {
+  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, locationInterest?: LocationInterest, initialScene?: MapScene) {
     if (controllers.current.has(conversationId)) return;
     setError(null);
     const controller = new AbortController();
@@ -35,20 +35,18 @@ export function useAgentReply(update: Update) {
     let mapScene: MapScene | undefined;
     let locationArea: LocationInterest | undefined;
     setPending((previous) => ({ ...previous, [conversationId]: current }));
+    const selectedIds = [...new Set(messages.at(-1) ? messageReferences(messages.at(-1)!).map((reference) => reference.id) : [])];
     try {
+      if (selectedIds.length && save && !await save(selectedIds)) throw new Error("Save the workspace before analyzing selected media.");
+      controller.signal.throwIfAborted();
       const history = chatHistory(messages, threadId);
       const mapCalls = new Set<string>();
       const completedTools = new Map<string, MessageTool>();
-      if (reference && history.length) {
-        const references = Array.isArray(reference) ? reference : [reference];
-        const context = await Promise.all(references.map((node) => chatReference(node, nodes, account.user?.id)));
-        history[history.length - 1].content += context.join("");
-      }
       await streamAgentReply(channel, history, controller.signal, (message) => {
         if (controllers.current.get(conversationId) !== controller) return;
         for (const part of message.parts) {
           if (!isToolUIPart(part) || part.state !== "output-available" || mapCalls.has(part.toolCallId)) continue;
-          const change = audienceMapUpdate(getToolName(part), part.output, part.toolCallId, mapScene);
+          const change = audienceMapUpdate(getToolName(part), part.output, part.toolCallId, mapScene ?? initialScene);
           if (change.area) {
             locationArea = change.area;
             setPendingAreas((previous) => ({ ...previous, [conversationId]: locationArea }));
@@ -66,7 +64,7 @@ export function useAgentReply(update: Update) {
           text: message.parts.filter((part) => part.type === "text").map((part) => part.text).join("\n\n"),
         };
         setPending((previous) => ({ ...previous, [conversationId]: current }));
-      }, account.fetch, locationInterest, initialScene);
+      }, account.fetch, locationInterest, initialScene, selectedIds);
       current = finishReply(current, "complete");
     } catch (error) {
       if (!controllers.current.has(conversationId)) return;

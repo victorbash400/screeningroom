@@ -4,8 +4,8 @@ import type { FileNode } from "../../lib/types";
 import ReferenceChip from "./ReferenceChip";
 import styles from "./SelectedFiles.module.css";
 
-export default function SelectedFiles({ nodes, workspaceName, onRemove }: {
-  nodes: FileNode[]; workspaceName: string; onRemove: (id: string) => void;
+export default function SelectedFiles({ nodes, workspaceName, onRemove, onOpen }: {
+  nodes: FileNode[]; workspaceName: string; onRemove: (id: string) => void; onOpen?: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const id = useId();
@@ -14,7 +14,7 @@ export default function SelectedFiles({ nodes, workspaceName, onRemove }: {
   return <div className={styles.tray} data-has-files={nodes.length > 0}>
     <span className={styles.workspace} title={workspaceName}><FolderOpen size={14} /><span>{workspaceName}</span></span>
     <div id={id} className={styles.chips} data-expanded={expanded} data-overflow={extra > 0}>
-      {visible.map((node) => <ReferenceChip key={node.id} node={node} onRemove={() => onRemove(node.id)} />)}
+      {visible.map((node) => <ReferenceChip key={node.id} node={node} onOpen={onOpen ? () => onOpen(node.id) : undefined} onRemove={() => onRemove(node.id)} />)}
     </div>
     {extra > 0 && <button type="button" className={styles.expand} aria-label={expanded ? "Collapse files" : `Show ${extra} more ${extra === 1 ? "file" : "files"}`}
       aria-expanded={expanded} aria-controls={id} onClick={() => setExpanded(!expanded)}>

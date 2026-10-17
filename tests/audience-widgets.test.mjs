@@ -96,3 +96,26 @@ test("venue updates preserve heatmap extent while an explicit venue focus can zo
   assert.deepEqual(audienceCamera(focused).center, place);
   assert.notEqual(audienceCamera(focused).key, audienceCamera(initial).key);
 });
+
+test("research widgets render responsive comparisons, exact chart values and accessible disclosure controls", async () => {
+  const { default: ResearchWidgetView } = await import("../app/components/research/ResearchWidgetView.tsx");
+  const chart = { kind: "chart", evidenceId: "e", title: "Click-through rate", source: "Campaign.csv", unit: "percent", view: "bar", basis: "Clicks / impressions from uploaded records.", series: [{ name: "CTR", points: [{ label: "Campaign A", value: 5 }, { label: "Campaign B", value: 2 }] }] };
+  const html = renderToStaticMarkup(createElement(ResearchWidgetView, { widget: chart }));
+  assert.ok(html.includes("5%"));
+  assert.ok(html.includes('aria-label="Bar chart"'));
+  assert.ok(html.includes("About this result"));
+  const line = renderToStaticMarkup(createElement(ResearchWidgetView, { widget: { ...chart, view: "line" } }));
+  assert.ok(line.includes("View values"));
+  assert.ok(line.includes('role="img"'));
+  assert.ok(line.includes("Campaign B"));
+});
+
+test("toolbar exposes all four roots beside geographic Audience and starters select a workflow", async () => {
+  const { default: ResearchTabs } = await import("../app/components/workspace/ResearchTabs.tsx");
+  const { default: ChatStarters } = await import("../app/components/chat/ChatStarters.tsx");
+  const toolbar = renderToStaticMarkup(createElement(ResearchTabs, { selected: "fit", onSelect() {} }));
+  for (const label of ["Similar media", "Compare", "Audience fit", "Performance", "Audience"]) assert.ok(toolbar.includes(`aria-label="${label}"`));
+  const roots = renderToStaticMarkup(createElement(ChatStarters, { onSelect() {} }));
+  assert.ok(roots.includes("Find similar media"));
+  assert.ok(roots.includes("Compare with existing media"));
+});

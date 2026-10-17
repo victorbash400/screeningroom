@@ -6,15 +6,17 @@ import styles from "./ReferenceChip.module.css";
 export default function ReferenceChip({
   node,
   onRemove,
+  onOpen,
 }: {
   node: FileNode;
   onRemove: () => void;
+  onOpen?: () => void;
 }) {
   const Icon = node.kind === "folder" ? FolderClosed : fileIcon(node.name, node.sourceUrl, node.mimeType);
   return (
     <div className={styles.chip}>
       <Icon size={18} />
-      <span title={node.name}>{node.name}</span>
+      {onOpen ? <button type="button" className={styles.open} title={node.name} onClick={onOpen}>{node.name}</button> : <span title={node.name}>{node.name}</span>}
       <IconButton label={`Remove ${node.name}`} onClick={onRemove}>
         <X />
       </IconButton>

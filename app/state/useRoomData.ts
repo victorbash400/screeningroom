@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount } from "./AccountContext";
+import { mediaSelectionSaved } from "../lib/selectedMediaNodes";
 import { RoomSync } from "../lib/roomSync";
 import { uploadCloudFile, uploadRoomFiles } from "../lib/cloudFiles";
 import { parseData, storageKey } from "../lib/storage";
@@ -46,6 +47,7 @@ export function useRoomData(scope: string) {
   }, [sync, scope, importBrowserData]);
   return { data: sync.data, ready: sync.ready, error, setError, syncStatus: sync.syncStatus,
     checkSync, syncNow: () => sync.retry(),
+    saveMedia: async (ids: string[]) => mediaSelectionSaved(ids, sync.data.nodes, sync.snapshot.data.nodes) || await sync.saveBeforeLeaving(),
     update: sync.update.bind(sync), reload: () => { void sync.retry(); }, hasLegacy, save: () => sync.saveBeforeLeaving(), importBrowserData: async () => {
     try { await importBrowserData(); setHasLegacy(false); }
     catch (error) { setError(error instanceof Error ? error.message : "Cannot import browser data."); }

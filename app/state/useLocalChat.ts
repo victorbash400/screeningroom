@@ -1,4 +1,5 @@
 import type { AudienceWidget } from "../lib/audienceWidget";
+import { channelLabel } from "../lib/mediaWorkflows";
 import { useState } from "react";
 import { useAgentReply } from "./useAgentReply";
 import { selectedReferences } from "../lib/chatSelection";
@@ -11,8 +12,9 @@ export function useLocalChat(
   data: RoomData,
   workspaceId: string | null,
   update: Update,
+  save?: (ids: string[]) => Promise<boolean>,
 ) {
-  const agent = useAgentReply(update);
+  const agent = useAgentReply(update, save);
   const [threads, setThreads] = useState<Record<string, string | undefined>>(
     {},
   );
@@ -23,7 +25,7 @@ export function useLocalChat(
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const saved = data.conversations.filter(
-    (item) => item.workspaceId === workspaceId && (channel === "locations" ? item.channel === "locations" : item.channel !== "locations"),
+    (item) => item.workspaceId === workspaceId && (item.channel ?? "chat") === channel,
   );
   function workspaceConversation(targetWorkspaceId: string, targetChannel = channel): Conversation {
     const existing = data.conversations.find(
@@ -38,7 +40,7 @@ export function useLocalChat(
         messages: [],
         draft: "",
       }),
-      title: targetChannel === "locations" ? "Audience" : "Chats",
+      title: channelLabel(targetChannel),
       ...(targetChannel === "locations" ? { locationInterest: existing?.locationInterest ?? defaultLocationInterest } : {}),
     };
   }
@@ -132,54 +134,17 @@ export function useLocalChat(
     }));
   }
   function shareReference(node: FileNode, text: string) {
-    const destination =
-      data.conversations.find(
-        (item) =>
-          item.workspaceId === node.workspaceId &&
-          item.id === selected[`${node.workspaceId}:chat`],
-      ) ??
-      workspaceConversation(node.workspaceId, "chat");
-    const id = destination.id;
-    if (agent.busy(id)) return false;
-    const message: Message = {
-      role: "user",
-      id: crypto.randomUUID(),
-      text: text || `Discuss ${node.name}`,
-      referenceId: node.id,
-      referenceName: node.name,
-      referenceKind: node.kind,
-      createdAt: new Date().toISOString(),
-    };
-    const success = update((previous) => {
-      if (!previous.nodes.some((item) => item.id === node.id))
-        throw new Error("Item no longer exists.");
-      return {
-        ...previous,
-        conversations: previous.conversations.some((item) => item.id === id)
-          ? previous.conversations.map((item) =>
-              item.id === id
-                ? { ...item, messages: [...item.messages, message] }
-                : item,
-            )
-          : [
-              ...previous.conversations,
-              {
-                ...destination,
-                messages: [message],
-                draft: "",
-              },
-            ],
-      };
-    });
-    if (success) {
+    if (!ensureWorkspaceConversation(node.workspaceId, "chat")) return false;
+    const destination = workspaceConversation(node.workspaceId, "chat");
+    const saved = update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => item.id === destination.id ? { ...item, draft: text } : item) }));
+    if (saved) {
       setChannel("chat");
-      setThreads((previous) => ({ ...previous, [id]: undefined }));
-      setSelected((previous) => ({ ...previous, [`${node.workspaceId}:chat`]: id }));
-      setReferenceId(undefined);
+      setSelected((previous) => ({ ...previous, [`${node.workspaceId}:chat`]: destination.id }));
+      setReferenceId(node.id);
+      setReferenceRequest((previous) => previous + 1);
       setOpen(true);
-      void agent.reply(id, "chat", [...destination.messages, message], undefined, node, data.nodes);
     }
-    return success;
+    return saved;
   }
   function send(text: string, referenceIds: string[] = []) {
     if (!conversation || agent.busy(conversation.id)) return false;
@@ -200,7 +165,7 @@ export function useLocalChat(
     }));
     if (success) {
       setReferenceId(undefined);
-      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined, conversation.mapScene);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined, conversation.mapScene);
     }
     return success;
   }
@@ -216,6 +181,15 @@ export function useLocalChat(
     setLocationInterest: (locationInterest?: LocationInterest) => conversation ? update((previous) => ({
       ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, locationInterest } : item),
     })) : false,
+    chooseWorkflow: (targetChannel: ChatChannel) => {
+      if (!workspaceId || !ensureWorkspaceConversation(workspaceId, targetChannel)) return;
+      if (channel === "chat" && conversation?.draft) {
+        const target = workspaceConversation(workspaceId, targetChannel);
+        update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => item.id === target.id ? { ...item, draft: conversation.draft } : item) }));
+      }
+      setChannel(targetChannel);
+      setOpen(true);
+    },
     channel,
     discard: agent.discard,
     error: agent.error,

@@ -1,0 +1,23 @@
+.switch { display: flex; justify-content: flex-end; padding: 0 10px 8px; gap: 2px; }
+.switch button { display: flex; align-items: center; justify-content: center; width: 26px; height: 24px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; }
+.switch button[aria-pressed="true"], .switch button:hover { color: var(--ink); background: var(--hover); }
+.switch button:focus-visible { outline: 2px solid var(--accent); }
+.bars { max-height: 320px; overflow-y: auto; padding: 0 12px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.series { display: grid; gap: 9px; }
+.series + .series { margin-top: 16px; }
+.series > strong { font-size: 11px; font-weight: 500; }
+.row { display: grid; grid-template-columns: minmax(65px, 1fr) minmax(35px, 1.2fr) auto; gap: 9px; align-items: center; font-size: 10px; }
+.row > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.row output { text-align: right; font-variant-numeric: tabular-nums; min-width: 42px; }
+.track { height: 8px; border-radius: 3px; background: var(--hover); }
+.track i { display: block; height: 100%; border-radius: inherit; background: #6e96a2; }
+.track i[data-negative="true"] { background: #bba38e; }
+.lines > svg { display: block; width: calc(100% - 24px); height: auto; margin: 0 12px; overflow: visible; }
+.lines text { font-size: 10px; fill: var(--muted); }
+.lines > details > summary { margin: 8px 12px 0; font-size: 10px; color: var(--muted); cursor: pointer; }
+.values { max-height: 240px; overflow: auto; padding: 10px 12px 0; font-size: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.values strong { display: block; font-weight: 500; margin-bottom: 8px; }
+.values > div + div { margin-top: 12px; }
+.values > div > div { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.bars::-webkit-scrollbar, .values::-webkit-scrollbar { width: 5px; }
+.bars::-webkit-scrollbar-thumb, .values::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }

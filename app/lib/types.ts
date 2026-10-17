@@ -29,6 +29,7 @@ export interface FileNode {
   size?: number;
 }
 export interface MessageTool {
+  research?: import("./researchWidget").ResearchWidget;
   widget?: import("./audienceWidget").AudienceWidget;
   results?: import("./similarResults").SimilarResult[];
   id: string;
@@ -55,7 +56,7 @@ export interface Message {
   referenceName?: string;
   referenceKind?: "file" | "folder";
 }
-export type ChatChannel = "chat" | "locations" | "similar" | "performance" | "compare";
+export type ChatChannel = "chat" | "locations" | "similar" | "performance" | "compare" | "fit";
 export interface Conversation {
   mapScene?: import("./mapScene").MapScene;
   locationInterest?: import("./locationInterest").LocationInterest;

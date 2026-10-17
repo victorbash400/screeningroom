@@ -149,7 +149,7 @@ export function parseData(raw: string): RoomData {
       !text(item.title) ||
       !text(item.draft) ||
       (item.scope !== undefined && item.scope !== "workspace") ||
-      (item.channel !== undefined && !["chat", "locations", "similar", "performance", "compare", "cvr", "compliance"].includes(item.channel as string)) ||
+      (item.channel !== undefined && !["chat", "locations", "similar", "performance", "compare", "fit", "cvr", "compliance"].includes(item.channel as string)) ||
       !Array.isArray(item.messages) ||
       conversations.has(item.id)
     )

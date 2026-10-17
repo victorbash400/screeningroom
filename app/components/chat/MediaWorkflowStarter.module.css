@@ -1,0 +1,7 @@
+.starter { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.starter > svg { width: 140px; height: 85px; max-width: 100%; color: var(--icon); }
+.starter strong { font-size: 13px; font-weight: 500; }
+.starter button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 18px; background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
+.starter button:hover { background: var(--hover); }
+.starter button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-height: 500px) { .starter { gap: 8px; padding: 12px; } .starter > svg { height: 48px; } }
