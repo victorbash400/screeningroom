@@ -5,3 +5,6 @@
 .options button[aria-pressed="true"] { background: #e9edf0; }
 .options button:hover:not(:disabled) { background: #f1f3f5; opacity: 1; }
 .options button:focus-visible { outline: 2px solid #9aa3ac; outline-offset: 1px; }
+
+.busy { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

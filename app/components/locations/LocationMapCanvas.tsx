@@ -4,6 +4,7 @@ import { Map, Marker, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { areaBoundary, type LocationInterest } from "../../lib/locationInterest";
 import LocationMapOptions from "./LocationMapOptions";
+import { useCurrentLocation } from "./useCurrentLocation";
 import MapAttribution from "./MapAttribution";
 import styles from "./LocationMapCanvas.module.css";
 import { cleanMapStyle } from "./mapStyle";
@@ -22,6 +23,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   threeD: boolean;
   onArea: (area?: LocationInterest) => void;
 }) {
+  const deviceLocation = useCurrentLocation(area, onArea);
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const marker = useRef<Marker | null>(null);
@@ -115,10 +117,10 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}
-    {error && <div className={styles.error} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
-    <LocationMapOptions landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
+    {(error || deviceLocation.error) && <div className={styles.error} role="alert"><span>{error ? "Map could not load." : deviceLocation.error}</span><button type="button" onClick={() => { if (error) setAttempt((value) => value + 1); else deviceLocation.locate(); }} disabled={deviceLocation.busy}>Retry</button></div>}
+    <LocationMapOptions area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
-      onCenter={() => { const center = map.current?.getCenter(); if (center) select(center.lng, center.lat); }} />
+      onCurrentLocation={deviceLocation.locate} locating={deviceLocation.busy} />
     <MapAttribution />
   </div>;
 }
