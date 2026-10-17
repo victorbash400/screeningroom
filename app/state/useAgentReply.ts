@@ -20,7 +20,7 @@ export function useAgentReply(update: Update) {
     return () => { for (const controller of active.values()) controller.abort(); active.clear(); };
   }, []);
 
-  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, reference?: FileNode, nodes: FileNode[] = []) {
+  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, reference?: FileNode | FileNode[], nodes: FileNode[] = []) {
     if (controllers.current.has(conversationId)) return;
     setError(null);
     const controller = new AbortController();
@@ -29,7 +29,11 @@ export function useAgentReply(update: Update) {
     setPending((previous) => ({ ...previous, [conversationId]: current }));
     try {
       const history = chatHistory(messages, threadId);
-      if (reference && history.length) history[history.length - 1].content = history[history.length - 1].content + await chatReference(reference, nodes, account.user?.id);
+      if (reference && history.length) {
+        const references = Array.isArray(reference) ? reference : [reference];
+        const context = await Promise.all(references.map((node) => chatReference(node, nodes, account.user?.id)));
+        history[history.length - 1].content += context.join("");
+      }
       await streamAgentReply(channel, history, controller.signal, (message) => {
         current = {
           ...current,

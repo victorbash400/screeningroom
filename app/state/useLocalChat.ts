@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAgentReply } from "./useAgentReply";
+import { selectedReferences } from "../lib/chatSelection";
 import type { ChatChannel, Conversation, FileNode, Message, RoomData } from "../lib/types";
 type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useLocalChat(
@@ -174,12 +175,12 @@ export function useLocalChat(
     }
     return success;
   }
-  function send(text: string, referenceId?: string) {
+  function send(text: string, referenceIds: string[] = []) {
     if (!conversation || agent.busy(conversation.id)) return false;
-    const reference = referenceId ? data.nodes.find((node) => node.id === referenceId) : undefined;
+    const references = selectedReferences(referenceIds, data.nodes);
     const message: Message = {
-      id: crypto.randomUUID(), role: "user", text: text || (reference ? `Discuss ${reference.name}` : ""),
-      referenceId, referenceName: reference?.name, referenceKind: reference?.kind,
+      id: crypto.randomUUID(), role: "user", text: text || (references.length ? `Discuss ${references.map((node) => node.name).join(", ")}` : ""),
+      references: references.map(({ id, name, kind, workspaceId }) => ({ id, name, kind, workspaceId })),
       replyToId: thread?.id, createdAt: new Date().toISOString(),
     };
     if (!message.text.trim()) return false;
@@ -193,7 +194,7 @@ export function useLocalChat(
     }));
     if (success) {
       setReferenceId(undefined);
-      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, reference, data.nodes);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes);
     }
     return success;
   }

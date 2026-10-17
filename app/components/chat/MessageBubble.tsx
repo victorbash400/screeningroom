@@ -1,8 +1,7 @@
 import { useCallback, useState } from "react";
 import AssistantMessage from "./AssistantMessage";
 import ContextMenu from "../controls/ContextMenu";
-import { FolderClosed } from "lucide-react";
-import { fileIcon } from "../../lib/fileTypes";
+import MessageReferences from "./MessageReferences";
 import type { Message, FileNode } from "../../lib/types";
 import styles from "./MessageBubble.module.css";
 export default function MessageBubble({
@@ -22,10 +21,7 @@ export default function MessageBubble({
 }) {
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
   const closeMenu = useCallback(() => setMenu(null), []);
-  const referenceId = message.referenceId;
   const referenceName = message.referenceName ?? reference?.name;
-  const referenceKind = message.referenceKind ?? reference?.kind;
-  const Icon = referenceKind === "folder" ? FolderClosed : fileIcon(referenceName ?? "", reference?.sourceUrl, reference?.mimeType);
   const tools = message.tools;
   const waiting = message.status === "streaming" && message.waiting;
   if (!message.text && !referenceName && !tools?.length && !message.blocks?.length && !waiting) return null;
@@ -54,15 +50,7 @@ export default function MessageBubble({
         className={styles.bubble}
       >
         {message.role === "assistant" ? <AssistantMessage message={message} /> : message.text && <div>{message.text}</div>}
-        {referenceId && referenceName && (
-          <button
-            className={styles.reference}
-            onClick={() => onReference(referenceId)}
-          >
-            <Icon size={18} />
-            {referenceName}
-          </button>
-        )}
+        <MessageReferences message={message} reference={reference} onOpen={onReference} />
         {hasReplies && (
           <button className={styles.thread} onClick={onReply}>
             View thread

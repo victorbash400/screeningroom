@@ -172,6 +172,12 @@ export function parseData(raw: string): RoomData {
         !text(message.id) ||
         !text(message.text) ||
         !date(message.createdAt) ||
+        (message.references !== undefined && (!Array.isArray(message.references) ||
+          new Set(message.references.map((reference) => record(reference) ? reference.id : undefined)).size !== message.references.length ||
+          message.references.some((reference) => !record(reference) || !text(reference.id) || !reference.id ||
+            !text(reference.name) || !reference.name.trim() || !text(reference.workspaceId) || !reference.workspaceId ||
+            (reference.kind !== "file" && reference.kind !== "folder") ||
+            (nodes.has(reference.id) && nodes.get(reference.id)?.workspaceId !== reference.workspaceId)))) ||
         (message.role !== undefined && message.role !== "user" && message.role !== "assistant") ||
         (message.status !== undefined && !["streaming", "complete", "stopped", "failed"].includes(message.status as string)) ||
         (message.error !== undefined && !text(message.error)) ||
@@ -224,7 +230,7 @@ export function parseData(raw: string): RoomData {
   return value as unknown as RoomData;
 }
 
-export function folderPath(data: RoomData, folderId: string | null) {
+export function folderPath(data: Pick<RoomData, "nodes">, folderId: string | null) {
   const path = [];
   const visited = new Set<string>();
   let id = folderId;

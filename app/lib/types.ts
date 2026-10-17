@@ -38,6 +38,7 @@ export type MessageBlock =
   | { id: string; kind: "text"; text: string }
   | { id: string; kind: "tool"; tool: MessageTool };
 export interface Message {
+  references?: { id: string; name: string; kind: "file" | "folder"; workspaceId: string }[];
   role?: "user" | "assistant";
   status?: "streaming" | "complete" | "stopped" | "failed";
   error?: string;

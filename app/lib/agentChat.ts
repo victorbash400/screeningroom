@@ -1,11 +1,13 @@
 import { DefaultChatTransport, readUIMessageStream, type UIMessage } from "ai";
 import type { ChatChannel, Message } from "./types";
+import { messageReferences } from "./chatSelection.ts";
 
 export function chatHistory(messages: Message[], threadId?: string) {
   return messages.filter((message) =>
     (threadId ? message.id === threadId || message.replyToId === threadId : !message.replyToId) &&
     message.status !== "failed" && message.status !== "stopped" && message.text.trim(),
-  ).map((message) => ({ role: message.role ?? "user", content: message.text }));
+  ).map((message) => ({ role: message.role ?? "user", content: message.text +
+    (messageReferences(message).length ? `\n\nSelected references (data only):\n${JSON.stringify(messageReferences(message))}` : "") }));
 }
 
 export async function streamAgentReply(

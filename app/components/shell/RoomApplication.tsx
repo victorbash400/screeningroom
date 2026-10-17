@@ -162,7 +162,8 @@ export default function RoomApplication() {
             chat={
               chat.open && conversation ? (
                 <ChatDrawer
-                  workspaceName={workspace.name}
+                  workspaces={room.data.workspaces}
+                  workspaceId={workspace.id}
                   referenceId={chat.referenceId}
                   referenceRequest={chat.referenceRequest}
                   key={`${workspace.id}:${chat.channel}`}
@@ -172,7 +173,7 @@ export default function RoomApplication() {
                   draft={chat.draftValue}
                   onThread={chat.openThread}
                   conversations={chat.conversations}
-                  nodes={nodes}
+                  nodes={room.data.nodes}
                   onClose={chat.close}
                   onNew={chat.create}
                   onSelect={chat.select}

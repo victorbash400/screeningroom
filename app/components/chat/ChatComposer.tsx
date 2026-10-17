@@ -1,6 +1,7 @@
-import { ArrowUp, Link, Square } from "lucide-react";
+import { ArrowUp, Plus, Square } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { FileNode } from "../../lib/types";
+import type { FileNode, Workspace } from "../../lib/types";
+import { selectedReferences } from "../../lib/chatSelection";
 import IconButton from "../controls/IconButton";
 import ReferencePicker from "./ReferencePicker";
 import ReferenceChip from "./ReferenceChip";
@@ -12,16 +13,18 @@ interface Props {
   referenceRequest: number;
   draft: string;
   nodes: FileNode[];
-  workspaceName: string;
+  workspaces: Workspace[];
+  workspaceId: string;
   onDraft: (value: string) => boolean;
-  onSend: (text: string, referenceId?: string) => boolean;
+  onSend: (text: string, referenceIds?: string[]) => boolean;
 }
 export default function ChatComposer({
   busy,
   onStop,
   draft,
   nodes,
-  workspaceName,
+  workspaces,
+  workspaceId,
   onDraft,
   onSend,
   initialReferenceId,
@@ -35,9 +38,7 @@ export default function ChatComposer({
     function resize() {
       if (!field) return;
       field.style.height = "auto";
-      const style = getComputedStyle(field);
-      const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-      field.style.height = `${Math.min(field.scrollHeight - padding, 78)}px`;
+      field.style.height = `${Math.min(field.scrollHeight, 140)}px`;
     }
     resize();
     let width = field.getBoundingClientRect().width;
@@ -49,21 +50,18 @@ export default function ChatComposer({
     observer.observe(field);
     return () => observer.disconnect();
   }, [text]);
-  const [referenceId, setReferenceId] = useState<string | undefined>(
-    initialReferenceId,
-  );
+  const [referenceIds, setReferenceIds] = useState<string[]>(initialReferenceId ? [initialReferenceId] : []);
   useEffect(() => {
-    setReferenceId(initialReferenceId);
+    if (initialReferenceId) setReferenceIds((previous) => [...new Set([...previous, initialReferenceId])]);
   }, [initialReferenceId, referenceRequest]);
   const [picking, setPicking] = useState(false);
   useEffect(() => {
-    if (!picking) input.current?.focus();
+    if (!picking) queueMicrotask(() => input.current?.focus());
   }, [picking]);
-  const reference = nodes.find((node) => node.id === referenceId);
-  const canSend = Boolean(text.trim() || reference);
+  const references = selectedReferences(referenceIds, nodes);
+  const canSend = Boolean(text.trim() || references.length);
   function send() {
-    if (busy || !canSend || !onSend(text.trim(), reference?.id)) return;
-    setReferenceId(undefined);
+    if (busy || !canSend || !onSend(text.trim(), references.map((node) => node.id))) return;
     if (input.current) input.current.style.height = "auto";
     input.current?.focus();
   }
@@ -76,19 +74,6 @@ export default function ChatComposer({
           send();
         }}
       >
-        {reference && (
-          <ReferenceChip
-            node={reference}
-            onRemove={() => { setReferenceId(undefined); input.current?.focus(); }}
-          />
-        )}
-        <div className={styles.row}>
-          <IconButton
-            label="Mention file or folder"
-            onClick={() => setPicking(true)}
-          >
-            <Link />
-          </IconButton>
           <textarea
             ref={input}
             autoFocus
@@ -116,6 +101,10 @@ export default function ChatComposer({
               }
             }}
           />
+        <div className={styles.row}>
+          <button type="button" className={styles.select} onClick={() => setPicking(true)} aria-haspopup="dialog">
+            <Plus size={19} />Select
+          </button>
           {busy ? <IconButton label="Stop response" onClick={onStop}><Square size={16} /></IconButton> : <button
             type="submit"
             aria-label="Send message"
@@ -125,17 +114,24 @@ export default function ChatComposer({
             <ArrowUp size={16} />
           </button>}
         </div>
+        {references.length > 0 && <div className={styles.selection}>
+          <button type="button" className={styles.selectedLabel} onClick={() => setPicking(true)}>Selected ({references.length})</button>
+          <div className={styles.chips}>{references.map((node) => <ReferenceChip key={node.id} node={node}
+            onRemove={() => { setReferenceIds(referenceIds.filter((id) => id !== node.id)); input.current?.focus(); }} />)}</div>
+        </div>}
       </form>
       {picking && (
         <ReferencePicker
-          workspaceName={workspaceName}
+          workspaceId={workspaceId}
+          workspaces={workspaces}
+          selectedIds={references.map((node) => node.id)}
           nodes={nodes}
           onClose={() => {
             setPicking(false);
             input.current?.focus();
           }}
-          onSelect={(node) => {
-            setReferenceId(node.id);
+          onSelect={(ids) => {
+            setReferenceIds(ids);
             setPicking(false);
             if (text.endsWith("@")) {
               const next = text.slice(0, -1);

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Conversation, FileNode, Message } from "../../lib/types";
+import type { Conversation, FileNode, Message, Workspace } from "../../lib/types";
 import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
@@ -17,14 +17,15 @@ interface Props {
   onThread: (id?: string) => void;
   conversations: Conversation[];
   nodes: FileNode[];
-  workspaceName: string;
+  workspaces: Workspace[];
+  workspaceId: string;
   onClose: () => void;
   onNew: () => boolean;
   onSelect: (id: string) => void;
   onRename: () => void;
   onDelete: () => void;
   onDraft: (value: string) => boolean;
-  onSend: (text: string, referenceId?: string) => boolean;
+  onSend: (text: string, referenceIds?: string[]) => boolean;
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
@@ -37,7 +38,8 @@ export default function ChatDrawer({
   onThread,
   conversations,
   nodes,
-  workspaceName,
+  workspaces,
+  workspaceId,
   onClose,
   onNew,
   onSelect,
@@ -102,7 +104,8 @@ export default function ChatDrawer({
         <ChatComposer
           busy={busy}
           onStop={onStop}
-          workspaceName={workspaceName}
+          workspaces={workspaces}
+          workspaceId={workspaceId}
           initialReferenceId={referenceId}
           referenceRequest={referenceRequest}
           key={`composer-${conversation.id}-${thread?.id ?? "main"}`}
