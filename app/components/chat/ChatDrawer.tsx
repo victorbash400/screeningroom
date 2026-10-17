@@ -30,7 +30,7 @@ interface Props {
   onNew: () => boolean;
   onSelect: (id: string) => void;
   onRename: () => void;
-  onDelete: () => void;
+  onDelete: (id: string) => void;
   onDraft: (value: string) => boolean;
   onSend: (text: string, referenceIds?: string[]) => boolean;
   onReference: (id: string) => void;
@@ -108,7 +108,7 @@ export default function ChatDrawer({
         onHistory={() => setHistoryOpen(!historyOpen)}
         onClose={onClose}
         onRename={onRename}
-        onDelete={onDelete}
+        onDelete={() => onDelete(conversation.id)}
         threadOpen={Boolean(thread)}
         onBack={() => onThread()}
       />
@@ -148,6 +148,7 @@ export default function ChatDrawer({
             />
             <ChatHistory
               items={conversations}
+              onDelete={onDelete}
               activeId={conversation.id}
               onNew={() => {
                 if (onNew()) setHistoryOpen(false);

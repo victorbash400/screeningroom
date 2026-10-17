@@ -41,6 +41,7 @@ export function useAgentReply(update: Update) {
         history[history.length - 1].content += context.join("");
       }
       await streamAgentReply(channel, history, controller.signal, (message) => {
+        if (controllers.current.get(conversationId) !== controller) return;
         for (const part of message.parts) {
           if (!isToolUIPart(part) || getToolName(part) !== "showMapLocations" || part.state !== "output-available" || mapCalls.has(part.toolCallId)) continue;
           const presentation = mapPresentationSchema.parse(part.output);
@@ -84,5 +85,12 @@ export function useAgentReply(update: Update) {
       }
     }
   }
-  return { reply, pending, pendingMaps, error, clearError: () => setError(null), busy: (id: string) => controllers.current.has(id), stop: (id: string) => controllers.current.get(id)?.abort() };
+  function discard(id: string) {
+    const controller = controllers.current.get(id);
+    controllers.current.delete(id);
+    controller?.abort();
+    setPending((previous) => ({ ...previous, [id]: undefined }));
+    setPendingMaps((previous) => ({ ...previous, [id]: undefined }));
+  }
+  return { discard, reply, pending, pendingMaps, error, clearError: () => setError(null), busy: (id: string) => controllers.current.has(id), stop: (id: string) => controllers.current.get(id)?.abort() };
 }

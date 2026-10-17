@@ -211,6 +211,7 @@ export function useLocalChat(
       ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, locationInterest } : item),
     })) : false,
     channel,
+    discard: agent.discard,
     error: agent.error,
     clearError: agent.clearError,
     show,

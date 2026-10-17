@@ -136,6 +136,7 @@ export function useScreeningroom() {
   function remove() {
     if (!deleting) return false;
     if (!actions.remove(deleting.target, deleting.id)) return false;
+    if (deleting.target === "conversation") chat.discard(deleting.id);
     if (deleting.target === "workspace" && location.workspaceId === deleting.id)
       navigate(null);
     if (

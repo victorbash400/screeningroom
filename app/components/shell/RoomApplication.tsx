@@ -186,9 +186,7 @@ export default function RoomApplication() {
                       name: conversation.title,
                     })
                   }
-                  onDelete={() =>
-                    app.askDelete("conversation", conversation.id)
-                  }
+                  onDelete={(id) => app.askDelete("conversation", id)}
                   onDraft={chat.draft}
                   onSend={chat.send}
                   busy={chat.busy}

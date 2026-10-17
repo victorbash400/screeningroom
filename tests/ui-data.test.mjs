@@ -264,3 +264,15 @@ test("research chats persist independently alongside legacy workspace chat", () 
   const invalid = { ...data, conversations: [{ ...data.conversations[0], channel: "unknown" }] };
   assert.throws(() => validate(invalid));
 });
+
+test("deleting a chat preserves other chats and workspace files", () => {
+  const data = fixture();
+  data.conversations = [
+    { id: "first", workspaceId: "a", title: "First", draft: "", messages: [] },
+    { id: "second", workspaceId: "a", title: "Second", draft: "", messages: [] },
+  ];
+  const removed = removeRoomItem(data, "conversation", "first");
+  assert.deepEqual(removed.conversations, [data.conversations[1]]);
+  assert.deepEqual(removed.workspaces, data.workspaces);
+  assert.deepEqual(removed.nodes, data.nodes);
+});
