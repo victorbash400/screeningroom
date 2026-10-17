@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import VideoControls from "./VideoControls";
 import AudioControls from "./AudioControls";
@@ -9,6 +9,7 @@ export default function MediaControls({
   current,
   duration,
   muted,
+  volume,
   video,
   onError,
 }: {
@@ -18,10 +19,12 @@ export default function MediaControls({
   current: number;
   duration: number;
   muted: boolean;
+  volume: number;
   video: boolean;
   onError: (error: string) => void;
 }) {
   const [fullScreen, setFullScreen] = useState(false);
+  const lastVolume = useRef(1);
   useEffect(() => {
     if (!video) return;
     const changed = () =>
@@ -41,14 +44,26 @@ export default function MediaControls({
     }
   }
   function toggleMute() {
-    if (media.current) media.current.muted = !muted;
+    if (!media.current) return;
+    if (muted || volume === 0) {
+      media.current.muted = false;
+      if (media.current.volume === 0) media.current.volume = lastVolume.current;
+    } else media.current.muted = true;
+  }
+  function changeVolume(value: number) {
+    if (!media.current) return;
+    if (value > 0) lastVolume.current = value;
+    media.current.volume = value;
+    media.current.muted = false;
   }
   if (!video)
     return (
       <AudioControls
         buffering={buffering}
-      playing={playing}
+        playing={playing}
         muted={muted}
+        volume={volume}
+        onVolume={changeVolume}
         current={current}
         duration={duration}
         onPlay={togglePlayback}
@@ -63,6 +78,8 @@ export default function MediaControls({
       buffering={buffering}
       playing={playing}
       muted={muted}
+      volume={volume}
+      onVolume={changeVolume}
       current={current}
       duration={duration}
       fullScreen={fullScreen}

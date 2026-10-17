@@ -1,0 +1,6 @@
+.thumbnail { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 10; min-height: 0; margin-bottom: 16px; overflow: hidden; border-radius: 8px; background: var(--hover); color: var(--muted); }
+.open { position: absolute; inset: 0; display: grid; place-items: center; width: 100%; height: 100%; min-width: 0; min-height: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.open img { width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.error { position: absolute; inset: auto 8px 8px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--danger); background: var(--panel); padding: 8px; border-radius: 6px; }
+.error button { margin-left: auto; padding: 4px; border: 0; background: transparent; font-size: 11px; cursor: pointer; }
+@container workspace (max-width: 619px) { .thumbnail { width: 36px; height: 48px; aspect-ratio: auto; margin: 0; grid-row: 1 / 4; } .error { position: static; font-size: 0; padding: 0; } .error span { display: none; } }

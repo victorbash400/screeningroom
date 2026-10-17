@@ -22,7 +22,7 @@ export async function saveRoom(userId: string, fileId: string, revision: number,
   if ((current?.version ?? 0) !== revision) throw new ApiError(409, "Workspace changed in another browser. Retry to merge your changes.");
   const data = await readRoomFile(userId, fileId);
   for (const node of data.nodes) {
-    for (const content of [node.content, ...(node.versions ?? []).map((version) => version.content)]) {
+    for (const content of [node.content, node.thumbnail?.content, ...(node.versions ?? []).map((version) => version.content)]) {
       if (content !== undefined && (!content.startsWith("cloud-file:") || !recordId.safeParse(content.slice(11)).success)) throw new ApiError(400, "Upload file contents before saving the workspace.");
     }
   }

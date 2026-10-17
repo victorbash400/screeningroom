@@ -1,0 +1,7 @@
+.control { display: flex; align-items: center; flex-shrink: 0; gap: 4px; color: inherit; }
+.control > button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.control > button svg { width: 18px; height: 18px; stroke-width: 1.8; }
+.control > button:hover { background: #ffffff1c; }
+.control > input[type="range"] { appearance: none; flex: none; width: 56px; height: 4px; margin: 0; padding: 0; border: 0; border-radius: 8px; cursor: pointer; background: linear-gradient(to right, currentColor var(--volume), #ffffff40 var(--volume)); }
+.control > input::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.control > input::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: currentColor; }

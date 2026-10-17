@@ -14,6 +14,7 @@ export interface FileComment {
   createdAt: string;
 }
 export interface FileNode {
+  thumbnail?: { content: string; source: string; width: number; height: number };
   id: string;
   workspaceId: string;
   parentId: string | null;

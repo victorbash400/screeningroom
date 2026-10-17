@@ -18,6 +18,7 @@ export default function MediaPreview({
     [current, setCurrent] = useState(0),
     [duration, setDuration] = useState(0),
     [muted, setMuted] = useState(false),
+    [volume, setVolume] = useState(1),
     [error, setError] = useState<string | null>(null);
   const [readySource, setReadySource] = useState<string>();
   const buffering = !error && (loading || !source || readySource !== source);
@@ -52,7 +53,7 @@ export default function MediaPreview({
     onLoadedMetadata: updateDuration,
     onLoadedData: () => setReadySource(source),
     onDurationChange: updateDuration,
-    onVolumeChange: () => setMuted(media.current?.muted ?? false),
+    onVolumeChange: () => { setMuted(media.current?.muted ?? false); setVolume(media.current?.volume ?? 1); },
     onError: () => setError("Cannot play this file."),
   };
   return (
@@ -87,6 +88,7 @@ export default function MediaPreview({
         current={current}
         duration={duration}
         muted={muted}
+        volume={volume}
         onError={setError}
       />
     </div>

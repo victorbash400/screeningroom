@@ -22,11 +22,6 @@
   height: 25px;
   stroke-width: 1;
 }
-.volume {
-  grid-column: 3;
-  justify-self: end;
-  color: inherit;
-}
 .controls input {
   display: block;
   appearance: none;

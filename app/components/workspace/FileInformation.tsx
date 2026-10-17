@@ -1,14 +1,16 @@
 import type { FileNode } from "../../lib/types";
 import { fileIcon, fileSize } from "../../lib/fileTypes";
 import styles from "./FileInformation.module.css";
-export default function FileInformation({ node }: { node: FileNode }) {
+import FileThumbnail from "./FileThumbnail";
+import { thumbnailKind } from "../../lib/mediaThumbnail";
+export default function FileInformation({ node, onOpen }: { node: FileNode; onOpen: () => void }) {
   const Icon = fileIcon(node.name, node.sourceUrl, node.mimeType);
   const date = new Date(node.updatedAt);
   return (
     <div className={styles.information}>
-      <div className={styles.icon}>
+      {thumbnailKind(node) ? <FileThumbnail key={node.content} node={node} onOpen={onOpen} /> : <div className={styles.icon}>
         <Icon size={72} strokeWidth={1.5} />
-      </div>
+      </div>}
       <div className={styles.name}>{node.name}</div>
       <div className={styles.size}>{node.sourceUrl ? "Link" : fileSize(node.size ?? 0)}</div>
       <div className={styles.modified}>

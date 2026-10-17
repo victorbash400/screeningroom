@@ -11,10 +11,12 @@ export default function FilePreview({
   node,
   onComment,
   onClose,
+  onOpen,
 }: {
   node: FileNode;
   onComment: (text: string) => boolean;
   onClose: () => void;
+  onOpen: () => void;
 }) {
   const [tab, setTab] = useState<"Versions" | "Comments">("Versions");
   return (
@@ -35,7 +37,7 @@ export default function FilePreview({
       >
         <X />
       </IconButton>
-      <FileInformation node={node} />
+      <FileInformation node={node} onOpen={onOpen} />
       <div role="tablist" aria-label="File details" className={styles.tabs}>
         {(["Versions", "Comments"] as const).map((value) => (
           <button

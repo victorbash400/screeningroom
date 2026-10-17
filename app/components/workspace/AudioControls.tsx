@@ -1,7 +1,8 @@
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import type { CSSProperties } from "react";
 import IconButton from "../controls/IconButton";
 import styles from "./AudioControls.module.css";
+import VolumeControl from "./VolumeControl";
 
 function clock(seconds: number) {
   const value = Math.max(0, Math.floor(seconds));
@@ -12,6 +13,8 @@ export default function AudioControls({
   playing,
   buffering,
   muted,
+  volume,
+  onVolume,
   current,
   duration,
   onPlay,
@@ -21,6 +24,8 @@ export default function AudioControls({
   playing: boolean;
   buffering: boolean;
   muted: boolean;
+  volume: number;
+  onVolume: (volume: number) => void;
   current: number;
   duration: number;
   onPlay: () => void;
@@ -57,13 +62,7 @@ export default function AudioControls({
           onChange={(event) => onSeek(Number(event.target.value))}
         />
         <span>−{clock(duration - current)}</span>
-        <IconButton
-          className={styles.volume}
-          label={muted ? "Unmute" : "Mute"}
-          onClick={onMute}
-        >
-          {muted ? <VolumeX /> : <Volume2 />}
-        </IconButton>
+        <VolumeControl volume={volume} muted={muted} onMute={onMute} onVolume={onVolume} />
       </div>
     </div>
   );

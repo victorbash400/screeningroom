@@ -5,11 +5,10 @@ import {
   Play,
   RotateCcw,
   RotateCw,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 import styles from "./VideoControls.module.css";
+import VolumeControl from "./VolumeControl";
 
 function clock(seconds: number) {
   const value = Math.max(0, Math.floor(seconds));
@@ -20,6 +19,8 @@ export default function VideoControls({
   playing,
   buffering,
   muted,
+  volume,
+  onVolume,
   current,
   duration,
   fullScreen,
@@ -31,6 +32,8 @@ export default function VideoControls({
   playing: boolean;
   buffering: boolean;
   muted: boolean;
+  volume: number;
+  onVolume: (volume: number) => void;
   current: number;
   duration: number;
   fullScreen: boolean;
@@ -93,13 +96,7 @@ export default function VideoControls({
           onInput={(event) => onSeek(Number(event.currentTarget.value))}
         />
         <span>−{clock(duration - current)}</span>
-        <button
-          type="button"
-          aria-label={muted ? "Unmute" : "Mute"}
-          onClick={onMute}
-        >
-          {muted ? <VolumeX /> : <Volume2 />}
-        </button>
+        <VolumeControl volume={volume} muted={muted} onMute={onMute} onVolume={onVolume} />
         <button
           type="button"
           aria-label={fullScreen ? "Exit full screen" : "Full screen"}

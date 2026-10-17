@@ -138,6 +138,7 @@ export default function RoomApplication() {
                 <FilePreview
                   key={app.selected.id}
                   node={app.selected}
+                  onOpen={() => app.selected && app.setPreviewing(app.selected)}
                   onClose={() => {
                     const id = app.selected?.id;
                     app.setSelection(null);

@@ -78,6 +78,10 @@ export function parseData(raw: string): RoomData {
       nodes.has(item.id)
     )
       throw new Error("Saved file data is invalid.");
+    if (item.thumbnail !== undefined && (!record(item.thumbnail) || !text(item.thumbnail.content) ||
+      !text(item.thumbnail.source) || !Number.isSafeInteger(item.thumbnail.width) || Number(item.thumbnail.width) <= 0 ||
+      !Number.isSafeInteger(item.thumbnail.height) || Number(item.thumbnail.height) <= 0))
+      throw new Error("Saved thumbnail data is invalid.");
     if (
       item.versions !== undefined &&
       (!Array.isArray(item.versions) ||

@@ -1,4 +1,4 @@
-import type { RoomData } from "./types.ts";
+import type { FileNode, RoomData } from "./types.ts";
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 export interface RoomConflict { kind: "Workspace" | "File" | "Folder" | "Chat" | "Activity"; id: string; name: string }
 export class RoomConflictError extends Error {
@@ -27,10 +27,18 @@ function mergeItems<T extends { id: string }>(base: T[], local: T[], remote: T[]
 }
 export function mergeRoom(base: RoomData, local: RoomData, remote: RoomData): RoomData {
   const conflicts: RoomConflict[] = [];
+  const originals = (nodes: FileNode[]) => nodes.map(({ thumbnail, ...node }) => node);
+  const nodes = mergeItems(originals(base.nodes), originals(local.nodes), originals(remote.nodes), "File", conflicts);
+  const localNodes = new Map(local.nodes.map((node) => [node.id, node]));
+  const remoteNodes = new Map(remote.nodes.map((node) => [node.id, node]));
   const merged: RoomData = {
     version: 1,
     workspaces: mergeItems(base.workspaces, local.workspaces, remote.workspaces, "Workspace", conflicts),
-    nodes: mergeItems(base.nodes, local.nodes, remote.nodes, "File", conflicts),
+    nodes: nodes.map((node) => {
+      const thumbnail = [remoteNodes.get(node.id)?.thumbnail, localNodes.get(node.id)?.thumbnail]
+        .find((item) => item && item.source === node.content);
+      return thumbnail ? { ...node, thumbnail } : node;
+    }),
     conversations: mergeItems(base.conversations, local.conversations, remote.conversations, "Chat", conflicts),
     activity: mergeItems(base.activity ?? [], local.activity ?? [], remote.activity ?? [], "Activity", conflicts),
   };
