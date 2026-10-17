@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, MapPin } from "lucide-react";
+import { createPortal } from "react-dom";
 import { Map, Marker, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { areaBoundary, type LocationInterest } from "../../lib/locationInterest";
@@ -27,6 +28,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const marker = useRef<Marker | null>(null);
+  const [pinElement, setPinElement] = useState<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -70,7 +72,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       instance.resize();
     });
     observer.observe(container.current);
-    return () => { observer.disconnect(); marker.current?.remove(); marker.current = null; instance.remove(); map.current = null; };
+    return () => { observer.disconnect(); marker.current?.remove(); marker.current = null; setPinElement(null); instance.remove(); map.current = null; };
   }, [attempt]);
 
   useEffect(() => {
@@ -99,11 +101,12 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       if (!marker.current) {
         const element = document.createElement("div");
         element.className = styles.pin;
-        marker.current = new Marker({ element }).setLngLat([area.longitude, area.latitude]).addTo(instance);
+        marker.current = new Marker({ element, anchor: "bottom", offset: [0, 3] }).setLngLat([area.longitude, area.latitude]).addTo(instance);
+        setPinElement(element);
       }
       marker.current.getElement().setAttribute("aria-label", area.name);
       marker.current.setLngLat([area.longitude, area.latitude]);
-    } else { marker.current?.remove(); marker.current = null; }
+    } else { marker.current?.remove(); marker.current = null; setPinElement(null); }
   }, [ready, area?.name, area?.latitude, area?.longitude, area?.radius]);
   useEffect(() => {
     if (!visible) map.current?.stop();
@@ -121,6 +124,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     <LocationMapOptions area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCurrentLocation={deviceLocation.locate} locating={deviceLocation.busy} />
+    {pinElement && createPortal(<MapPin aria-hidden="true" />, pinElement)}
     <MapAttribution />
   </div>;
 }

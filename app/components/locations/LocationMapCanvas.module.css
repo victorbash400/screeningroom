@@ -1,6 +1,7 @@
 .canvas { position: relative; flex: 1; min-height: 0; background: #f3f1ed; }
 .map { position: absolute; inset: 0; }
-.pin { width: 14px; height: 14px; border: 3px solid white; border-radius: 50%; background: var(--accent); }
+.pin { width: 32px; height: 32px; color: var(--accent); }
+.pin svg { display: block; width: 32px; height: 32px; fill: white; stroke-width: 1.8; }
 .resultPin { width: 20px; height: 20px; border: 3px solid white; border-radius: 50%; background: var(--accent); cursor: pointer; transition: width 140ms ease, height 140ms ease; }
 .resultPin:hover { width: 24px; height: 24px; }
 .loading { position: absolute; top: calc(50% - 10px); left: calc(50% - 10px); width: 20px; height: 20px; color: var(--icon); animation: spin 1s linear infinite; }
