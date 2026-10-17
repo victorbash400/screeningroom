@@ -1,4 +1,4 @@
-.options { position: absolute; bottom: 30px; left: 12px; display: flex; align-items: center; gap: 10px; padding: 4px; border-radius: 24px; z-index: 2; }
+.options { position: absolute; bottom: calc(30px + var(--map-footer)); left: 12px; display: flex; align-items: center; gap: 10px; padding: 4px; border-radius: 24px; z-index: 2; }
 .group { display: flex; align-items: center; gap: 2px; }
 .options button { color: inherit; border-radius: 50%; font-size: 11px; }
 .options button[aria-pressed="true"] { background: #ffffff26; }

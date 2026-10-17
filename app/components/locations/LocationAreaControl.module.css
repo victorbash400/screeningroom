@@ -1,8 +1,8 @@
-.area { display: flex; align-items: center; flex-shrink: 0; gap: 12px; height: 36px; box-sizing: border-box; padding: 0 28px 0 14px; font-size: 12px; }
+.area { position: absolute; bottom: 28px; left: 12px; right: 12px; display: flex; align-items: center; gap: 12px; height: 34px; box-sizing: border-box; padding: 0 8px 0 12px; border-radius: 20px; font-size: 12px; }
 .area > span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.area label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
-.area input { width: 38px; padding: 4px 2px; background: transparent; border: 0; border-radius: 4px; text-align: right; font-size: 12px; appearance: textfield; color: var(--ink); }
+.area label { display: inline-flex; align-items: center; gap: 4px; color: inherit; }
+.area input { width: 38px; padding: 4px 2px; background: transparent; border: 0; border-radius: 4px; text-align: right; font-size: 12px; appearance: textfield; color: inherit; }
 .area label:focus-within { outline: 1px solid var(--border); border-radius: 6px; }
-.area > button { width: 24px; height: 24px; }
+.area > button { width: 24px; height: 24px; color: inherit; }
 .area > button svg { width: 15px; height: 15px; }
 .area input::-webkit-inner-spin-button, .area input::-webkit-outer-spin-button { appearance: none; margin: 0; }

@@ -3,6 +3,7 @@ import { LoaderCircle, Search } from "lucide-react";
 import { useAccount } from "../../state/AccountContext";
 import type { LocationInterest } from "../../lib/locationInterest";
 import styles from "./LocationSearch.module.css";
+import glass from "../workspace/PreviewGlass.module.css";
 
 interface Place { name: string; detail: string; latitude: number; longitude: number }
 export default function LocationSearch({ onSelect }: { onSelect: (place: Omit<LocationInterest, "radius">) => void }) {
@@ -29,11 +30,11 @@ export default function LocationSearch({ onSelect }: { onSelect: (place: Omit<Lo
     } finally { if (active.current === controller) setBusy(false); }
   }
   return <div className={styles.search}>
-    <form onSubmit={(event) => { event.preventDefault(); if (query.trim()) void search(); }}>
+    <form className={glass.surface} onSubmit={(event) => { event.preventDefault(); if (query.trim()) void search(); }}>
       <input aria-label="Search places" placeholder="Search places" value={query} onChange={(event) => { active.current?.abort(); setBusy(false); setQuery(event.target.value); setPlaces([]); setError(""); }} />
       <button type="submit" aria-label="Search" disabled={busy || !query.trim()}>{busy ? <LoaderCircle className={styles.busy} /> : <Search />}</button>
     </form>
-    {(places.length > 0 || error) && <div className={styles.results}>
+    {(places.length > 0 || error) && <div className={`${styles.results} ${glass.surface}`}>
       {places.map((place, index) => <button type="button" key={`${place.longitude}:${place.latitude}:${index}`} onClick={() => {
         onSelect({ name: place.name, latitude: place.latitude, longitude: place.longitude }); setPlaces([]); setQuery(place.name);
       }}><span>{place.name}</span><small>{place.detail}</small></button>)}

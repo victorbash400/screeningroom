@@ -22,7 +22,7 @@ export default function FloatingLocationMap({ anchor, open, area, scene, onArea 
   const [view, setView] = useState<{ sceneId?: string; threeD: boolean }>({ threeD: false });
   const threeD = view.sceneId === scene?.id ? view.threeD : scene?.presentation.threeD ?? false;
   if (!frame) return null;
-  return createPortal(<section role="region" aria-label="Place map" hidden={!open} className={styles.window}
+  return createPortal(<section role="region" aria-label="Place map" hidden={!open} data-area={Boolean(area)} className={styles.window}
     style={{ left: frame.x, top: frame.y, width: frame.width, height: frame.height }}>
     <header className={styles.header}>
       <button type="button" title="Move map" aria-label="Move map" className={`${styles.handle} ${glass.surface}`} onPointerDown={(event) => start(event, "move")}
@@ -32,7 +32,7 @@ export default function FloatingLocationMap({ anchor, open, area, scene, onArea 
     <LocationMapCanvas visible={open} scene={scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />
     {area && <LocationAreaControl area={area} onChange={onArea} />}
-    <button type="button" className={styles.resize} aria-label="Resize map" onPointerDown={(event) => start(event, "resize")}
+    <button type="button" className={`${styles.resize} ${glass.surface}`} aria-label="Resize map" onPointerDown={(event) => start(event, "resize")}
       onKeyDown={(event) => { if (adjust(event.key, "resize")) event.preventDefault(); }}><MoveDiagonal2 /></button>
   </section>, document.body);
 }

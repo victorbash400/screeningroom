@@ -1,9 +1,10 @@
-.window { position: fixed; z-index: 8; display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel); }
+.window { --map-footer: 0px; position: fixed; z-index: 8; display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel); }
+.window[data-area="true"] { --map-footer: 44px; }
 .window[hidden] { display: none; }
 .header { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .header > * { pointer-events: auto; }
 .handle { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 34px; height: 34px; padding: 0; border-radius: 50%; cursor: grab; touch-action: none; }
 .handle:active { cursor: grabbing; }
 .handle svg { width: 17px; height: 17px; }
-.resize { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; padding: 2px; display: flex; border: 0; border-radius: 4px 0 0; background: var(--panel); color: var(--muted); cursor: nwse-resize; touch-action: none; }
+.resize { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; padding: 2px; display: flex; border-radius: 50%; cursor: nwse-resize; touch-action: none; }
 .resize svg { width: 14px; height: 14px; }

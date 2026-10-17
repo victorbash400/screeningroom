@@ -5,6 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { areaBoundary, type LocationInterest } from "../../lib/locationInterest";
 import LocationMapOptions from "./LocationMapOptions";
 import styles from "./LocationMapCanvas.module.css";
+import glass from "../workspace/PreviewGlass.module.css";
 import { cleanMapStyle } from "./mapStyle";
 import { useMapScene } from "./useMapScene";
 import type { MapScene } from "../../lib/mapScene";
@@ -59,7 +60,13 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       const feature = instance.queryRenderedFeatures(event.point).find((item) => item.sourceLayer === "poi" && typeof item.properties?.name === "string");
       select(event.lngLat.lng, event.lngLat.lat, feature?.properties?.name);
     });
-    const observer = new ResizeObserver(() => instance.resize());
+    let width = 0, height = 0;
+    const observer = new ResizeObserver(([entry]) => {
+      const next = entry.contentRect;
+      if (!next.width || !next.height || (next.width === width && next.height === height)) return;
+      width = next.width; height = next.height;
+      instance.resize();
+    });
     observer.observe(container.current);
     return () => { observer.disconnect(); marker.current?.remove(); marker.current = null; instance.remove(); map.current = null; };
   }, [attempt]);
@@ -86,14 +93,20 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     if (!ready || !instance) return;
     const source = instance.getSource<GeoJSONSource>("interest");
     source?.setData(area ? areaBoundary(area) : { type: "FeatureCollection", features: [] });
-    marker.current?.remove(); marker.current = null;
     if (area) {
-      const element = document.createElement("div");
-      element.className = styles.pin;
-      element.setAttribute("aria-label", area.name);
-      marker.current = new Marker({ element }).setLngLat([area.longitude, area.latitude]).addTo(instance);
-    }
-  }, [ready, area]);
+      if (!marker.current) {
+        const element = document.createElement("div");
+        element.className = styles.pin;
+        marker.current = new Marker({ element }).setLngLat([area.longitude, area.latitude]).addTo(instance);
+      }
+      marker.current.getElement().setAttribute("aria-label", area.name);
+      marker.current.setLngLat([area.longitude, area.latitude]);
+    } else { marker.current?.remove(); marker.current = null; }
+  }, [ready, area?.name, area?.latitude, area?.longitude, area?.radius]);
+  useEffect(() => {
+    if (!visible) map.current?.stop();
+    else map.current?.resize();
+  }, [visible]);
   useEffect(() => {
     if (ready && area) map.current?.easeTo({ center: [area.longitude, area.latitude], zoom: Math.max(map.current.getZoom(), 11), duration: 450 });
   }, [ready, area?.latitude, area?.longitude]);
@@ -102,7 +115,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}
-    {error && <div className={styles.error} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
+    {error && <div className={`${styles.error} ${glass.surface}`} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
     <LocationMapOptions landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCenter={() => { const center = map.current?.getCenter(); if (center) select(center.lng, center.lat); }} />
