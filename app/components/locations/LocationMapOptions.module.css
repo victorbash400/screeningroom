@@ -1,7 +1,16 @@
 .options { position: absolute; bottom: 24px; left: 12px; right: 12px; display: flex; flex-direction: column; padding: 4px; border-radius: 20px; z-index: 2; }
-.actions { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; }
+.areaRow { display: flex; align-items: center; width: 100%; gap: 8px; }
+.areaRow > div:first-child { flex: 1; min-width: 0; }
+.searchArea { display: flex; align-items: center; justify-content: center; gap: 5px; border: 0; border-radius: 16px; padding: 7px 9px; background: #ffffff24; color: inherit; font-size: 11px; white-space: nowrap; cursor: pointer; }
+.searchArea:disabled { opacity: .5; cursor: default; }
+.error { margin: 6px 8px; font-size: 11px; line-height: 1.5; }
+.busy { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .group { display: flex; align-items: center; gap: 2px; }
-.options button { color: inherit; border-radius: 50%; font-size: 11px; }
+.options button { color: inherit; font-size: 11px; }
+.group button, .actions > button[aria-label] { border-radius: 50%; }
 .options button[aria-pressed="true"] { background: #ffffff26; }
 
 .options.options.options { box-shadow: inset 0 1px 0 #ffffff18; }
+.options:has([aria-expanded="true"]) { z-index: 4; }

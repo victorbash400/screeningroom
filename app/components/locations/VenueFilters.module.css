@@ -1,0 +1,8 @@
+.filters { position: relative; }
+.filters > button { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 0; background: transparent; color: inherit; font-size: 11px; cursor: pointer; border-radius: 16px; }
+.filters > button:hover { background: #ffffff1c; }
+.filters > button > span { font-variant-numeric: tabular-nums; }
+.menu { position: absolute; bottom: calc(100% + 10px); right: 0; display: flex; flex-direction: column; width: 164px; padding: 5px; border-radius: 12px; }
+.menu button { padding: 8px 10px; text-align: left; border: 0; border-radius: 7px; background: transparent; color: inherit; font-size: 12px; cursor: pointer; }
+.menu button:hover { background: #ffffff1c; }
+.menu button[aria-pressed="true"] { background: #ffffff30; }

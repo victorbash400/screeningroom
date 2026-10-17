@@ -5,6 +5,7 @@ import { env } from "../server/config";
 export const entityType = z.enum(["movie", "tv_show", "person", "place", "destination", "brand", "artist", "book", "podcast", "videogame"]);
 const entity = z.object({
   entity_id: z.string(), name: z.string(),
+  location: z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }).nullish(),
   types: z.array(z.string()).optional(), subtype: z.string().optional(),
   properties: z.object({
     address: z.string().optional(), description: z.string().optional(),

@@ -13,7 +13,8 @@ import type { MapScene } from "../../lib/mapScene";
 
 setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
 
-export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onLandmarks, onThreeD }: {
+export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onLandmarks, onThreeD, onSetLocation, onSearchArea, searching, searchError }: {
+  onSetLocation: () => void; onSearchArea: () => void; searching: boolean; searchError: string;
   onLandmarks: (enabled: boolean) => void;
   onThreeD: (enabled: boolean) => void;
   visible: boolean;
@@ -31,7 +32,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   const [attempt, setAttempt] = useState(0);
   const select = useEffectEvent((longitude: number, latitude: number, name?: string) => onArea({
     longitude: ((longitude + 180) % 360 + 360) % 360 - 180, latitude,
-    name: name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, radius: area?.radius ?? 5_000,
+    name: name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, radius: area?.radius ?? 5_000, venueTypes: area?.venueTypes,
   }));
   const initialArea = useRef(area);
   useEffect(() => {
@@ -112,12 +113,13 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     if (ready && area) map.current?.easeTo({ center: [area.longitude, area.latitude], zoom: Math.max(map.current.getZoom(), 11), duration: 450 });
   }, [ready, area?.latitude, area?.longitude]);
 
-  useMapScene(map, ready, scene, onArea, threeD, visible);
+  useMapScene(map, ready, scene, (value) => onArea({ ...value, radius: area?.radius ?? value.radius, venueTypes: area?.venueTypes }), threeD, visible);
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}
     {error && <div className={`${styles.error} ${glass.surface}`} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
-    <LocationMapOptions area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
+    <LocationMapOptions onSetLocation={onSetLocation} onSearchArea={onSearchArea} searching={searching} searchError={searchError}
+      area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCenter={() => { const center = map.current?.getCenter(); if (center) select(center.lng, center.lat); }} />
     <MapAttribution />

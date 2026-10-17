@@ -1,13 +1,16 @@
 import { z } from "zod";
+import { venueTypeSchema } from "./venueTypes.ts";
 
 export const locationInterestSchema = z.object({
   name: z.string().trim().min(1),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   radius: z.number().positive(),
+  venueTypes: z.array(venueTypeSchema).optional(),
 }).strict();
 
 export type LocationInterest = z.infer<typeof locationInterestSchema>;
+export const defaultLocationInterest: LocationInterest = { name: "Nairobi", latitude: -1.2921, longitude: 36.8219, radius: 5_000 };
 
 export function areaBoundary(area: LocationInterest) {
   const latitude = area.latitude * Math.PI / 180;

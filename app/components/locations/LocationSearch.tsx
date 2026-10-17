@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { LoaderCircle, Search } from "lucide-react";
 import { useAccount } from "../../state/AccountContext";
 import type { LocationInterest } from "../../lib/locationInterest";
@@ -6,7 +6,7 @@ import styles from "./LocationSearch.module.css";
 import glass from "../workspace/PreviewGlass.module.css";
 
 interface Place { name: string; detail: string; latitude: number; longitude: number }
-export default function LocationSearch({ onSelect }: { onSelect: (place: Omit<LocationInterest, "radius">) => void }) {
+export default function LocationSearch({ inputRef, onSelect }: { inputRef?: RefObject<HTMLInputElement | null>; onSelect: (place: Pick<LocationInterest, "name" | "latitude" | "longitude">) => void }) {
   const account = useAccount();
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState<Place[]>([]);
@@ -31,7 +31,7 @@ export default function LocationSearch({ onSelect }: { onSelect: (place: Omit<Lo
   }
   return <div className={styles.search}>
     <form onSubmit={(event) => { event.preventDefault(); if (query.trim()) void search(); }}>
-      <input aria-label="Search places" placeholder="Search places" value={query} onChange={(event) => { active.current?.abort(); setBusy(false); setQuery(event.target.value); setPlaces([]); setError(""); }} />
+      <input ref={inputRef} aria-label="Search places" placeholder="Search places" value={query} onChange={(event) => { active.current?.abort(); setBusy(false); setQuery(event.target.value); setPlaces([]); setError(""); }} />
       <button type="submit" aria-label="Search" disabled={busy || !query.trim()}>{busy ? <LoaderCircle className={styles.busy} /> : <Search />}</button>
     </form>
     {(places.length > 0 || error) && <div className={`${styles.results} ${glass.surface}`}>

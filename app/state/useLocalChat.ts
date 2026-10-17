@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAgentReply } from "./useAgentReply";
 import { selectedReferences } from "../lib/chatSelection";
 import type { LocationInterest } from "../lib/locationInterest";
+import { defaultLocationInterest } from "../lib/locationInterest";
+import type { MapScene } from "../lib/mapScene";
 import type { ChatChannel, Conversation, FileNode, Message, RoomData } from "../lib/types";
 type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useLocalChat(
@@ -35,7 +37,8 @@ export function useLocalChat(
         messages: [],
         draft: "",
       }),
-      title: "Chats",
+      title: targetChannel === "locations" ? "Audience" : "Chats",
+      ...(targetChannel === "locations" ? { locationInterest: existing?.locationInterest ?? defaultLocationInterest } : {}),
     };
   }
   const shared = workspaceId ? workspaceConversation(workspaceId) : undefined;
@@ -72,6 +75,7 @@ export function useLocalChat(
           id,
           workspaceId: targetWorkspaceId,
           channel,
+          ...(channel === "locations" ? { locationInterest: defaultLocationInterest } : {}),
           title,
           messages: [],
           draft: "",
@@ -195,11 +199,14 @@ export function useLocalChat(
     }));
     if (success) {
       setReferenceId(undefined);
-      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes, conversation.locationInterest);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined);
     }
     return success;
   }
   return {
+    setMapScene: (mapScene: MapScene) => conversation ? update((previous) => ({
+      ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, mapScene } : item),
+    })) : false,
     setLocationInterest: (locationInterest?: LocationInterest) => conversation ? update((previous) => ({
       ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, locationInterest } : item),
     })) : false,
