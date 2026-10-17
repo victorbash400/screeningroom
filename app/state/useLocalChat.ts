@@ -20,7 +20,7 @@ export function useLocalChat(
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const saved = data.conversations.filter(
-    (item) => item.workspaceId === workspaceId && (item.channel ?? "chat") === channel,
+    (item) => item.workspaceId === workspaceId && (channel === "locations" ? item.channel === "locations" : item.channel !== "locations"),
   );
   function workspaceConversation(targetWorkspaceId: string, targetChannel = channel): Conversation {
     const existing = data.conversations.find(
@@ -40,7 +40,7 @@ export function useLocalChat(
   }
   const shared = workspaceId ? workspaceConversation(workspaceId) : undefined;
   const conversations = shared
-    ? [shared, ...saved.filter((item) => item.scope !== "workspace")]
+    ? [shared, ...saved.filter((item) => item.id !== shared.id)]
     : [];
   const conversation =
     conversations.find((item) => item.id === selected[selectionKey]) ??

@@ -29,12 +29,8 @@
 .tab svg {
   flex-shrink: 0;
 }
-.tab .location,
-.tab .similar {
+.tab .location {
   stroke-width: 2;
-}
-.tab .performance {
-  stroke-width: 1.8;
 }
 .tab:focus-visible {
   outline: 2px solid var(--accent);
@@ -72,12 +68,6 @@
     grid-template-columns: 1fr;
     margin-left: 6px;
     opacity: 1;
-  }
-}
-@container workspace (max-width: 959px) {
-  .position {
-    grid-column: 1 / -1;
-    grid-row: 2;
   }
 }
 @media (hover: none) {

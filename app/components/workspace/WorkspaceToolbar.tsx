@@ -68,8 +68,8 @@ export default function WorkspaceToolbar({
           onNavigate={onNavigate}
         />
       </div>
-      <ResearchTabs selected={chatOpen ? chatChannel : null} onSelect={onChat} />
       <div className={styles.actions}>
+        <ResearchTabs selected={chatOpen ? chatChannel : null} onSelect={onChat} />
         <ViewSelector value={mode} onChange={onMode} />
         <div className={`${styles.group} ${styles.actionGroup}`}>
           <IconButton label="Import" disabled={importing} onClick={onImport}>

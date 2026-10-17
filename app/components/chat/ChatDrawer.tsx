@@ -6,6 +6,7 @@ import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
 import ChatComposer from "./ChatComposer";
+import ChatStarters from "./ChatStarters";
 import styles from "./ChatDrawer.module.css";
 const FloatingLocationMap = dynamic(() => import("../locations/FloatingLocationMap"), { ssr: false });
 interface Props {
@@ -55,13 +56,7 @@ export default function ChatDrawer({
   referenceRequest,
 }: Props) {
   const channel = conversation.channel ?? "chat";
-  const label = {
-    chat: "Chats",
-    locations: "Places",
-    similar: "Similar",
-    performance: "Performance",
-    compare: "Compare",
-  }[channel];
+  const label = channel === "locations" ? "Places" : "Chats";
   const drawer = useRef<HTMLElement>(null);
   const previousFocus = useRef(
     typeof document !== "undefined" ? document.activeElement : null,
@@ -110,14 +105,20 @@ export default function ChatDrawer({
       {channel === "locations" && <FloatingLocationMap anchor={drawer} open={mapOpen}
         scene={conversation.mapScene} area={conversation.locationInterest} onArea={onLocationInterest} />}
       <div className={styles.body}>
-        <MessageList
+        {channel !== "locations" && conversation.messages.length === 0 && !thread ? <ChatStarters onSelect={(prompt) => {
+          if (onDraft(prompt)) {
+            const input = drawer.current?.querySelector("textarea");
+            input?.focus();
+            queueMicrotask(() => input?.setSelectionRange(prompt.length, prompt.length));
+          }
+        }} /> : <MessageList
           key={`messages-${conversation.id}-${thread?.id ?? "main"}`}
           messages={conversation.messages}
           threadId={thread?.id}
           onReply={onThread}
           nodes={nodes}
           onReference={onReference}
-        />
+        />}
         <ChatComposer
           busy={busy}
           onStop={onStop}

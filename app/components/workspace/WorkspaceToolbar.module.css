@@ -1,6 +1,6 @@
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -43,12 +43,6 @@
 .mobile {
   display: none;
 }
-@container workspace (max-width: 959px) {
-  .toolbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 6px;
-  }
-}
 @container workspace (max-width: 439px) {
   .navigation {
     grid-column: 1 / -1;
@@ -56,8 +50,8 @@
   }
   .actions {
     grid-column: 1 / -1;
-    grid-row: 3;
-    justify-self: center;
+    grid-row: 2;
+    justify-self: end;
   }
 }
 @media (max-width: 760px) {
