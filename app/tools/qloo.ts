@@ -1,18 +1,21 @@
 import "server-only";
 import { z } from "zod";
 import { env } from "../server/config";
+import { ApiError } from "../server/http";
+
+const optionalText = z.string().nullish().transform((value) => value ?? undefined);
 
 export const entityType = z.enum(["movie", "tv_show", "person", "place", "destination", "brand", "artist", "book", "podcast", "videogame"]);
 const entity = z.object({
   entity_id: z.string(), name: z.string(),
   location: z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }).nullish(),
-  types: z.array(z.string()).optional(), subtype: z.string().optional(),
+  types: z.array(z.string()).nullish().transform((value) => value ?? undefined), subtype: optionalText,
   properties: z.object({
-    address: z.string().optional(), description: z.string().optional(),
-    release_year: z.number().optional(), website: z.string().optional(),
-    image: z.object({ url: z.string() }).nullish(),
+    address: optionalText, description: optionalText,
+    release_year: z.number().nullish().transform((value) => value ?? undefined), website: optionalText,
+    image: z.object({ url: optionalText }).nullish().transform((value) => value?.url ? { url: value.url } : undefined),
     geocode: z.unknown().optional(),
-  }).optional(),
+  }).nullish().transform((value) => value ?? undefined),
   query: z.unknown().optional(),
 });
 const searchResponse = z.object({ results: z.array(entity) });
@@ -30,5 +33,14 @@ export async function qlooRequest(path: "/search" | "/v2/insights", parameters: 
   });
   if (!response.ok) throw new Error(`Qloo request failed (${response.status}).`);
   const value: unknown = await response.json();
-  return path === "/search" ? searchResponse.parse(value).results : insightsResponse.parse(value).results.entities;
+  if (path === "/search") {
+    const parsed = searchResponse.safeParse(value);
+    if (parsed.success) return parsed.data.results;
+    console.error("Invalid Qloo search response", parsed.error.issues.map(({ path, code }) => ({ path, code })));
+  } else {
+    const parsed = insightsResponse.safeParse(value);
+    if (parsed.success) return parsed.data.results.entities;
+    console.error("Invalid Qloo insights response", parsed.error.issues.map(({ path, code }) => ({ path, code })));
+  }
+  throw new ApiError(502, "Qloo returned invalid results. Try again.");
 }

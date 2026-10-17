@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import test from "node:test";
 
 registerHooks({ resolve(specifier, context, next) {
+  if (specifier === "next/server") return next("next/server.js", context);
   if (specifier.startsWith(".") && context.parentURL) {
     const file = new URL(specifier + ".ts", context.parentURL);
     if (existsSync(file)) return next(file.href, context);
@@ -42,6 +43,33 @@ test("provider failures and invalid response shapes fail explicitly", async () =
     globalThis.fetch = async () => new Response("rate limited", { status: 429 });
     await assert.rejects(qlooRequest("/search", {}), { message: "Qloo request failed (429)." });
     globalThis.fetch = async () => Response.json({ results: "invalid" });
-    await assert.rejects(qlooRequest("/search", {}), { name: "ZodError" });
+    await assert.rejects(qlooRequest("/search", {}), { status: 502, message: "Qloo returned invalid results. Try again." });
+  } finally { globalThis.fetch = original; }
+});
+
+
+test("nullable catalogue metadata does not reject valid entities or leak nulls into result cards", async () => {
+  const original = globalThis.fetch;
+  const { findSimilar } = await import("../app/tools/find-similar.ts");
+  const item = { entity_id: id, name: "Cinema", location: { lat: -1.29, lon: 36.82 }, types: null, subtype: null,
+    properties: { address: null, description: null, website: null, release_year: null, image: { url: null } } };
+  try {
+    globalThis.fetch = async (url) => Response.json(url.pathname === "/search" ? { results: [item] } : { success: true, results: { entities: [item] } });
+    const result = await qlooRequest("/search", {});
+    assert.equal(result[0].name, "Cinema");
+    assert.deepEqual(result[0].location, item.location);
+    assert.equal(result[0].properties.description, undefined);
+    const cards = await findSimilar.execute({ type: "place", entityIds: [id], take: 1 }, { toolCallId: "t", messages: [] });
+    assert.deepEqual(cards, [{ id, name: "Cinema" }]);
+    globalThis.fetch = async () => Response.json({ results: [{ ...item, properties: null }] });
+    assert.equal((await qlooRequest("/search", {}))[0].properties, undefined);
+  } finally { globalThis.fetch = original; }
+});
+
+test("required entity names remain strict and upstream failures are not reported as user input errors", async () => {
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => Response.json({ success: true, results: { entities: [{ entity_id: id, name: null }] } });
+    await assert.rejects(qlooRequest("/v2/insights", {}), { status: 502, message: "Qloo returned invalid results. Try again." });
   } finally { globalThis.fetch = original; }
 });

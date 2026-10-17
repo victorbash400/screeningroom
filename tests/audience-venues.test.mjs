@@ -55,3 +55,16 @@ test("venue choices persist with the chat area while old areas remain valid", ()
   const data = { ...emptyData, workspaces: [{ id: "w", name: "Workspace" }], conversations: [{ id: "c", workspaceId: "w", channel: "locations", title: "Audience", draft: "", messages: [], locationInterest: area }] };
   assert.deepEqual(parseData(JSON.stringify(data)).conversations[0].locationInterest, area);
 });
+
+
+test("venue filters still return map pins when optional provider text fields are null", async () => {
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => Response.json({ success: true, results: { entities: [{
+      entity_id: "venue", name: "Theatre", location: { lat: -1.28, lon: 36.82 },
+      properties: { description: null, address: null, website: null },
+    }] } });
+    const result = await audienceVenues({ ...defaultLocationInterest, venueTypes: ["theatre"] });
+    assert.deepEqual(result.locations, [{ name: "Theatre", latitude: -1.28, longitude: 36.82 }]);
+  } finally { globalThis.fetch = original; }
+});

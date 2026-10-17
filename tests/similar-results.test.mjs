@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import test from "node:test";
 
 registerHooks({ resolve(specifier, context, next) {
+  if (specifier === "next/server") return next("next/server.js", context);
   if (specifier.startsWith(".") && context.parentURL) {
     const file = new URL(specifier + ".ts", context.parentURL);
     if (existsSync(file)) return next(file.href, context);
