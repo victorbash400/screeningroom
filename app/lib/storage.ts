@@ -1,4 +1,6 @@
 import { validMessageBlocks, validMessageTools } from "./messageBlocks.ts";
+import { locationInterestSchema } from "./locationInterest.ts";
+import { mapSceneSchema } from "./mapScene.ts";
 import type { RoomData } from "./types";
 import { parseLink } from "./linkFiles.ts";
 
@@ -164,6 +166,10 @@ export function parseData(raw: string): RoomData {
         Object.values(item.threadDrafts).some((value) => !text(value)))
     )
       throw new Error("Saved thread drafts are invalid.");
+    if (item.locationInterest !== undefined && !locationInterestSchema.safeParse(item.locationInterest).success)
+      throw new Error("Saved location is invalid.");
+    if (item.mapScene !== undefined && !mapSceneSchema.safeParse(item.mapScene).success)
+      throw new Error("Saved map locations are invalid.");
     conversations.add(item.id);
     const messages = new Set<string>();
     for (const message of item.messages) {

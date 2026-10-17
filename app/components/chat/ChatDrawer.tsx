@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import type { LocationInterest } from "../../lib/locationInterest";
 import type { Conversation, FileNode, Message, Workspace } from "../../lib/types";
 import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
 import ChatComposer from "./ChatComposer";
 import styles from "./ChatDrawer.module.css";
+const FloatingLocationMap = dynamic(() => import("../locations/FloatingLocationMap"), { ssr: false });
 interface Props {
+  onLocationInterest: (area?: LocationInterest) => boolean;
   busy: boolean;
   onStop: () => void;
   referenceId?: string;
@@ -28,6 +32,7 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
+  onLocationInterest,
   busy,
   onStop,
   conversation,
@@ -52,7 +57,7 @@ export default function ChatDrawer({
   const channel = conversation.channel ?? "chat";
   const label = {
     chat: "Chats",
-    locations: "Locations",
+    locations: "Places",
     similar: "Similar",
     performance: "Performance",
     compare: "Compare",
@@ -69,10 +74,11 @@ export default function ChatDrawer({
     };
   }, []);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(true);
   return (
     <aside
       ref={drawer}
-      className={`${styles.drawer} ${channel === "locations" ? styles.locations : ""}`}
+      className={styles.drawer}
       aria-label={label}
       onKeyDown={(event) => {
         if (
@@ -89,6 +95,8 @@ export default function ChatDrawer({
       }}
     >
       <ChatHeader
+        mapOpen={mapOpen}
+        onMapToggle={channel === "locations" ? setMapOpen : undefined}
         label={label}
         conversation={conversation}
         historyOpen={historyOpen}
@@ -99,6 +107,8 @@ export default function ChatDrawer({
         threadOpen={Boolean(thread)}
         onBack={() => onThread()}
       />
+      {channel === "locations" && <FloatingLocationMap anchor={drawer} open={mapOpen}
+        scene={conversation.mapScene} area={conversation.locationInterest} onArea={onLocationInterest} />}
       <div className={styles.body}>
         <MessageList
           key={`messages-${conversation.id}-${thread?.id ?? "main"}`}

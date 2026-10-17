@@ -3,8 +3,11 @@ import type { Conversation } from "../../lib/types";
 import IconButton from "../controls/IconButton";
 import ActionMenu from "../controls/ActionMenu";
 import styles from "./ChatHeader.module.css";
+import ToggleSwitch from "../controls/ToggleSwitch";
 export default function ChatHeader({
   label,
+  mapOpen,
+  onMapToggle,
   conversation,
   historyOpen,
   onHistory,
@@ -15,6 +18,8 @@ export default function ChatHeader({
   onBack,
 }: {
   label: string;
+  mapOpen?: boolean;
+  onMapToggle?: (open: boolean) => void;
   conversation: Conversation;
   historyOpen: boolean;
   onHistory: () => void;
@@ -44,6 +49,7 @@ export default function ChatHeader({
         onRename={onRename}
         onDelete={onDelete}
       />}
+      {onMapToggle && <ToggleSwitch label="Map" checked={Boolean(mapOpen)} onChange={onMapToggle} />}
       <IconButton label={`Close ${label.toLowerCase()}`} onClick={onClose}>
         <X />
       </IconButton>

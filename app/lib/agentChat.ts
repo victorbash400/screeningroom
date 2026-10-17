@@ -1,6 +1,7 @@
 import { DefaultChatTransport, readUIMessageStream, type UIMessage } from "ai";
 import type { ChatChannel, Message } from "./types";
 import { messageReferences } from "./chatSelection.ts";
+import type { LocationInterest } from "./locationInterest";
 
 export function chatHistory(messages: Message[], threadId?: string) {
   return messages.filter((message) =>
@@ -16,10 +17,11 @@ export async function streamAgentReply(
   signal: AbortSignal,
   onMessage: (message: UIMessage) => void,
   requestFetch: typeof fetch = fetch,
+  locationInterest?: LocationInterest,
 ) {
   const context = [...messages];
   const transport = new DefaultChatTransport({
-    prepareSendMessagesRequest: () => ({ body: { agent, messages: context } }),
+    prepareSendMessagesRequest: () => ({ body: { agent, messages: context, locationInterest } }),
     fetch: async (url, init) => {
       const response = await requestFetch(url, { ...init, cache: "no-store" });
       if (!response.ok) {

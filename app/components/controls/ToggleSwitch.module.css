@@ -1,0 +1,4 @@
+.switch { display: inline-flex; align-items: center; flex-shrink: 0; width: 28px; height: 17px; margin: 6px; padding: 2px; border: 0; border-radius: 12px; background: var(--disabled); cursor: pointer; }
+.switch > span { width: 13px; height: 13px; border-radius: 50%; background: var(--surface); transition: transform 120ms ease; }
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch[aria-checked="true"] > span { transform: translateX(11px); }

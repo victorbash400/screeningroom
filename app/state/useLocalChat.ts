@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAgentReply } from "./useAgentReply";
 import { selectedReferences } from "../lib/chatSelection";
+import type { LocationInterest } from "../lib/locationInterest";
 import type { ChatChannel, Conversation, FileNode, Message, RoomData } from "../lib/types";
 type Update = (change: (data: RoomData) => RoomData) => boolean;
 export function useLocalChat(
@@ -194,11 +195,14 @@ export function useLocalChat(
     }));
     if (success) {
       setReferenceId(undefined);
-      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, references, data.nodes, conversation.locationInterest);
     }
     return success;
   }
   return {
+    setLocationInterest: (locationInterest?: LocationInterest) => conversation ? update((previous) => ({
+      ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, locationInterest } : item),
+    })) : false,
     channel,
     error: agent.error,
     clearError: agent.clearError,
@@ -214,9 +218,11 @@ export function useLocalChat(
     referenceRequest,
     setReferenceId,
     open: open && Boolean(conversation),
-    conversation: conversation && agent.pending[conversation.id]
-      ? { ...conversation, messages: [...conversation.messages, agent.pending[conversation.id]!] }
-      : conversation,
+    conversation: conversation ? {
+      ...conversation,
+      mapScene: agent.pendingMaps[conversation.id] ?? conversation.mapScene,
+      messages: agent.pending[conversation.id] ? [...conversation.messages, agent.pending[conversation.id]!] : conversation.messages,
+    } : undefined,
     busy: conversation ? agent.busy(conversation.id) : false,
     stop: () => { if (conversation) agent.stop(conversation.id); },
     conversations,

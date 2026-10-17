@@ -55,6 +55,8 @@ export interface Message {
 }
 export type ChatChannel = "chat" | "locations" | "similar" | "performance" | "compare";
 export interface Conversation {
+  mapScene?: import("./mapScene").MapScene;
+  locationInterest?: import("./locationInterest").LocationInterest;
   channel?: ChatChannel;
   scope?: "workspace";
   threadDrafts?: Record<string, string>;

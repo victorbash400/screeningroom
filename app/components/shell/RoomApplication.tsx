@@ -162,6 +162,7 @@ export default function RoomApplication() {
             chat={
               chat.open && conversation ? (
                 <ChatDrawer
+                  onLocationInterest={chat.setLocationInterest}
                   workspaces={room.data.workspaces}
                   workspaceId={workspace.id}
                   referenceId={chat.referenceId}
