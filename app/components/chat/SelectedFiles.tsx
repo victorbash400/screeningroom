@@ -1,18 +1,18 @@
 import { useId, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, FolderOpen } from "lucide-react";
 import type { FileNode } from "../../lib/types";
 import ReferenceChip from "./ReferenceChip";
 import styles from "./SelectedFiles.module.css";
 
-export default function SelectedFiles({ nodes, onRemove }: {
-  nodes: FileNode[]; onRemove: (id: string) => void;
+export default function SelectedFiles({ nodes, workspaceName, onRemove }: {
+  nodes: FileNode[]; workspaceName: string; onRemove: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const id = useId();
-  if (!nodes.length) return null;
   const extra = Math.max(0, nodes.length - 2);
   const visible = expanded ? nodes : nodes.slice(0, 2);
-  return <div className={styles.tray}>
+  return <div className={styles.tray} data-has-files={nodes.length > 0}>
+    <span className={styles.workspace} title={workspaceName}><FolderOpen size={14} /><span>{workspaceName}</span></span>
     <div id={id} className={styles.chips} data-expanded={expanded} data-overflow={extra > 0}>
       {visible.map((node) => <ReferenceChip key={node.id} node={node} onRemove={() => onRemove(node.id)} />)}
     </div>

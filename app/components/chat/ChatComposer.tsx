@@ -68,7 +68,7 @@ export default function ChatComposer({
   return (
     <>
       <div className={styles.shell}>
-      <SelectedFiles nodes={references} onRemove={(id) => {
+      <SelectedFiles workspaceName={workspaces.find((workspace) => workspace.id === workspaceId)?.name ?? workspaceId} nodes={references} onRemove={(id) => {
         setReferenceIds(referenceIds.filter((value) => value !== id)); input.current?.focus();
       }} />
       <form
