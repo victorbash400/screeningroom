@@ -119,3 +119,14 @@ test("toolbar exposes all four roots beside geographic Audience and starters sel
   assert.ok(roots.includes("Find similar media"));
   assert.ok(roots.includes("Compare with existing media"));
 });
+
+test("media analysis widgets show sampled coverage, transcripts and explicit continuation", async () => {
+  const { default: MediaAnalysisCard } = await import("../app/components/research/MediaAnalysisCard.tsx");
+  const analysis = { kind: "media", fileId: "asset", name: "Speech.wav", modality: "audio", model: "google.gemma-4-e2b", summary: "", visibleText: "", uncertainties: [], start: 0, end: 120, duration: 200, nextStart: 120, segments: [{ start: 0, end: 30, text: "The screening starts at seven." }] };
+  const html = renderToStaticMarkup(createElement(AudienceMapProvider, { value: actions }, createElement(MediaAnalysisCard, { analysis, onOpen() {} })));
+  assert.ok(html.includes("The screening starts at seven."));
+  assert.ok(html.includes("Continue transcript"));
+  assert.ok(html.includes("0:00–2:00"));
+  assert.ok(html.includes("not individual words"));
+  assert.ok(html.includes("Open media"));
+});

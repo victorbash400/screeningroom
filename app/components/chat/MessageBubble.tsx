@@ -49,7 +49,7 @@ export default function MessageBubble({
         }}
         className={styles.bubble}
       >
-        {message.role === "assistant" ? <AssistantMessage message={message} /> : message.text && <div>{message.text}</div>}
+        {message.role === "assistant" ? <AssistantMessage message={message} onReference={onReference} /> : message.text && <div>{message.text}</div>}
         <MessageReferences message={message} reference={reference} onOpen={onReference} />
         {hasReplies && (
           <button className={styles.thread} onClick={onReply}>

@@ -482,8 +482,8 @@ CSV and JSON are read from the authenticated user's S3-backed workspace. Folder
 selection grants access to its descendants, not unrelated files. Newly changed
 assets finish syncing before analysis; chat-only changes do not delay a file read.
 Selected file chips open the existing media preview without closing the chat.
-GLM-5 is text-only: images/audio/video and PDF binaries provide metadata, not visual
-or acoustic understanding. Supply a text brief, transcript, or named comparable.
+GLM-5 handles the conversation; dedicated Gemma 4 tools handle selected image,
+video-frame and speech analysis. PDF binaries still need a text export.
 
 - Similar uses Qloo catalogue recommendations and available artwork. This is taste
   similarity, not reverse-image or open-web search.
@@ -510,3 +510,36 @@ without revealing internal deliberation or merely reprinting the widgets.
 
 Checks: `tests/media-performance.test.mjs`, `tests/media-research.test.mjs`, and the
 research render/toolbar checks in `tests/audience-widgets.test.mjs`.
+
+### Selected-media understanding
+
+`inspectImage` uses `google.gemma-4-26b-a4b` for descriptions and visible text.
+`inspectVideo` samples compressed JPEG frames across the selected time range
+(default 12 samples), with approximate frame positions. The original video is not
+sent to the model. `transcribeMedia` uses `google.gemma-4-e2b` for audio or a video's
+speech, downmixed to mono 16 kHz WAV in 30-second windows. Its default request covers
+two minutes; longer files expose an explicit Continue transcript action. These are
+processing windows, not upload/file-size limits, and an explicit end time can
+request another range. The agent must distinguish sampled visuals, transcript
+coverage and observations from unprocessed media or performance predictions.
+
+Media calls use the existing project credentials and Gemma 4's
+`/openai/v1/chat/completions` Mantle route. Optional server settings
+`BEDROCK_VISION_MODEL_ID` and `BEDROCK_AUDIO_MODEL_ID` select other compatible models.
+The main chat model is unchanged. Provider reasoning is not returned to chat.
+
+FFmpeg and FFprobe are installed as platform-specific dependencies, traced into
+the chat function's server bundle, and use signed owner-scoped S3 URLs. Inputs use
+explicit demuxers and restricted protocols. Small files are staged once in a temporary
+server file and removed after analysis; larger files use signed range requests.
+Images shrink to at most 1024 pixels
+per side without upscaling. Video frame payloads are batched below Gemma's documented
+3.5 MB request ceiling. No browser media reupload, background polling or new AWS
+service is required. `FFMPEG_PATH`/`FFPROBE_PATH` may explicitly override the bundled
+binaries on a supported server.
+
+Successful results are cached beneath the account's S3 prefix by immutable source
+content, model, analysis parameters and cache format version. Changed media or
+analysis settings cannot reuse stale results. File names, sources, time coverage,
+text and uncertainty persist in validated chat widgets, using the existing preview
+to open the original media. Cache/storage/provider failures remain visible.

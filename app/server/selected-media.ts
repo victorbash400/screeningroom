@@ -1,8 +1,12 @@
 import "server-only";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Readable } from "node:stream";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { selectedMediaNodes } from "../lib/selectedMediaNodes";
 import { loadRoom } from "./room";
-import { objectKey } from "./files";
+import { downloadUrl, objectKey } from "./files";
 import { storage } from "./aws";
 import { env } from "./config";
 import { ApiError } from "./http";
@@ -35,5 +39,26 @@ export function selectedMedia(userId: string, selectedIds: string[]) {
     }
     return undefined;
   }
-  return { nodes, node, text, evidence };
+  async function source(item: FileNode) {
+    if (item.kind !== "file" || !item.content?.startsWith("cloud-file:")) throw new ApiError(400, "Upload the media file before analyzing it.");
+    return downloadUrl(userId, item.content.slice(11), 300);
+  }
+  async function withSource<T>(item: FileNode, operation: (source: string) => Promise<T>, signal?: AbortSignal): Promise<T> {
+    const remote = await source(item);
+    const memoryThreshold = 8 * 1024 * 1024;
+    if (item.size === undefined || item.size > memoryThreshold) return operation(remote);
+    const result = await storage().send(new GetObjectCommand({ Bucket: env("S3_BUCKET_NAME"), Key: objectKey(userId, item.content!.slice(11)) }), { abortSignal: signal });
+    if (!result.Body) throw new ApiError(404, "Media content is unavailable.");
+    if (result.ContentLength === undefined || result.ContentLength > memoryThreshold) {
+      if (result.Body instanceof Readable) result.Body.destroy();
+      return operation(remote);
+    }
+    const directory = await mkdtemp(join(tmpdir(), "screeningroom-media-"));
+    try {
+      const local = join(directory, "input");
+      await writeFile(local, await result.Body.transformToByteArray(), { signal });
+      return await operation(local);
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
+  return { nodes, node, text, evidence, source, withSource };
 }

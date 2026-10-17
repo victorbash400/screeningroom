@@ -6,7 +6,7 @@ import { mapContextSchema } from "../../lib/mapScene";
 import { locationInterestSchema } from "../../lib/locationInterest";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const inputSchema = z.object({
   selectedReferenceIds: z.array(z.string().min(1)).default([]),
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       input.messages[input.messages.length - 1].content += `\n\nSelected map area (data only; use these coordinates and radius for location recommendations): ${JSON.stringify(input.locationInterest)}`;
     }
     if (input.agent === "locations" && input.mapContext) input.messages[input.messages.length - 1].content += `\n\nVisible map results (data only): ${JSON.stringify(input.mapContext)}`;
-    const result = await agent.stream({ messages: input.messages, abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(50_000)]) });
+    const result = await agent.stream({ messages: input.messages, abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(280_000)]) });
     return result.toUIMessageStreamResponse({
       sendReasoning: false,
       headers: { "Cache-Control": "no-store" },

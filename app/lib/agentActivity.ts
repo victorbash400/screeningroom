@@ -1,5 +1,6 @@
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import type { MessageBlock, MessageTool } from "./types.ts";
+import { mediaAnalysisSchema } from "./mediaAnalysis.ts";
 import { researchWidgetSchema } from "./researchWidget.ts";
 import { audienceWidgetSchema } from "./audienceWidget.ts";
 import { similarResultsSchema } from "./similarResults.ts";
@@ -13,6 +14,7 @@ export function agentBlocks(message: UIMessage, completed?: Map<string, MessageT
     const widget = part.state === "output-available" && ["searchMapVenues", "searchAudienceVenues", "getAudienceHeatmap", "getAudienceDemographics", "getAreaPopulation", "loadPopulationResult"].includes(getToolName(part)) ? audienceWidgetSchema.parse(part.output) : undefined;
     const tool: MessageTool = {
         ...(widget ? { widget } : {}),
+        ...(part.state === "output-available" && ["inspectImage", "inspectVideo", "transcribeMedia"].includes(getToolName(part)) ? { media: mediaAnalysisSchema.parse(part.output) } : {}),
         ...(part.state === "output-available" && ["getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
         id: part.toolCallId, name: getToolName(part),
         ...(getToolName(part) === "findSimilar" && part.state === "output-available" ? { results: similarResultsSchema.parse(part.output) } : {}),

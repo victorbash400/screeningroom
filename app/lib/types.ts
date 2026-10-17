@@ -29,6 +29,7 @@ export interface FileNode {
   size?: number;
 }
 export interface MessageTool {
+  media?: import("./mediaAnalysis").MediaAnalysis;
   research?: import("./researchWidget").ResearchWidget;
   widget?: import("./audienceWidget").AudienceWidget;
   results?: import("./similarResults").SimilarResult[];
