@@ -66,5 +66,33 @@ test("map links focus the latest verified venue result without changing the sear
   assert.equal(opened, true);
   assert.deepEqual(scene.presentation.locations, [place]);
   assert.equal(scene.presentation.focusIndex, 0);
+  assert.equal(scene.reframe, true);
   assert.equal(scene.locationInterest, undefined);
+});
+
+test("affinity widgets expose keyboard-expandable metric definitions and scale labels", () => {
+  const heatmap = render({ kind: "heatmap", title: "Film affinity", source: "Qloo", area, cells: [{ latitude: 1, longitude: 2, geohash: "a", affinity: .8, rank: .9, popularity: .5 }] });
+  assert.ok(heatmap.includes("<details"));
+  assert.ok(heatmap.includes("About affinity"));
+  assert.ok(heatmap.includes("Lower affinity"));
+  assert.ok(heatmap.includes("Higher affinity"));
+  assert.ok(heatmap.includes("ticket-sales forecast"));
+});
+
+test("venue updates preserve heatmap extent while an explicit venue focus can zoom in", async () => {
+  const { audienceCamera } = await import("../app/lib/audienceCamera.ts");
+  const { audienceMapUpdate } = await import("../app/lib/audienceMapUpdate.ts");
+  const heatmap = { kind: "heatmap", title: "Film", source: "Qloo", area, cells: [
+    { latitude: -2, longitude: 35, geohash: "a", affinity: .8, rank: .9, popularity: .5 },
+    { latitude: 0, longitude: 38, geohash: "b", affinity: .5, rank: .6, popularity: .5 },
+  ] };
+  const initial = { id: "heat", presentation: { locations: [], heatmap } };
+  const next = audienceMapUpdate("searchMapVenues", { kind: "venues", source: "Qloo", area, venues: [place] }, "venues", initial).scene;
+  assert.equal(audienceCamera(initial).key, audienceCamera(next).key);
+  const shown = audienceMapUpdate("showMapLocations", { locations: [place] }, "show", next).scene;
+  assert.deepEqual(shown.presentation.heatmap, heatmap);
+  assert.equal(audienceCamera(initial).key, audienceCamera(shown).key);
+  const focused = { ...shown, presentation: { ...shown.presentation, focusIndex: 0 } };
+  assert.deepEqual(audienceCamera(focused).center, place);
+  assert.notEqual(audienceCamera(focused).key, audienceCamera(initial).key);
 });

@@ -17,7 +17,7 @@ export const mapPresentationSchema = z.object({
   zoom: z.number().min(0).max(22).optional(),
   threeD: z.boolean().optional(),
 }).strict().refine((value) => value.focusIndex === undefined || value.focusIndex < value.locations.length, "Choose an existing map location.");
-export const mapSceneSchema = z.object({ id: z.string(), presentation: mapPresentationSchema });
+export const mapSceneSchema = z.object({ id: z.string(), presentation: mapPresentationSchema, reframe: z.boolean().optional() });
 export type MapPlace = z.infer<typeof mapPlaceSchema>;
 export type MapScene = z.infer<typeof mapSceneSchema>;
 

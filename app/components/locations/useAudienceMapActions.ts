@@ -19,14 +19,14 @@ export function useAudienceMapActions(conversation: Conversation, busy: boolean,
     return null;
   }
   function showPlaces(places: MapPlace[], focusIndex?: number) {
-    if (onScene({ id: crypto.randomUUID(), presentation: { ...conversation.mapScene?.presentation, locations: places, focusIndex } })) setOpen(true);
+    if (onScene({ id: crypto.randomUUID(), reframe: true, presentation: { ...conversation.mapScene?.presentation, locations: places, focusIndex } })) setOpen(true);
   }
   return {
     busy, showPlaces,
     ask: (text: string) => { if (!busy) onSend(text); },
     updateWidget: onWidget,
     showLocation: () => setOpen(true),
-    showHeatmap: (heatmap: AudienceHeatmap) => { if (onScene({ id: crypto.randomUUID(), presentation: { locations: [], heatmap } })) setOpen(true); },
+    showHeatmap: (heatmap: AudienceHeatmap) => { if (onScene({ id: crypto.randomUUID(), reframe: true, presentation: { ...conversation.mapScene?.presentation, locations: conversation.mapScene?.presentation.locations ?? [], focusIndex: undefined, zoom: undefined, heatmap } })) setOpen(true); },
     hasVenue: (id: string) => Boolean(venueGroup(id)),
     focusVenue: (id: string) => { const group = venueGroup(id); if (group) showPlaces(group.places, group.focus); },
   };

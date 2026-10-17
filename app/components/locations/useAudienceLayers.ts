@@ -49,6 +49,10 @@ export function useAudienceLayers(map: RefObject<Map | null>, ready: boolean, sc
     const instance = map.current;
     if (!ready || !instance) return;
     instance.getSource<GeoJSONSource>("audience-venues")?.setData({ type: "FeatureCollection", features: (scene?.presentation.locations ?? []).map((place, index) => ({ type: "Feature", properties: { index }, geometry: { type: "Point", coordinates: [place.longitude, place.latitude] } })) });
+  }, [map, ready, scene?.presentation.locations]);
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance) return;
     instance.getSource<GeoJSONSource>("audience-heat")?.setData({ type: "FeatureCollection", features: (scene?.presentation.heatmap?.cells ?? []).map((cell) => ({ type: "Feature", properties: { rank: cell.rank }, geometry: { type: "Point", coordinates: [cell.longitude, cell.latitude] } })) });
-  }, [map, ready, scene?.id]);
+  }, [map, ready, scene?.presentation.heatmap]);
 }
