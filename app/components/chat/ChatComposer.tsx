@@ -4,7 +4,7 @@ import type { FileNode, Workspace } from "../../lib/types";
 import { selectedReferences } from "../../lib/chatSelection";
 import IconButton from "../controls/IconButton";
 import ReferencePicker from "./ReferencePicker";
-import ReferenceChip from "./ReferenceChip";
+import SelectedFiles from "./SelectedFiles";
 import styles from "./ChatComposer.module.css";
 interface Props {
   busy: boolean;
@@ -67,6 +67,7 @@ export default function ChatComposer({
   }
   return (
     <>
+      <div className={styles.shell}>
       <form
         className={styles.composer}
         onSubmit={(event) => {
@@ -114,12 +115,11 @@ export default function ChatComposer({
             <ArrowUp size={16} />
           </button>}
         </div>
-        {references.length > 0 && <div className={styles.selection}>
-          <button type="button" className={styles.selectedLabel} onClick={() => setPicking(true)}>Selected ({references.length})</button>
-          <div className={styles.chips}>{references.map((node) => <ReferenceChip key={node.id} node={node}
-            onRemove={() => { setReferenceIds(referenceIds.filter((id) => id !== node.id)); input.current?.focus(); }} />)}</div>
-        </div>}
       </form>
+      <SelectedFiles nodes={references} onSelect={() => setPicking(true)} onRemove={(id) => {
+        setReferenceIds(referenceIds.filter((value) => value !== id)); input.current?.focus();
+      }} />
+      </div>
       {picking && (
         <ReferencePicker
           workspaceId={workspaceId}

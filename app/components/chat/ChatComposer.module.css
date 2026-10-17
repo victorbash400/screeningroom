@@ -1,15 +1,18 @@
+.shell { display: flex; flex-direction: column; flex-shrink: 0; width: calc(100% - 24px); max-width: 760px; margin: 8px 12px 12px; align-self: center; }
 .composer {
   display: flex;
   flex-direction: column;
-  width: calc(100% - 24px);
+  width: 100%;
   max-width: 760px;
   align-self: center;
   box-sizing: border-box;
-  margin: 8px 12px 12px;
-  padding: 12px;
+  margin: 0;
+  padding: 14px;
   border: 1px solid var(--border);
   border-radius: 20px;
   background: var(--surface);
+  position: relative;
+  z-index: 1;
 }
 .row {
   display: flex;
@@ -39,10 +42,6 @@
   background: var(--disabled);
   cursor: default;
 }
-.composer > textarea { width: 100%; min-height: 56px; max-height: 140px; resize: none; box-sizing: border-box; padding: 2px 2px 10px; border: 0; outline: none; background: transparent; font-size: 13px; line-height: 1.5; }
+.composer > textarea { width: 100%; min-height: 72px; max-height: 140px; resize: none; box-sizing: border-box; padding: 2px 2px 10px; border: 0; outline: none; background: transparent; font-size: 13px; line-height: 1.5; }
 .composer > textarea::placeholder { color: var(--muted); }
 .select { display: inline-flex; align-items: center; gap: 6px; padding: 5px 2px; border: 0; background: transparent; font-size: 12px; color: var(--icon); cursor: pointer; }
-.selection { margin-top: 10px; }
-.selectedLabel { border: 0; padding: 2px 0 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 110px; overflow-y: auto; }
-.chips > div { margin: 0; }

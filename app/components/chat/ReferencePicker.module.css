@@ -1,21 +1,4 @@
 .picker { overflow: hidden; }
-.browser { display: flex; gap: 16px; height: min(400px, calc(100dvh - 200px)); min-height: 100px; margin-top: 20px; }
-.workspaces { flex: 0 0 144px; min-width: 0; overflow-y: auto; }
-.workspaces button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 8px; margin-bottom: 3px; border: 0; border-radius: 9px; background: transparent; text-align: left; font-size: 13px; cursor: pointer; }
-.workspaces svg { flex-shrink: 0; color: var(--icon); }
-.workspaces span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.workspaces button:hover { background: var(--hover); }
-.workspaces button[aria-current="page"] { background: var(--selection); }
-.files { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.path { display: flex; align-items: center; gap: 4px; min-height: 34px; flex-shrink: 0; overflow-x: auto; }
-.path > button:not(:first-child) { flex-shrink: 0; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 5px; border: 0; background: transparent; font-size: 12px; cursor: pointer; }
-.path > button:not(:first-child):hover { background: var(--hover); border-radius: 5px; }
-.columns { display: flex; justify-content: space-between; padding: 12px 8px 6px 36px; color: var(--muted); font-size: 10px; flex-shrink: 0; }
-.list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.browser { height: min(400px, calc(100dvh - 200px)); min-height: 100px; overflow-y: auto; overflow-x: hidden; margin-top: 20px; padding-right: 4px; overscroll-behavior: contain; }
 .footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .footer > span { margin-right: auto; font-size: 12px; color: var(--muted); }
-@media (max-width: 540px) {
-  .browser { flex-direction: column; gap: 10px; }
-  .workspaces { display: flex; flex: 0 0 auto; gap: 4px; overflow-x: auto; }
-  .workspaces button { width: auto; flex-shrink: 0; max-width: 160px; margin: 0; }
-}

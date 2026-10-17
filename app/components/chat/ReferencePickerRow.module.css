@@ -1,10 +1,4 @@
-.row { display: flex; align-items: center; gap: 4px; border-radius: 8px; padding: 3px 5px; margin: 2px 0; }
-.row:hover { background: var(--hover); }
-.selected { background: var(--selection); }
-.row button { border: 0; background: transparent; cursor: pointer; color: var(--ink); }
-.toggle { display: grid; place-items: center; flex-shrink: 0; width: 24px; height: 32px; padding: 0; color: var(--icon); }
-.toggle:disabled { opacity: 0.5; cursor: default; }
-.name { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding: 6px 2px; text-align: left; font-size: 13px; }
-.name svg { flex-shrink: 0; color: var(--icon); }
-.name span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.date { flex-shrink: 0; color: var(--muted); font-size: 11px; margin-left: 4px; }
+.select { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; margin-left: 8px; padding: 0; border: 0; background: transparent; color: var(--icon); cursor: pointer; }
+.select > span { display: grid; place-items: center; width: 15px; height: 15px; border: 1px solid var(--muted); border-radius: 4px; }
+.select[aria-checked="true"] > span { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.select:disabled { opacity: 0.4; cursor: default; }

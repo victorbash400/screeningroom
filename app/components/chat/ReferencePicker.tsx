@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, FolderClosed, FolderOpen, X } from "lucide-react";
+import { ChevronRight, FolderClosed, FolderOpen, X } from "lucide-react";
 import type { FileNode, Workspace } from "../../lib/types";
-import { directory, folderPath } from "../../lib/storage";
+import { directory } from "../../lib/storage";
 import { selectedReferences } from "../../lib/chatSelection";
 import { useDialogBackdrop } from "../../state/useDialogBackdrop";
 import IconButton from "../controls/IconButton";
@@ -9,6 +9,7 @@ import SettingsInlineButton from "../settings/SettingsInlineButton";
 import ReferencePickerRow from "./ReferencePickerRow";
 import modal from "../workspace/ImportDialog.module.css";
 import styles from "./ReferencePicker.module.css";
+import tree from "../navigation/WorkspaceBranch.module.css";
 
 export default function ReferencePicker({ nodes, workspaces, workspaceId, selectedIds, onSelect, onClose }: {
   nodes: FileNode[]; workspaces: Workspace[]; workspaceId: string; selectedIds: string[];
@@ -17,11 +18,12 @@ export default function ReferencePicker({ nodes, workspaces, workspaceId, select
   const dialog = useRef<HTMLDialogElement>(null);
   const previousFocus = useRef(typeof document !== "undefined" ? document.activeElement : null);
   const backdrop = useDialogBackdrop(onClose);
-  const [location, setLocation] = useState({ workspaceId, folderId: null as string | null });
+  const [expanded, setExpanded] = useState(new Set([workspaceId]));
   const [selected, setSelected] = useState(selectedIds);
-  const path = folderPath({ nodes }, location.folderId);
-  const workspace = workspaces.find((item) => item.id === location.workspaceId);
-  const children = directory(nodes.filter((node) => node.workspaceId === location.workspaceId), location.folderId);
+  const selectedSet = new Set(selected);
+  function expand(id: string) {
+    setExpanded((previous) => { const next = new Set(previous); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  }
   const effective = selectedReferences(selected, nodes);
   function toggle(node: FileNode) {
     setSelected((previous) => previous.includes(node.id) ? previous.filter((id) => id !== node.id) : [...previous, node.id]);
@@ -39,29 +41,26 @@ export default function ReferencePicker({ nodes, workspaces, workspaceId, select
       <FolderOpen size={20} /><span>Select files</span>
       <IconButton label="Close file picker" onClick={onClose}><X /></IconButton>
     </header>
-    <div className={styles.browser}>
-      <nav className={styles.workspaces} aria-label="Workspaces">
-        {workspaces.map((item) => <button key={item.id} type="button" aria-current={item.id === location.workspaceId ? "page" : undefined}
-          onClick={() => setLocation({ workspaceId: item.id, folderId: null })}>
-          {item.id === location.workspaceId ? <FolderOpen size={21} /> : <FolderClosed size={21} />}<span>{item.name}</span>
-        </button>)}
-      </nav>
-      <div className={styles.files}>
-        <nav className={styles.path} aria-label="Folder path">
-          <IconButton label="Parent folder" disabled={!location.folderId}
-            onClick={() => setLocation({ ...location, folderId: path.at(-2)?.id ?? null })}><ArrowLeft /></IconButton>
-          <button type="button" onClick={() => setLocation({ ...location, folderId: null })}>{workspace?.name}</button>
-          {path.map((folder) => <button type="button" key={folder.id}
-            onClick={() => setLocation({ ...location, folderId: folder.id })}>{folder.name}</button>)}
-        </nav>
-        <div className={styles.columns} aria-hidden="true"><span>Name</span><span>Modified</span></div>
-        <div className={styles.list}>
-          {children.map((node) => <ReferencePickerRow key={node.id} node={node} selected={selected.includes(node.id)}
-            included={!selected.includes(node.id) && path.some((folder) => selected.includes(folder.id))}
-            onToggle={() => toggle(node)} onOpen={() => setLocation({ ...location, folderId: node.id })} />)}
-        </div>
-      </div>
-    </div>
+    <nav className={styles.browser} aria-label="Workspace files">
+      {workspaces.map((workspace) => {
+        const open = expanded.has(workspace.id);
+        const scopedNodes = nodes.filter((node) => node.workspaceId === workspace.id);
+        const Icon = open ? FolderOpen : FolderClosed;
+        return <div key={workspace.id}>
+          <div className={tree.row}>
+            <button type="button" className={`${tree.toggle} ${open ? tree.expanded : ""}`}
+              aria-label={`${open ? "Collapse" : "Expand"} ${workspace.name}`} aria-expanded={open} onClick={() => expand(workspace.id)}>
+              <ChevronRight size={14} />
+            </button>
+            <button type="button" className={tree.label} onClick={() => expand(workspace.id)}>
+              <Icon size={24} strokeWidth={1.7} /><span>{workspace.name}</span>
+            </button>
+          </div>
+          {open && directory(scopedNodes, null).map((node) => <ReferencePickerRow key={node.id} node={node} nodes={scopedNodes}
+            depth={1} expanded={expanded} selected={selectedSet} onExpand={expand} onToggle={toggle} />)}
+        </div>;
+      })}
+    </nav>
     <footer className={styles.footer}>
       <span>Selected ({effective.length})</span>
       <SettingsInlineButton onClick={onClose}>Cancel</SettingsInlineButton>

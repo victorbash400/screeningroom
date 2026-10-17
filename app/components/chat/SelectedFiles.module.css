@@ -1,0 +1,4 @@
+.tray { align-self: center; width: calc(100% - 16px); box-sizing: border-box; margin-top: -10px; padding: 18px 12px 10px; border-radius: 0 0 16px 16px; background: var(--hover); }
+.label { display: block; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 110px; margin-top: 8px; overflow-y: auto; }
+.chips > div { margin: 0; background: var(--panel); }
