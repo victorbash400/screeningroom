@@ -8,7 +8,7 @@ export default function MediaAnalysisCard({ analysis, onOpen }: { analysis: Medi
   const chat = useAudienceMap();
   const label = analysis.modality === "audio" ? "Transcript" : analysis.modality === "video" ? "Video frames" : "Image";
   const range = analysis.start !== undefined && analysis.end !== undefined ? `${mediaTime(analysis.start)}–${mediaTime(analysis.end)}` : "";
-  const basis = analysis.modality === "video" ? `${analysis.segments.length} sampled frames${range ? ` · ${range}` : ""}. Times are approximate frame positions. Unsampled scenes and audio were not inspected.` : analysis.modality === "audio" ? `Speech transcript${range ? ` · ${range}` : ""}. Timestamps identify audio chunks, not individual words.${analysis.nextStart !== undefined ? " More audio remains." : ""}` : "Visual description and legible text from a resized image.";
+  const basis = analysis.modality === "video" ? `${analysis.segments.length} sampled frames${range ? ` · ${range}` : ""}. Times are approximate frame positions. Unsampled scenes were not inspected.${analysis.hasAudio === false ? " This file has no audio track." : " Audio is analyzed separately."}` : analysis.modality === "audio" ? `Speech transcript${range ? ` · ${range}` : ""}. Timestamps identify audio chunks, not individual words.${analysis.nextStart !== undefined ? " More audio remains." : ""}` : "Visual description and legible text from a resized image.";
   return <ResearchWidgetFrame title={`${label} · ${analysis.name}`} source={analysis.model} basis={basis}>
     <div className={styles.actions}>
       {onOpen && <button type="button" onClick={() => onOpen(analysis.fileId)}>{analysis.modality === "image" ? <FileImage size={14} /> : <Play size={14} />}Open media</button>}

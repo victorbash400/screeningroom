@@ -41,7 +41,7 @@ export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<
       controller.signal.throwIfAborted();
       const history = chatHistory(messages, threadId);
       const mapCalls = new Set<string>();
-      const completedTools = new Map<string, MessageTool>();
+      const toolActivity = new Map<string, MessageTool>();
       await streamAgentReply(channel, history, controller.signal, (message) => {
         if (controllers.current.get(conversationId) !== controller) return;
         for (const part of message.parts) {
@@ -60,7 +60,7 @@ export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<
         current = {
           ...current,
           waiting: waitingForAnswer(message),
-          blocks: agentBlocks(message, completedTools),
+          blocks: agentBlocks(message, toolActivity),
           text: message.parts.filter((part) => part.type === "text").map((part) => part.text).join("\n\n"),
         };
         setPending((previous) => ({ ...previous, [conversationId]: current }));

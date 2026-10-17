@@ -33,3 +33,29 @@ test('cancellation and failure settle active calls without inventing successful 
   assert.equal(finishReply(reply,'failed','Network failed').blocks[0].tool.state,'failed');
   assert.equal(agentBlocks(message({type:'tool-searchEntities',toolCallId:'one',state:'output-denied',input:{}}))[0].tool.state,'failed');
 });
+
+test('each streamed tool keeps its own clock and terminal durations survive saving',()=>{
+ const activity=new Map();
+ const first={type:'tool-searchEntities',toolCallId:'one',state:'input-available',input:{}};
+ let blocks=agentBlocks(message(first),activity,1000);
+ assert.equal(blocks[0].tool.startedAt,1000);
+ blocks=agentBlocks(message({...first,state:'output-available',output:[]},{...first,toolCallId:'two'}),activity,3600);
+ assert.equal(blocks[0].tool.endedAt,3600);
+ assert.equal(blocks[1].tool.startedAt,3600);
+ blocks=agentBlocks(message({...first,state:'output-available',output:[]},{...first,toolCallId:'two',state:'output-error',errorText:'Unavailable'}),activity,5000);
+ assert.equal(blocks[0].tool.endedAt,3600);
+ assert.equal(blocks[1].tool.endedAt,5000);
+ assert.equal(blocks[1].tool.state,'failed');
+ const saved=finishReply({id:'a',text:'',createdAt:'2026-10-17T10:00:00Z',blocks},'complete');
+ const data={...emptyData,workspaces:[{id:'w',name:'Workspace'}],conversations:[{id:'c',workspaceId:'w',title:'Chats',draft:'',messages:[saved]}]};
+ assert.deepEqual(parseData(JSON.stringify(data)).conversations[0].messages[0].blocks,blocks);
+ const stopped=finishReply({id:'a',text:'',createdAt:'2026-10-17T10:00:00Z',blocks:agentBlocks(message(first),new Map(),1000)},'stopped',undefined,2800);
+ assert.equal(stopped.blocks[0].tool.endedAt,2800);
+});
+
+test('parallel calls and streamed text never show a duplicate waiting indicator',()=>{
+ const active={type:'tool-searchEntities',toolCallId:'one',state:'input-available',input:{}};
+ assert.equal(waitingForAnswer(message(active,{...active,toolCallId:'two',state:'output-available',output:[]})),false);
+ assert.equal(waitingForAnswer(message({type:'text',state:'done',text:'Here is the answer.'})),false);
+ assert.equal(waitingForAnswer(message(active,{type:'text',state:'done',text:'Checking.'})),false);
+});

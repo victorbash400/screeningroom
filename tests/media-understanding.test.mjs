@@ -63,3 +63,31 @@ test('small private media is prepared once and temporary files are removed on su
   assert.equal(requests,2);
  }finally{client.send=originalSend;client.config.credentials=originalCredentials;}
 });
+
+test('video calls allow no more than five interior samples and reject an invalid request before decoding',async()=>{
+ const {mediaUnderstandingTools}=await import('../app/tools/media-understanding.ts');
+ const {asSchema}=await import('ai');
+ const schema=asSchema(mediaUnderstandingTools('owner',[]).inspectVideo.inputSchema);
+ const valid=await schema.validate({fileId:'video',question:'Describe it',samples:5,startSeconds:0});
+ const invalid=await schema.validate({fileId:'video',samples:6});
+ assert.equal(valid.success,true);assert.equal(invalid.success,false);
+ const times=sampleTimes(0,600,5);assert.deepEqual(times,[60,180,300,420,540]);
+ assert.ok(times.every(time=>time>0&&time<600));
+});
+
+test('video preview cache reuses decoded frames across questions and remains owner/content scoped',async()=>{
+ const {videoFrames}=await import('../app/server/video-frames.ts');
+ const client=storage(),original=client.send,values=new Map();let decodes=0;
+ client.send=async command=>{if(command.constructor.name==='GetObjectCommand'){const value=values.get(command.input.Key);if(value===undefined){const error=new Error('missing');error.name='NoSuchKey';throw error;}return{Body:{transformToString:async()=>value}};}values.set(command.input.Key,command.input.Body);return{};};
+ const prepare=async()=>{decodes++;return {duration:600,hasAudio:false,start:0,end:600,frames:[{time:60,image:Buffer.from('frame').toString('base64')}]};};
+ try{
+  const node={name:'Clip.mp4',content:'cloud-file:one'};
+  const first=await videoFrames('one',node,5,0,undefined,prepare);
+  const second=await videoFrames('one',node,5,0,undefined,prepare);
+  assert.equal(decodes,1);assert.equal(second.frames[0].bytes.toString(),'frame');assert.equal(first.hasAudio,false);
+  await videoFrames('two',node,5,0,undefined,prepare);assert.equal(decodes,2);
+  await videoFrames('one',{...node,content:'cloud-file:two'},5,0,undefined,prepare);assert.equal(decodes,3);
+  client.send=async()=>{throw new Error('Access denied');};
+  await assert.rejects(videoFrames('one',node,5,0,undefined,prepare),{message:'Access denied'});assert.equal(decodes,3);
+ }finally{client.send=original;}
+});

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     checkOrigin(request);
     const user = await requireUser();
     const input = await body(request, inputSchema, Number.POSITIVE_INFINITY);
-    if (input.agent === "chat") throw new ApiError(400, "Choose Similar media, Compare, Audience fit or Performance before sending.");
+    if (input.agent === "chat" && !input.messages.some((message) => message.role === "assistant")) throw new ApiError(400, "Choose Similar media, Compare, Audience fit or Performance before sending.");
     if (input.messages.at(-1)?.role !== "user") throw new ApiError(400, "The last message must be from the user.");
     const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds);
     if (input.agent === "locations" && input.locationInterest) {

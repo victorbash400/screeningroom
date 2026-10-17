@@ -9,6 +9,7 @@ const require=createRequire(import.meta.url),swc=require('next/dist/build/swc');
 const stub=source=>({url:`data:text/javascript,${encodeURIComponent(source)}`,shortCircuit:true});
 registerHooks({
  resolve(specifier,context,next){
+  if(specifier==='next/dynamic')return stub('export default ()=>()=>null;');
   if(specifier.endsWith('/AccountContext'))return stub('export const useAccount=()=>({user:{id:"test"},request:async()=>{throw new Error("Unexpected request")}});');
   if(specifier.endsWith('.css'))return stub('export default new Proxy({}, {get:(_,name)=>String(name)});');
   if(specifier.startsWith('.')&&context.parentURL?.startsWith('file:'))for(const suffix of ['.tsx','.ts']){const url=new URL(specifier+suffix,context.parentURL);if(existsSync(url))return next(url.href,context);}
@@ -45,4 +46,24 @@ test('connection rows and their actions exist before any status request finishes
   assert.ok(html.includes(`Checking ${label}`));
  }
  assert.equal(html.split('disabled=""').length-1,5);
+});
+
+test('tool durations render independently and frozen calls do not need a live clock',()=>{
+ const blocks=[{id:'tool:first',kind:'tool',tool:{id:'first',name:'inspectVideo',state:'done',startedAt:1000,endedAt:4500}},{id:'tool:second',kind:'tool',tool:{id:'second',name:'transcribeMedia',state:'running',startedAt:4500}}];
+ const html=renderToStaticMarkup(createElement(AssistantMessage,{message:{...reply,status:'streaming',blocks,text:'',waiting:false}}));
+ assert.ok(html.includes('0:03'));
+ assert.ok(html.includes('0:00'));
+ assert.ok(!html.includes('Waiting for answer'));
+ assert.ok(html.indexOf('Video frames')<html.indexOf('Audio transcription'));
+});
+
+test('workflow cards appear only before the first message and existing chats keep their composer',async()=>{
+ const {default:ChatDrawer}=await import('../app/components/chat/ChatDrawer.tsx');
+ const action=()=>true,props={onWorkflow:action,onAudienceWidget:action,onMapScene:action,onLocationInterest:action,busy:false,onStop:action,referenceRequest:0,draft:'',onThread:action,conversations:[],nodes:[],workspaces:[{id:'w',name:'Workspace'}],workspaceId:'w',onClose:action,onNew:action,onSelect:action,onRename:action,onDelete:action,onDraft:action,onSend:action,onReference:action};
+ const conversation={id:'c',workspaceId:'w',channel:'chat',title:'Chats',draft:'',messages:[]};
+ const empty=renderToStaticMarkup(createElement(ChatDrawer,{...props,conversation}));
+ assert.ok(empty.includes('Find similar media'));
+ const active=renderToStaticMarkup(createElement(ChatDrawer,{...props,conversation:{...conversation,messages:[{...reply,text:'Hello',blocks:[{id:'text',kind:'text',text:'Hello'}]}]}}));
+ assert.ok(!active.includes('Find similar media'));
+ assert.ok(active.includes('aria-label="Message"'));
 });

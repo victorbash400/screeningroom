@@ -1,5 +1,6 @@
 import { SquareTerminal } from "lucide-react";
 import type { Message, MessageTool } from "../../lib/types";
+import ToolElapsedTime from "./ToolElapsedTime";
 import styles from "./ToolCallIndicator.module.css";
 
 export default function ToolCallIndicator({ tool, status }: { tool: MessageTool; status?: Message["status"] }) {
@@ -8,5 +9,6 @@ export default function ToolCallIndicator({ tool, status }: { tool: MessageTool;
   return <span className={styles.tool} data-state={state} role="status" title={tool.error} aria-label={`${label}: ${state}${tool.error ? `. ${tool.error}` : ""}`}>
     <SquareTerminal aria-hidden="true" size={14} />
     <strong>{label}{state === "failed" ? " failed" : state === "stopped" ? " stopped" : ""}</strong>
+    {tool.startedAt !== undefined && <ToolElapsedTime startedAt={tool.startedAt} endedAt={tool.endedAt} running={state === "running"} />}
   </span>;
 }

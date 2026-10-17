@@ -141,7 +141,7 @@ export default function ChatDrawer({
           nodes={nodes}
           onReference={onReference}
         />}
-        {channel !== "chat" ? <ChatComposer
+        {channel !== "chat" || conversation.messages.length > 0 ? <ChatComposer
           pickerRequest={pickerRequest}
           placeholder={workflow?.placeholder}
           onOpenReference={onReference}
@@ -159,7 +159,7 @@ export default function ChatDrawer({
           nodes={nodes}
           onDraft={onDraft}
           onSend={onSend}
-        /> : conversation.messages.length > 0 ? <ChatStarters onSelect={onWorkflow} /> : null}
+        /> : null}
         {historyOpen && (
           <>
             <button

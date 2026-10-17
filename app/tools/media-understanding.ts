@@ -1,10 +1,11 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { selectedMedia } from "../server/selected-media";
-import { mediaKind, sampleTimes, audioWindows, type MediaAnalysis } from "../lib/mediaAnalysis";
+import { mediaKind, audioWindows, type MediaAnalysis } from "../lib/mediaAnalysis";
 import { imageFrame, probeMedia, audioClip, mediaInputFormat } from "../server/media-processing";
 import { describeFrames, transcribeClip, visualModelId, audioModelId } from "../server/media-model";
 import { cachedMediaAnalysis } from "../server/media-analysis-cache";
+import { videoFrames } from "../server/video-frames";
 import { ApiError } from "../server/http";
 
 const rangeSchema = { startSeconds: z.number().nonnegative().default(0), endSeconds: z.number().positive().optional() };
@@ -24,21 +25,14 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       },
     }),
     inspectVideo: tool({
-      description: "Analyze selected video using compressed timestamped frame samples with Gemma 4. Defaults to 12 uniformly spaced frames over the full video; startSeconds/endSeconds and samples allow a closer look at a chosen range. Only the sampled frames were inspected, not every scene or the soundtrack. Report coverage and uncertainty; use transcribeMedia separately for speech. Do not make up motion or missed scenes.",
-      inputSchema: z.object({ fileId: z.string(), question: z.string().min(1).default("Describe the visible subjects, setting, style and on-screen text in these sampled frames."), samples: z.number().int().positive().default(12), ...rangeSchema }),
+      description: "Analyze selected video using compressed timestamped frame samples with Gemma 4. Uses at most five uniformly spaced interior frames over the full video; startSeconds/endSeconds and samples allow a closer look at a chosen range. Only the sampled frames were inspected, not every scene or the soundtrack. Report coverage and uncertainty; use transcribeMedia separately for speech. Do not make up motion or missed scenes.",
+      inputSchema: z.object({ fileId: z.string(), question: z.string().min(1).default("Describe the visible subjects, setting, style and on-screen text in these sampled frames."), samples: z.number().int().min(1).max(5).default(5), ...rangeSchema }),
       execute: async ({ fileId, question, samples, startSeconds, endSeconds }, { abortSignal }) => {
         const node = await files.node(fileId);
         if (mediaKind(node) !== "video") throw new ApiError(400, "Select a video file.");
-        return cachedMediaAnalysis(userId, { version: 2, content: node.content, fileId, name: node.name, model: visualModelId(), question, samples, startSeconds, endSeconds }, () => files.withSource(node, async (source) => {
-          const metadata = await probeMedia(source, mediaInputFormat(node), abortSignal);
-          if (!metadata.duration || !metadata.hasVideo) throw new ApiError(422, "Video duration or visual track is unavailable.");
-          const duration = metadata.videoDuration ?? metadata.duration;
-          const end = Math.min(endSeconds ?? duration, duration);
-          if (startSeconds >= end) throw new ApiError(400, "Choose a range inside this video.");
-          const frames: { bytes: Uint8Array; time: number }[] = [];
-          if (!metadata.frameRate) throw new ApiError(422, "Video frame timing is unavailable. Upload a converted copy.");
-          const times = [...new Set(sampleTimes(startSeconds, end, samples).map((time) => Math.floor(time * metadata.frameRate!) / metadata.frameRate!))];
-          for (let index = 0; index < times.length; index += 2) frames.push(...await Promise.all(times.slice(index, index + 2).map(async (time) => ({ bytes: await imageFrame(source, time, mediaInputFormat(node), abortSignal), time }))));
+        return cachedMediaAnalysis(userId, { version: 4, content: node.content, fileId, name: node.name, model: visualModelId(), question, samples, startSeconds, endSeconds }, async () => {
+          const prepared = await videoFrames(userId, node, samples, startSeconds, endSeconds, (prepare) => files.withSource(node, prepare, abortSignal), abortSignal);
+          const { duration, hasAudio, start, end, frames } = prepared;
           const batches: typeof frames[] = [];
           let batch: typeof frames = [], size = 0;
           for (const frame of frames) {
@@ -49,10 +43,10 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
           if (batch.length) batches.push(batch);
           const results = [];
           for (const batch of batches) results.push({ batch, result: await describeFrames(batch, question, abortSignal) });
-          return { kind: "media", fileId, name: node.name, modality: "video", model: visualModelId(), duration, start: startSeconds, end,
+          return { kind: "media", fileId, name: node.name, modality: "video", model: visualModelId(), duration, hasAudio, start, end,
             summary: results.map(({ result }) => result.summary).join("\n\n"), visibleText: results.map(({ result }) => result.visibleText).filter(Boolean).join("\n"), uncertainties: [...new Set(results.flatMap(({ result }) => result.uncertainties))],
             segments: results.flatMap(({ batch, result }) => result.frames.map((frame) => ({ start: batch[frame.index].time, text: frame.description }))).toSorted((a, b) => a.start - b.start) };
-        }, abortSignal), abortSignal);
+        }, abortSignal);
       },
     }),
     transcribeMedia: tool({

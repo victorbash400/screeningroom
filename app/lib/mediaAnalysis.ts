@@ -13,6 +13,7 @@ export const mediaAnalysisSchema = z.object({
   kind: z.literal("media"), fileId: z.string().min(1), name: z.string().min(1), modality: z.enum(["image", "video", "audio"]), model: z.string().min(1),
   summary: z.string(), visibleText: z.string(), uncertainties: z.array(z.string()),
   duration: z.number().nonnegative().optional(), start: z.number().nonnegative().optional(), end: z.number().nonnegative().optional(),
+  hasAudio: z.boolean().optional(),
   nextStart: z.number().nonnegative().optional(),
   segments: z.array(z.object({ start: z.number().nonnegative(), end: z.number().nonnegative().optional(), text: z.string() }).strict()),
 }).strict();

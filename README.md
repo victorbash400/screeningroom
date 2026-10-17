@@ -515,7 +515,7 @@ research render/toolbar checks in `tests/audience-widgets.test.mjs`.
 
 `inspectImage` uses `google.gemma-4-26b-a4b` for descriptions and visible text.
 `inspectVideo` samples compressed JPEG frames across the selected time range
-(default 12 samples), with approximate frame positions. The original video is not
+(at most five interior samples), with approximate frame positions. The original video is not
 sent to the model. `transcribeMedia` uses `google.gemma-4-e2b` for audio or a video's
 speech, downmixed to mono 16 kHz WAV in 30-second windows. Its default request covers
 two minutes; longer files expose an explicit Continue transcript action. These are
@@ -543,3 +543,16 @@ content, model, analysis parameters and cache format version. Changed media or
 analysis settings cannot reuse stale results. File names, sources, time coverage,
 text and uncertainty persist in validated chat widgets, using the existing preview
 to open the original media. Cache/storage/provider failures remain visible.
+
+Tool call clocks start when each call first appears in the stream and stop at its
+result, error, or cancellation. Each call stores its own timestamps with the reply;
+reopening a chat preserves completed durations. The live clock is local rendering,
+not network polling. Existing general chats can continue; new work still starts by
+choosing a workflow, and workflow cards only render before the first message.
+
+Video inspection extracts at most five interior frames concurrently, using one
+decoder thread per frame and persistent HTTP connections for signed range reads.
+The immutable source/range/frame selection has a separate owner-scoped S3 frame
+cache, so a new question reuses extracted frames without rereading the video.
+Results include whether an audio track exists; the agent only requests speech for
+questions that need it and does not transcribe a video confirmed to have no audio.

@@ -12,7 +12,9 @@ export async function bedrockHeaders() {
   return { Authorization: `Bearer ${token}`, "OpenAI-Project": env("BEDROCK_PROJECT_ID") };
 }
 
+export const bedrockFetch: typeof fetch = (url, options) => (fetchWithDispatcher as unknown as typeof fetch)(url, { ...options, dispatcher } as RequestInit & { dispatcher: Agent });
+
 export async function chatModel() {
-  const provider = createOpenAICompatible({ name: "screeningroom-bedrock", baseURL: env("BEDROCK_BASE_URL"), headers: await bedrockHeaders(), fetch: (url, options) => (fetchWithDispatcher as unknown as typeof fetch)(url, { ...options, dispatcher } as RequestInit & { dispatcher: Agent }) });
+  const provider = createOpenAICompatible({ name: "screeningroom-bedrock", baseURL: env("BEDROCK_BASE_URL"), headers: await bedrockHeaders(), fetch: bedrockFetch });
   return provider.chatModel(env("BEDROCK_MODEL_ID"));
 }

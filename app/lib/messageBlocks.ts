@@ -13,14 +13,14 @@ export function messageBlocks(message: Message): MessageBlock[] {
   ];
 }
 
-export function finishReply(message: Message, status: "complete" | "stopped" | "failed", error?: string): Message {
+export function finishReply(message: Message, status: "complete" | "stopped" | "failed", error?: string, now = Date.now()): Message {
   if (status === "complete" && message.blocks?.some((block) => block.kind === "tool" && block.tool.state === "running")) {
     throw new Error("Tool call ended without a result.");
   }
   return {
     ...message, status, error, waiting: false,
     blocks: message.blocks?.map((block) => block.kind === "tool" && block.tool.state === "running"
-      ? { ...block, tool: { ...block.tool, state: status === "stopped" ? "stopped" : "failed" } }
+      ? { ...block, tool: { ...block.tool, ...(block.tool.startedAt === undefined ? {} : { endedAt: now }), state: status === "stopped" ? "stopped" : "failed" } }
       : block),
   };
 }
@@ -30,6 +30,8 @@ function validMessageTool(value: unknown): value is MessageTool {
   const tool = value as Record<string, unknown>;
   return typeof tool.id === "string" && Boolean(tool.id) && typeof tool.name === "string" && Boolean(tool.name) &&
     (tool.error === undefined || typeof tool.error === "string") &&
+    (tool.startedAt === undefined || typeof tool.startedAt === "number" && Number.isFinite(tool.startedAt) && tool.startedAt >= 0) &&
+    (tool.endedAt === undefined || typeof tool.endedAt === "number" && Number.isFinite(tool.endedAt) && typeof tool.startedAt === "number" && tool.endedAt >= tool.startedAt) &&
     (tool.media === undefined || mediaAnalysisSchema.safeParse(tool.media).success) &&
     (tool.research === undefined || researchWidgetSchema.safeParse(tool.research).success) &&
     (tool.widget === undefined || audienceWidgetSchema.safeParse(tool.widget).success) &&
