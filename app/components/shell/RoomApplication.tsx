@@ -167,7 +167,6 @@ export default function RoomApplication() {
                   referenceId={chat.referenceId}
                   referenceRequest={chat.referenceRequest}
                   key={`${workspace.id}:${chat.channel}`}
-                  label="Chats"
                   conversation={conversation}
                   thread={chat.thread}
                   draft={chat.draftValue}

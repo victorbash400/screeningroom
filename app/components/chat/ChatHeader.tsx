@@ -4,6 +4,7 @@ import IconButton from "../controls/IconButton";
 import ActionMenu from "../controls/ActionMenu";
 import styles from "./ChatHeader.module.css";
 export default function ChatHeader({
+  label,
   conversation,
   historyOpen,
   onHistory,
@@ -13,6 +14,7 @@ export default function ChatHeader({
   threadOpen,
   onBack,
 }: {
+  label: string;
   conversation: Conversation;
   historyOpen: boolean;
   onHistory: () => void;
@@ -36,13 +38,13 @@ export default function ChatHeader({
           <ArrowLeft />
         </IconButton>
       )}
-      <span>Chats</span>
+      <span>{label}</span>
       {conversation.scope !== "workspace" && <ActionMenu
         label="Chat actions"
         onRename={onRename}
         onDelete={onDelete}
       />}
-      <IconButton label="Close chat" onClick={onClose}>
+      <IconButton label={`Close ${label.toLowerCase()}`} onClick={onClose}>
         <X />
       </IconButton>
     </header>

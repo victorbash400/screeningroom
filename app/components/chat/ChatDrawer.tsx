@@ -6,7 +6,6 @@ import MessageList from "./MessageList";
 import ChatComposer from "./ChatComposer";
 import styles from "./ChatDrawer.module.css";
 interface Props {
-  label?: string;
   busy: boolean;
   onStop: () => void;
   referenceId?: string;
@@ -29,7 +28,6 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
-  label = "Chats",
   busy,
   onStop,
   conversation,
@@ -51,6 +49,14 @@ export default function ChatDrawer({
   referenceId,
   referenceRequest,
 }: Props) {
+  const channel = conversation.channel ?? "chat";
+  const label = {
+    chat: "Chats",
+    locations: "Locations",
+    similar: "Similar",
+    performance: "Performance",
+    compare: "Compare",
+  }[channel];
   const drawer = useRef<HTMLElement>(null);
   const previousFocus = useRef(
     typeof document !== "undefined" ? document.activeElement : null,
@@ -66,7 +72,7 @@ export default function ChatDrawer({
   return (
     <aside
       ref={drawer}
-      className={styles.drawer}
+      className={`${styles.drawer} ${channel === "locations" ? styles.locations : ""}`}
       aria-label={label}
       onKeyDown={(event) => {
         if (
@@ -83,6 +89,7 @@ export default function ChatDrawer({
       }}
     >
       <ChatHeader
+        label={label}
         conversation={conversation}
         historyOpen={historyOpen}
         onHistory={() => setHistoryOpen(!historyOpen)}

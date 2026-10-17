@@ -12,6 +12,9 @@
   background: var(--panel);
   animation: arrive 180ms ease-out;
 }
+.locations {
+  width: max(52%, 560px);
+}
 .body {
   position: relative;
   display: flex;
@@ -42,6 +45,9 @@
     inset: 0 0 0 auto;
     width: min(480px, calc(100% - 20px));
     z-index: 5;
+  }
+  .locations {
+    width: calc(100% - 20px);
   }
 }
 
