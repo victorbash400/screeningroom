@@ -4,6 +4,7 @@ import { Map, Marker, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { areaBoundary, type LocationInterest } from "../../lib/locationInterest";
 import LocationMapOptions from "./LocationMapOptions";
+import MapAttribution from "./MapAttribution";
 import styles from "./LocationMapCanvas.module.css";
 import glass from "../workspace/PreviewGlass.module.css";
 import { cleanMapStyle } from "./mapStyle";
@@ -20,7 +21,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   area?: LocationInterest;
   landmarks: boolean;
   threeD: boolean;
-  onArea: (area: LocationInterest) => void;
+  onArea: (area?: LocationInterest) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
@@ -42,7 +43,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
         container: container.current,
         center: initialArea.current ? [initialArea.current.longitude, initialArea.current.latitude] : [0, 20],
         zoom: initialArea.current ? 11 : 1.5,
-        attributionControl: { compact: true },
+        attributionControl: false,
       });
     } catch { setError(true); return; }
     map.current = instance;
@@ -116,8 +117,9 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}
     {error && <div className={`${styles.error} ${glass.surface}`} role="alert"><span>Map could not load.</span><button type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</button></div>}
-    <LocationMapOptions landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
+    <LocationMapOptions area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCenter={() => { const center = map.current?.getCenter(); if (center) select(center.lng, center.lat); }} />
+    <MapAttribution />
   </div>;
 }

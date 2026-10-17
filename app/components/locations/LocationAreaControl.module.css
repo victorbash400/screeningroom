@@ -1,4 +1,4 @@
-.area { position: absolute; bottom: 28px; left: 12px; right: 12px; display: flex; align-items: center; gap: 12px; height: 34px; box-sizing: border-box; padding: 0 8px 0 12px; border-radius: 20px; font-size: 12px; }
+.area { display: flex; align-items: center; gap: 12px; width: 100%; height: 30px; box-sizing: border-box; padding: 0 4px 0 8px; font-size: 12px; }
 .area > span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .area label { display: inline-flex; align-items: center; gap: 4px; color: inherit; }
 .area input { width: 38px; padding: 4px 2px; background: transparent; border: 0; border-radius: 4px; text-align: right; font-size: 12px; appearance: textfield; color: inherit; }

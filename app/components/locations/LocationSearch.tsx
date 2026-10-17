@@ -30,7 +30,7 @@ export default function LocationSearch({ onSelect }: { onSelect: (place: Omit<Lo
     } finally { if (active.current === controller) setBusy(false); }
   }
   return <div className={styles.search}>
-    <form className={glass.surface} onSubmit={(event) => { event.preventDefault(); if (query.trim()) void search(); }}>
+    <form onSubmit={(event) => { event.preventDefault(); if (query.trim()) void search(); }}>
       <input aria-label="Search places" placeholder="Search places" value={query} onChange={(event) => { active.current?.abort(); setBusy(false); setQuery(event.target.value); setPlaces([]); setError(""); }} />
       <button type="submit" aria-label="Search" disabled={busy || !query.trim()}>{busy ? <LoaderCircle className={styles.busy} /> : <Search />}</button>
     </form>
