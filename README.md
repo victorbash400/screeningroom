@@ -582,6 +582,6 @@ the geographic affinity of specific references instead. Do not compare relative
 normalized values across independent queries as absolute market scores.
 
 The floating Audience map starts at the chat panel's full height and follows
-layout resizing. Returned places form a vertical, scroll-snapping shortlist below
+layout resizing. Returned places form a horizontal, scroll-snapping carousel with previous/next controls below
 the map; selecting a card focuses its map pin. Qloo venue affinity and surrounding
 heatmap affinity remain separate evidence. No synthetic combined score is used.
