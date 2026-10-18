@@ -1,11 +1,7 @@
-.transcript { margin-top: 12px; font-size: 11px; line-height: 1.6; }
-.transcript > summary { margin: 0 12px; color: var(--muted); cursor: pointer; }
-.transcript summary span { font-variant-numeric: tabular-nums; }
 .scroll { padding: 10px 12px 0; max-height: 260px; overflow: auto; white-space: pre-wrap; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .segment { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; margin-bottom: 10px; }
 .segment > span { color: var(--muted); font-variant-numeric: tabular-nums; }
 .segment p { margin: 0; }
-.uncertainty { margin: 10px 12px 0; }
-.transcript summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.uncertainty { padding: 0 12px; }
 .scroll::-webkit-scrollbar { width: 5px; }
 .scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }

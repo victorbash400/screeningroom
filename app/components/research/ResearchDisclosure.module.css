@@ -1,0 +1,10 @@
+.disclosure { min-width: 0; font-size: 11px; line-height: 1.6; }
+.control { box-sizing: border-box; display: flex; align-items: center; gap: 7px; min-height: 32px; margin: 0 8px; padding: 5px 4px; border-radius: 5px; list-style: none; color: var(--ink); cursor: pointer; }
+.control::-webkit-details-marker { display: none; }
+.control:hover { background: var(--hover); }
+.control > svg { flex: 0 0 auto; color: var(--muted); transition: transform 140ms ease; }
+.disclosure[open] > .control > svg { transform: rotate(90deg); }
+.label { min-width: 0; }
+.metadata { margin-left: auto; color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+.control:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { .control > svg { transition: none; } }

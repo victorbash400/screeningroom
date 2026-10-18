@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import ResearchDisclosure from "./ResearchDisclosure";
 import styles from "./ResearchWidgetFrame.module.css";
 
-export default function ResearchWidgetFrame({ title, source, basis, children }: { title: string; source: string; basis: string; children: ReactNode }) {
+export default function ResearchWidgetFrame({ title, source, basis, sourceInDetails = false, children }: { title: string; source: string; basis: string; sourceInDetails?: boolean; children: ReactNode }) {
   return <section className={styles.frame} aria-label={title}>
     <header>{title}</header>{children}
-    <footer>{source}</footer>
-    <details><summary>About this result<ChevronDown size={13} aria-hidden="true" /></summary><p>{basis}</p></details>
+    {!sourceInDetails && <footer>{source}</footer>}
+    <ResearchDisclosure title="About this result"><div className={styles.basis}>{sourceInDetails && <p className={styles.source}>{source}</p>}<p>{basis}</p></div></ResearchDisclosure>
   </section>;
 }
