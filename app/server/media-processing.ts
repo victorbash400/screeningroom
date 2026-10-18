@@ -33,17 +33,19 @@ function inputOptions(source: string) {
     ? ["-protocol_whitelist", "https,tls,tcp,crypto", "-multiple_requests", "1"]
     : ["-protocol_whitelist", "file,pipe"];
 }
-const probeSchema = z.object({ format: z.object({ duration: z.string().optional() }), streams: z.array(z.object({ codec_type: z.string(), width: z.number().optional(), height: z.number().optional(), duration: z.string().optional(), avg_frame_rate: z.string().optional() })) });
+const probeSchema = z.object({ format: z.object({ duration: z.string().optional() }), streams: z.array(z.object({ codec_type: z.string(), codec_name: z.string().optional(), width: z.number().optional(), height: z.number().optional(), duration: z.string().optional(), avg_frame_rate: z.string().optional() })) });
 export async function probeMedia(source: string, format: string, signal?: AbortSignal) {
   const bytes = await run(process.env.FFPROBE_PATH || ffprobe.path, ["-v", "error", ...inputOptions(source), "-f", format, "-show_format", "-show_streams", "-of", "json", source], signal);
   const parsed = probeSchema.safeParse(JSON.parse(bytes.toString("utf8")));
   if (!parsed.success) throw new ApiError(422, "Media metadata is invalid.");
   const duration = Number(parsed.data.format.duration);
+  const audio = parsed.data.streams.filter((stream) => stream.codec_type === "audio");
+  const audioDuration = Number(audio[0]?.duration);
   const video = parsed.data.streams.find((stream) => stream.codec_type === "video");
   const rate = video?.avg_frame_rate?.split("/").map(Number);
   const frameRate = rate?.length === 2 && rate[1] > 0 ? rate[0] / rate[1] : undefined;
   const videoDuration = Number(video?.duration);
-  return { frameRate: frameRate && Number.isFinite(frameRate) ? frameRate : undefined, videoDuration: videoDuration > 0 && Number.isFinite(videoDuration) ? videoDuration : undefined, duration: Number.isFinite(duration) && duration > 0 ? duration : undefined, hasAudio: parsed.data.streams.some((stream) => stream.codec_type === "audio"), hasVideo: parsed.data.streams.some((stream) => stream.codec_type === "video") };
+  return { audioDuration: audioDuration > 0 && Number.isFinite(audioDuration) ? audioDuration : undefined, audioTracks: audio.length, videoTracks: parsed.data.streams.filter((stream) => stream.codec_type === "video").length, frameRate: frameRate && Number.isFinite(frameRate) ? frameRate : undefined, videoDuration: videoDuration > 0 && Number.isFinite(videoDuration) ? videoDuration : undefined, duration: Number.isFinite(duration) && duration > 0 ? duration : undefined, hasAudio: parsed.data.streams.some((stream) => stream.codec_type === "audio"), hasVideo: parsed.data.streams.some((stream) => stream.codec_type === "video") };
 }
 export async function imageFrame(source: string, time: number | undefined, format: string, signal?: AbortSignal) {
   const result = await run(ffmpegBinary(), ["-hide_banner", "-loglevel", "error", ...inputOptions(source), ...(time === undefined ? [] : ["-ss", String(time)]), "-threads", "1", "-f", format, "-i", source, "-frames:v", "1", "-vf", "scale=w='min(1024,iw)':h='min(1024,ih)':force_original_aspect_ratio=decrease", "-q:v", "5", "-f", "image2pipe", "-vcodec", "mjpeg", "pipe:1"], signal);
@@ -52,4 +54,8 @@ export async function imageFrame(source: string, time: number | undefined, forma
 }
 export function audioClip(source: string, start: number, end: number, format: string, signal?: AbortSignal) {
   return run(ffmpegBinary(), ["-hide_banner", "-loglevel", "error", ...inputOptions(source), "-ss", String(start), "-f", format, "-i", source, "-t", String(end - start), "-vn", "-ac", "1", "-ar", "16000", "-f", "wav", "pipe:1"], signal);
+}
+
+export function decodeAudioFile(source: string, start: number, end: number, format: string, path: string, signal?: AbortSignal) {
+  return run(ffmpegBinary(), ["-hide_banner", "-loglevel", "error", ...inputOptions(source), "-ss", String(start), "-f", format, "-i", source, "-t", String(end - start), "-map", "0:a:0", "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", "-f", "s16le", path], signal);
 }

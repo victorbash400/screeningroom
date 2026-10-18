@@ -130,3 +130,15 @@ test("media analysis widgets show sampled coverage, transcripts and explicit con
   assert.ok(html.includes("not individual words"));
   assert.ok(html.includes("Open media"));
 });
+
+test('video analysis exposes the complete speech transcript alongside visual samples',async()=>{
+ const {default:MediaAnalysisCard}=await import('../app/components/research/MediaAnalysisCard.tsx');
+ const transcript={model:'google.gemma-4-e2b',start:0,end:130,duration:130,complete:true,uncertainties:[],segments:[{start:120,end:130,text:'Compare energy costs before buying hardware.'}]};
+ const analysis={kind:'media',fileId:'v',name:'Video.mp4',modality:'video',model:'google.gemma-4-26b-a4b',summary:'A hardware review.',visibleText:'',uncertainties:[],duration:130,start:0,end:130,hasAudio:true,transcript,segments:[{start:5,text:'A computer.'}]};
+ const html=renderToStaticMarkup(createElement(AudienceMapProvider,{value:actions},createElement(MediaAnalysisCard,{analysis})));
+ assert.ok(html.includes('Compare energy costs'));
+ assert.ok(html.includes('full audio track'));
+ assert.ok(html.includes('0:00–2:10'));
+ assert.ok(html.includes('google.gemma-4-e2b'));
+ assert.ok(!html.includes('Audio was not transcribed'));
+});

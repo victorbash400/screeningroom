@@ -11,8 +11,8 @@ import { region } from "./config";
 let documentClient: DynamoDBDocumentClient | undefined;
 let storageClient: S3Client | undefined;
 let identityClient: CognitoIdentityProviderClient | undefined;
-const requestHandler = () => ({
-  connectionTimeout: 10_000, requestTimeout: 15_000, throwOnRequestTimeout: true,
+const requestHandler = (requestTimeout = 15_000) => ({
+  connectionTimeout: 10_000, requestTimeout, throwOnRequestTimeout: true,
   httpsAgent: new Agent({ keepAlive: true, lookup: awsLookup, autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 250 }),
 });
 
@@ -31,7 +31,7 @@ export function database() {
   }
   return documentClient;
 }
-export function storage() { return storageClient ??= new S3Client({ region: region(), maxAttempts: 1, requestHandler: requestHandler() }); }
+export function storage() { return storageClient ??= new S3Client({ region: region(), maxAttempts: 1, requestHandler: requestHandler(280_000) }); }
 export function identity() {
   if (!identityClient) {
     identityClient = new CognitoIdentityProviderClient({ region: region(), maxAttempts: 1, requestHandler: requestHandler() });

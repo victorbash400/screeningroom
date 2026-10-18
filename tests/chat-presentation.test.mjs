@@ -54,7 +54,7 @@ test('tool durations render independently and frozen calls do not need a live cl
  assert.ok(html.includes('0:03'));
  assert.ok(html.includes('0:00'));
  assert.ok(!html.includes('Waiting for answer'));
- assert.ok(html.indexOf('Video frames')<html.indexOf('Audio transcription'));
+ assert.ok(html.indexOf('Video analysis')<html.indexOf('Audio transcription'));
 });
 
 test('workflow cards appear only before the first message and existing chats keep their composer',async()=>{

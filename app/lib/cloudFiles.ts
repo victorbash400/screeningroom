@@ -19,8 +19,16 @@ export async function uploadCloudFile(blob: Blob, signal?: AbortSignal, cache = 
   const type = blob.type || "application/octet-stream";
   const result = object(await fileRequest("/api/files/upload", { method: "POST", signal, body: JSON.stringify({ size: blob.size, contentType: type }) }));
   if (typeof result.url !== "string" || typeof result.id !== "string") throw new Error("Invalid upload response.");
-  const response = await fetch(result.url, { method: "PUT", signal, headers: { "Content-Type": type }, body: blob });
-  if (!response.ok) throw new Error(`File upload failed (${response.status}). Try again.`);
+  const started = performance.now();
+  console.info("File upload", { id: result.id, stage: "start", bytes: blob.size, contentType: type });
+  let response: Response;
+  try { response = await fetch(result.url, { method: "PUT", signal, headers: { "Content-Type": type }, body: blob }); }
+  catch (error) { console.error("File upload", { id: result.id, stage: "failed", elapsedMs: Math.round(performance.now() - started) }); throw error; }
+  if (!response.ok) {
+    console.error("File upload", { id: result.id, stage: "failed", status: response.status, elapsedMs: Math.round(performance.now() - started) });
+    throw new Error(`File upload failed (${response.status}). Try again.`);
+  }
+  console.info("File upload", { id: result.id, stage: "complete", bytes: blob.size, elapsedMs: Math.round(performance.now() - started) });
   if (cache && typeof result.ownerId === "string") cacheUploadedAsset(result.ownerId, result.id, blob);
   return `cloud-file:${result.id}`;
 }

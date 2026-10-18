@@ -515,23 +515,28 @@ research render/toolbar checks in `tests/audience-widgets.test.mjs`.
 
 `inspectImage` uses `google.gemma-4-26b-a4b` for descriptions and visible text.
 `inspectVideo` samples compressed JPEG frames across the selected time range
-(at most five interior samples), with approximate frame positions. The original video is not
+(eight representative samples by default, including an early sample), with approximate frame positions. The original video is not
 sent to the model. `transcribeMedia` uses `google.gemma-4-e2b` for audio or a video's
-speech, downmixed to mono 16 kHz WAV in 30-second windows. Its default request covers
-two minutes; longer files expose an explicit Continue transcript action. These are
-processing windows, not upload/file-size limits, and an explicit end time can
-request another range. The agent must distinguish sampled visuals, transcript
+speech, decoded once to mono 16 kHz PCM and read as exact 30-second WAV windows.
+The default covers the entire audio track; explicit start/end times select a range.
+A video inspection includes the full transcript automatically when sound exists.
+The original video is never sent to the model, and digital-silence chunks are
+identified exactly without a model call; nonzero quiet audio is preserved. The agent must distinguish sampled visuals, transcript
 coverage and observations from unprocessed media or performance predictions.
 
 Media calls use the existing project credentials and Gemma 4's
 `/openai/v1/chat/completions` Mantle route. Optional server settings
 `BEDROCK_VISION_MODEL_ID` and `BEDROCK_AUDIO_MODEL_ID` select other compatible models.
-The main chat model is unchanged. Provider reasoning is not returned to chat.
+The main chat model is unchanged. Vision uses low reasoning after comparing it
+with no-reasoning image output; audio uses no reasoning. Provider reasoning is not
+returned to chat.
 
 FFmpeg and FFprobe are installed as platform-specific dependencies, traced into
 the chat function's server bundle, and use signed owner-scoped S3 URLs. Inputs use
-explicit demuxers and restricted protocols. Small files are staged once in a temporary
-server file and removed after analysis; larger files use signed range requests.
+explicit demuxers and restricted protocols. Analysis streams an owned file once
+to a temporary server file, shares it between visual and audio processing, then
+removes it. Cache hits do not download the source. This avoids slow repeated remote
+seeks and does not download the original into the browser or send it to the model.
 Images shrink to at most 1024 pixels
 per side without upscaling. Video frame payloads are batched below Gemma's documented
 3.5 MB request ceiling. No browser media reupload, background polling or new AWS
@@ -550,9 +555,18 @@ reopening a chat preserves completed durations. The live clock is local renderin
 not network polling. Existing general chats can continue; new work still starts by
 choosing a workflow, and workflow cards only render before the first message.
 
-Video inspection extracts at most five interior frames concurrently, using one
-decoder thread per frame and persistent HTTP connections for signed range reads.
+Video inspection extracts at most eight representative frames concurrently, using one
+decoder thread per frame against the prepared local source.
 The immutable source/range/frame selection has a separate owner-scoped S3 frame
 cache, so a new question reuses extracted frames without rereading the video.
-Results include whether an audio track exists; the agent only requests speech for
-questions that need it and does not transcribe a video confirmed to have no audio.
+Results include whether an audio track exists, sampled observations and the full
+transcript with coverage. Visual-only requests can disable audio; the agent does
+not repeat transcription when the video result already contains it. Missing audio
+is reported as a property of the uploaded copy, not interpreted as model failure.
+
+`Media analysis` structured server logs correlate each operation by request ID and
+file ID. Stages record cache hits, track counts, extraction times and byte counts,
+model input/output frame counts and indices, and transcript chunk coverage. Logs
+exclude signed URLs, credentials, images, transcript text and provider reasoning.
+S3 object transfers use the chat operation’s transfer budget and abort signal; authentication and
+DynamoDB retain their short metadata timeouts.

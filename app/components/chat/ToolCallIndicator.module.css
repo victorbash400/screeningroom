@@ -12,10 +12,10 @@
   white-space: normal;
 }
 .tool svg { flex-shrink: 0; }
-.tool strong { font-weight: 620; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tool strong { position: relative; font-weight: 620; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tool[data-state="failed"] { color: var(--danger); }
-.tool[data-state="running"]::after {
+.tool[data-state="running"] strong::after {
   position: absolute;
   inset: 0 auto 0 -45%;
   width: 42%;
@@ -26,5 +26,5 @@
 }
 @keyframes shimmer { to { transform: translateX(350%); } }
 @media (prefers-reduced-motion: reduce) {
-  .tool[data-state="running"]::after { animation: none; }
+  .tool[data-state="running"] strong::after { animation: none; }
 }

@@ -45,31 +45,32 @@ test('analysis cache is owner/content/model scoped and does not hide storage or 
  }finally{client.send=original;}
 });
 
-test('small private media is prepared once and temporary files are removed on success and failure',async()=>{
+test('private media streams once and temporary files are removed on success and failure',async()=>{
  const {selectedMedia}=await import('../app/server/selected-media.ts');
  const {readFile}=await import('node:fs/promises');
+ const {Readable}=await import('node:stream');
  const client=storage(), originalSend=client.send, originalCredentials=client.config.credentials;
  client.config.credentials=async()=>({accessKeyId:'fixture',secretAccessKey:'fixture'});
  const node={id:'small',name:'Clip.mp4',kind:'file',size:4,content:'cloud-file:fixture'};
  let requests=0,path;
- client.send=async command=>{requests++;assert.equal(command.input.Key,'users/owner/files/fixture');return {ContentLength:4,Body:{transformToByteArray:async()=>Buffer.from('clip')}};};
+ client.send=async command=>{requests++;assert.equal(command.input.Key,'users/owner/files/fixture');return {ContentLength:4,Body:Readable.from([Buffer.from('clip')])};};
  try{
   const files=selectedMedia('owner',[]);
   await files.withSource(node,async source=>{path=source;assert.equal(await readFile(source,'utf8'),'clip');});
   assert.equal(existsSync(path),false);assert.equal(requests,1);
   await assert.rejects(files.withSource(node,async source=>{path=source;throw new Error('decode failed');}),{message:'decode failed'});
   assert.equal(existsSync(path),false);
-  await files.withSource({...node,size:9*1024*1024},async source=>{assert.ok(source.startsWith('https:'));});
-  assert.equal(requests,2);
+  await files.withSource({...node,size:9*1024*1024},async source=>{assert.equal(await readFile(source,'utf8'),'clip');});
+  assert.equal(requests,3);
  }finally{client.send=originalSend;client.config.credentials=originalCredentials;}
 });
 
-test('video calls allow no more than five interior samples and reject an invalid request before decoding',async()=>{
+test('video calls allow eight representative samples and reject an invalid request before decoding',async()=>{
  const {mediaUnderstandingTools}=await import('../app/tools/media-understanding.ts');
  const {asSchema}=await import('ai');
  const schema=asSchema(mediaUnderstandingTools('owner',[]).inspectVideo.inputSchema);
  const valid=await schema.validate({fileId:'video',question:'Describe it',samples:5,startSeconds:0});
- const invalid=await schema.validate({fileId:'video',samples:6});
+ const invalid=await schema.validate({fileId:'video',samples:9});
  assert.equal(valid.success,true);assert.equal(invalid.success,false);
  const times=sampleTimes(0,600,5);assert.deepEqual(times,[60,180,300,420,540]);
  assert.ok(times.every(time=>time>0&&time<600));
@@ -90,4 +91,36 @@ test('video preview cache reuses decoded frames across questions and remains own
   client.send=async()=>{throw new Error('Access denied');};
   await assert.rejects(videoFrames('one',node,5,0,undefined,prepare),{message:'Access denied'});assert.equal(decodes,3);
  }finally{client.send=original;}
+});
+
+test('video evidence retains full speech and rejects misleading full-coverage flags',async()=>{
+ const {videoSampleTimes}=await import('../app/lib/mediaAnalysis.ts');
+ const times=videoSampleTimes(0,600,8,'overview');assert.equal(times[0],5);assert.equal(times.length,8);assert.ok(times.at(-1)>550);
+ const transcript={model:'google.gemma-4-e2b',duration:130,start:0,end:130,complete:true,uncertainties:[],segments:[{start:120,end:130,text:'Compare energy costs before buying hardware.'}]};
+ const video={...analysis,modality:'video',hasAudio:true,transcript};delete video.nextStart;
+ assert.equal(mediaAnalysisSchema.safeParse(video).success,true);
+ assert.equal(mediaAnalysisSchema.safeParse({...video,transcript:{...transcript,start:30}}).success,false);
+ assert.ok(chatHistory([{id:'v',role:'assistant',text:'Technology analysis.',createdAt:'2026-10-18T10:00:00Z',blocks:[{id:'t',kind:'tool',tool:{id:'t',name:'inspectVideo',state:'done',media:video}}]}])[0].content.includes('Compare energy costs'));
+});
+
+test('video and audio share one streamed source and cache-only analysis does not download it',async()=>{
+ const {withPreparedMedia}=await import('../app/server/prepared-media.ts');
+ const {Readable}=await import('node:stream');const {readFile}=await import('node:fs/promises');
+ const client=storage(),original=client.send;let downloads=0,path;
+ client.send=async()=>{downloads++;return{ContentLength:4,Body:Readable.from([Buffer.from('clip')])};};
+ try{
+  const node={id:'video',kind:'file',name:'Video.mp4',content:'cloud-file:shared'};
+  await withPreparedMedia('owner',node,async source=>{
+   const results=await Promise.all([source(async p=>{path=p;return readFile(p,'utf8');}),source(async p=>{assert.equal(p,path);return readFile(p,'utf8');})]);
+   assert.deepEqual(results,['clip','clip']);assert.equal(downloads,1);
+  });assert.equal(existsSync(path),false);
+  await withPreparedMedia('owner',node,async()=>{});assert.equal(downloads,1);
+ }finally{client.send=original;}
+});
+
+test('a failed source transfer never reaches decoding or produces a successful source',async()=>{
+ const {withPreparedMedia}=await import('../app/server/prepared-media.ts');const{Readable}=await import('node:stream');
+ const client=storage(),original=client.send;let decoded=false;
+ client.send=async()=>({Body:Readable.from((async function*(){yield Buffer.from('partial');throw new Error('Transfer failed');})())});
+ try{await assert.rejects(withPreparedMedia('owner',{id:'v',kind:'file',name:'Video.mp4',content:'cloud-file:broken'},source=>source(async()=>{decoded=true;})),{message:'Transfer failed'});assert.equal(decoded,false);}finally{client.send=original;}
 });

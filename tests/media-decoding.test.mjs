@@ -25,3 +25,29 @@ test('bundled media decoding handles a video with speech-sized audio, sparse fra
   assert.throws(()=>mediaInputFormat({kind:'file',name:'playlist.m3u8',mimeType:'video/unknown'}));
  }finally{await rm(directory,{recursive:true,force:true});}
 });
+
+test('full audio decodes once and produces exact model-sized WAV windows beyond two minutes',async()=>{
+ const {withDecodedAudio}=await import('../app/server/decoded-audio.ts');
+ const directory=await mkdtemp(join(tmpdir(),'screeningroom-audio-test-'));
+ try{
+  const audio=join(directory,'long.wav');
+  await exec(ffmpeg,['-hide_banner','-loglevel','error','-f','lavfi','-i','sine=frequency=440:duration=125','-ar','16000','-ac','1',audio]);
+  await withDecodedAudio(audio,0,125,'wav',async decoded=>{
+   assert.equal(decoded.windows.length,5);
+   assert.deepEqual(decoded.windows.at(-1),{start:120,end:125});
+   const first=await decoded.read(0),last=await decoded.read(4);
+   assert.equal(first.length,960044);assert.equal(first.readUInt32LE(40),960000);
+   assert.equal(last.length,160044);assert.equal(last.readUInt32LE(40),160000);
+   assert.equal(last.readUInt32LE(24),16000);assert.equal(last.readUInt16LE(22),1);
+   await assert.rejects(decoded.read(5),{message:'Audio chunk is unavailable.'});
+  });
+ }finally{await rm(directory,{recursive:true,force:true});}
+});
+
+test('digital silence is skipped without removing quiet speech or other nonzero audio',async()=>{
+ const {hasAudioSignal}=await import('../app/server/decoded-audio.ts');
+ const wav=Buffer.alloc(44+32000);wav.write('RIFF',0);
+ assert.equal(hasAudioSignal(wav),false);
+ wav.writeInt16LE(1,44);assert.equal(hasAudioSignal(wav),true);
+ wav.writeInt16LE(-1,44);assert.equal(hasAudioSignal(wav),true);
+});

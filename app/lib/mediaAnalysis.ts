@@ -9,13 +9,16 @@ export function mediaKind(node: Pick<FileNode, "name" | "mimeType" | "kind">): "
   if (["mp4", "mov", "m4v", "webm", "mkv", "avi", "mpeg", "mpg"].includes(extension)) return "video";
   if (["mp3", "wav", "m4a", "aac", "flac", "ogg", "aiff", "aif", "opus"].includes(extension)) return "audio";
 }
+export const transcriptSchema = z.object({ model: z.string().min(1), start: z.number().nonnegative(), end: z.number().nonnegative(), duration: z.number().positive(), complete: z.boolean(), uncertainties: z.array(z.string()), segments: z.array(z.object({ start: z.number().nonnegative(), end: z.number().nonnegative(), text: z.string(), silence: z.boolean().optional() }).strict()) }).strict().refine((value) => value.end >= value.start && value.end <= value.duration && (!value.complete || value.start === 0 && value.end === value.duration), "Transcript coverage is invalid.");
+export type MediaTranscript = z.infer<typeof transcriptSchema>;
 export const mediaAnalysisSchema = z.object({
   kind: z.literal("media"), fileId: z.string().min(1), name: z.string().min(1), modality: z.enum(["image", "video", "audio"]), model: z.string().min(1),
   summary: z.string(), visibleText: z.string(), uncertainties: z.array(z.string()),
   duration: z.number().nonnegative().optional(), start: z.number().nonnegative().optional(), end: z.number().nonnegative().optional(),
   hasAudio: z.boolean().optional(),
+  transcript: transcriptSchema.optional(),
   nextStart: z.number().nonnegative().optional(),
-  segments: z.array(z.object({ start: z.number().nonnegative(), end: z.number().nonnegative().optional(), text: z.string() }).strict()),
+  segments: z.array(z.object({ start: z.number().nonnegative(), end: z.number().nonnegative().optional(), text: z.string(), silence: z.boolean().optional() }).strict()),
 }).strict();
 export type MediaAnalysis = z.infer<typeof mediaAnalysisSchema>;
 export function sampleTimes(start: number, end: number, count: number) {
@@ -32,4 +35,10 @@ export function mediaTime(seconds: number) {
   const value = Math.floor(seconds);
   const hours = Math.floor(value / 3600), minutes = Math.floor(value / 60) % 60;
   return `${hours ? `${hours}:` : ""}${String(minutes).padStart(hours ? 2 : 1, "0")}:${String(value % 60).padStart(2, "0")}`;
+}
+
+export function videoSampleTimes(start: number, end: number, count: number, strategy: "uniform" | "overview") {
+  const uniform = sampleTimes(start, end, count);
+  if (strategy === "uniform" || count === 1) return uniform;
+  return [start + Math.min(5, (end - start) * .03), ...sampleTimes(start, end, count - 1)];
 }
