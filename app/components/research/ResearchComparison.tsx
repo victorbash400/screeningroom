@@ -14,6 +14,6 @@ export default function ResearchComparison({ widget }: { widget: ComparisonWidge
         return <td key={subject.id}>{value ? metricText(value.value, value.unit) : "—"}</td>;
       })}</tr>)}</tbody></table>
     </div>
-    {widget.commonTags.length > 0 && <details className={styles.tags}><summary>Shared tags ({widget.commonTags.length})</summary><div>{widget.commonTags.map((tag) => <span key={tag}>{tag}</span>)}</div></details>}
+    {!widget.metricComparisons && widget.commonTags.length > 0 && <details className={styles.tags}><summary>Shared tags ({widget.commonTags.length})</summary><div>{widget.commonTags.map((tag) => <span key={tag}>{tag}</span>)}</div></details>}
   </ResearchWidgetFrame>;
 }

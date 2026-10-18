@@ -6,6 +6,6 @@ export default function ResearchSubject({ subject }: { subject: ComparisonWidget
   const [failed, setFailed] = useState(false);
   return <div className={styles.subject}>
     {subject.image && !failed && <img src={subject.image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />}
-    <strong>{subject.name}</strong>{subject.year !== undefined && <small>{subject.year}</small>}
+    <strong>{subject.website ? <a href={subject.website} target="_blank" rel="noopener noreferrer">{subject.name}</a> : subject.name}</strong>{subject.year !== undefined && <small>{subject.year}</small>}
   </div>;
 }

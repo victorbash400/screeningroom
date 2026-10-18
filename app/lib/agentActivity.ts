@@ -18,7 +18,7 @@ export function agentBlocks(message: UIMessage, activity?: Map<string, MessageTo
         ...(terminal ? { endedAt: now } : {}),
         ...(widget ? { widget } : {}),
         ...(part.state === "output-available" && ["inspectImage", "inspectVideo", "transcribeMedia"].includes(getToolName(part)) ? { media: mediaAnalysisSchema.parse(part.output) } : {}),
-        ...(part.state === "output-available" && ["getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
+        ...(part.state === "output-available" && ["findComparableMedia", "getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
         id: part.toolCallId, name: getToolName(part),
         ...(getToolName(part) === "findSimilar" && part.state === "output-available" ? { results: similarResultsSchema.parse(part.output) } : {}),
         ...(part.state === "output-error" ? { error: part.errorText } : part.state === "output-denied" ? { error: "Tool call denied." } : {}),

@@ -8,6 +8,9 @@
 .subject { display: flex; flex-direction: column; gap: 4px; min-width: 90px; max-width: 160px; }
 .subject img { width: 48px; height: 64px; object-fit: cover; border-radius: 5px; }
 .subject strong { font-weight: 500; }
+.subject a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 3px; }
+.subject a:hover { text-decoration-color: currentColor; }
+.subject a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .tags { margin: 10px 12px 0; font-size: 10px; color: var(--muted); }
 .tags summary { cursor: pointer; }
 .tags > div { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
