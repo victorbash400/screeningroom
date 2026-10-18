@@ -49,11 +49,13 @@ export default function FloatingLocationMap({ anchor, open, area = defaultLocati
   if (!frame) return null;
   return createPortal(<section role="region" aria-label="Audience map" hidden={!open} className={styles.window}
     style={{ left: frame.x, top: frame.y, width: frame.width, height: frame.height }}>
+    <div className={styles.mapArea}>
     <MapSearchControls area={area} onArea={onArea} searching={searching} error={searchError} onSearchArea={() => void searchArea()}
       onMove={(event) => start(event, "move")} onMoveKey={(event) => { if (adjust(event.key, "move")) event.preventDefault(); }} />
     <LocationMapCanvas
       visible={open} scene={scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />
+    </div>
     <VenueCarousel scene={scene} onScene={onScene} />
     <button type="button" className={styles.resize} aria-label="Resize map" onPointerDown={(event) => start(event, "resize")}
       onKeyDown={(event) => { if (adjust(event.key, "resize")) event.preventDefault(); }}><MoveDiagonal2 /></button>

@@ -5,7 +5,7 @@ import { audienceHeatmapSchema } from "./audienceHeatmap.ts";
 export const mapPlaceSchema = z.object({
   id: z.string().optional(),
   category: z.string().optional(), address: z.string().optional(), website: publicWebUrl.optional(),
-  affinity: z.number().optional(), source: z.enum(["Qloo", "OpenStreetMap", "Photon", "Geoapify"]).optional(),
+  image: publicWebUrl.optional(), affinity: z.number().optional(), source: z.enum(["Qloo", "OpenStreetMap", "Photon", "Geoapify"]).optional(),
   name: z.string().trim().min(1),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),

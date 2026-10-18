@@ -22,6 +22,7 @@ export async function audienceVenues(area: LocationInterest, entityIds: string[]
     const score = z.object({ affinity: z.number().optional() }).safeParse(item.query);
     return [{ id: item.entity_id, name: item.name, latitude: item.location.lat, longitude: item.location.lon,
       category: selected.length === 1 ? selected[0].label : "Venue", source: "Qloo" as const,
+      ...(publicWebUrl.safeParse(item.properties?.image?.url).success ? { image: item.properties!.image!.url } : {}),
       ...(item.properties?.address ? { address: item.properties.address } : {}),
       ...(publicWebUrl.safeParse(item.properties?.website).success ? { website: item.properties!.website } : {}),
       ...((entityIds.length || tagIds.length) && score.success && score.data.affinity !== undefined ? { affinity: score.data.affinity } : {}),

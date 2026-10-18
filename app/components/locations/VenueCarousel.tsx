@@ -1,49 +1,46 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { MapScene } from "../../lib/mapScene";
+import VenueCarouselCard from "./VenueCarouselCard";
 import styles from "./VenueCarousel.module.css";
 
 export default function VenueCarousel({ scene, onScene }: { scene?: MapScene; onScene: (scene: MapScene) => boolean }) {
   const list = useRef<HTMLDivElement>(null);
-  const [edges, setEdges] = useState({ start: true, end: false });
+  const [visible, setVisible] = useState(0);
   const places = scene?.presentation.locations ?? [];
   const selected = scene?.presentation.focusIndex;
+  const active = Math.min(visible, Math.max(0, places.length - 1));
+  function center(index: number) {
+    const element = list.current, card = element?.children[index];
+    if (element && card instanceof HTMLElement) element.scrollTo({ left: card.offsetLeft - (element.clientWidth - card.offsetWidth) / 2, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  }
+  useEffect(() => { if (selected !== undefined) { setVisible(selected); center(selected); } }, [selected, places]);
   function measure() {
     const element = list.current;
-    if (element) setEdges({ start: element.scrollLeft <= 1, end: element.scrollLeft + element.clientWidth >= element.scrollWidth - 1 });
-  }
-  useEffect(() => {
-    const element = list.current;
     if (!element) return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    measure();
-    return () => observer.disconnect();
-  }, [places]);
-  useEffect(() => {
-    const element = list.current, card = selected === undefined ? undefined : element?.children[selected];
-    if (element && card instanceof HTMLElement) {
-      const left = card.offsetLeft - element.offsetLeft;
-      if (left < element.scrollLeft) element.scrollTo({ left });
-      else if (left + card.offsetWidth > element.scrollLeft + element.clientWidth) element.scrollTo({ left: left + card.offsetWidth - element.clientWidth });
-    }
-  }, [selected]);
-  function move(direction: number) {
-    const element = list.current;
-    if (element) element.scrollBy({ left: direction * element.clientWidth * .85, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    const middle = element.scrollLeft + element.clientWidth / 2;
+    let closest = 0, distance = Infinity;
+    Array.from(element.children).forEach((card, index) => {
+      if (!(card instanceof HTMLElement)) return;
+      const next = Math.abs(card.offsetLeft + card.offsetWidth / 2 - middle);
+      if (next < distance) { distance = next; closest = index; }
+    });
+    setVisible(closest);
+  }
+  function select(index: number) {
+    setVisible(index); center(index);
+    if (scene) onScene({ id: crypto.randomUUID(), reframe: true, presentation: { ...scene.presentation, focusIndex: index } });
   }
   if (!places.length) return null;
   return <section className={styles.carousel} role="region" aria-label="Venue shortlist" aria-roledescription="carousel">
-    <div className={styles.controls}>
-      <button type="button" aria-label="Previous venues" disabled={edges.start} onClick={() => move(-1)}><ChevronLeft size={16} /></button>
-      <button type="button" aria-label="Next venues" disabled={edges.end} onClick={() => move(1)}><ChevronRight size={16} /></button>
-    </div>
     <div ref={list} className={styles.list} onScroll={measure}>
-      {places.map((place, index) => <button className={styles.card} type="button" key={place.id ?? `${place.longitude}:${place.latitude}`} aria-pressed={selected === index}
-        onClick={() => scene && onScene({ id: crypto.randomUUID(), reframe: true, presentation: { ...scene.presentation, focusIndex: index } })}>
-        <MapPin size={17} aria-hidden="true" /><span><strong>{place.name}</strong>{place.address && <small>{place.address}</small>}</span>
-        {place.affinity !== undefined && <output aria-label="Qloo venue affinity" title="Qloo venue affinity within this query">{place.affinity.toLocaleString(undefined, { maximumFractionDigits: 3 })}</output>}
-      </button>)}
+      {places.map((place, index) => <VenueCarouselCard key={place.id ?? `${place.longitude}:${place.latitude}`} place={place} index={index} active={active === index} selected={selected === index} onSelect={() => select(index)} />)}
+    </div>
+    <div className={styles.controls}>
+      <span className={styles.progress} aria-hidden="true"><span style={{ width: `${(active + 1) / places.length * 100}%` }} /></span>
+      <output aria-live="polite" aria-atomic="true"><strong>{String(active + 1).padStart(2, "0")}</strong><span>/ {String(places.length).padStart(2, "0")}</span></output>
+      <button type="button" aria-label="Previous venue" disabled={active === 0} onClick={() => select(active - 1)}><ChevronLeft size={17} /></button>
+      <button type="button" aria-label="Next venue" disabled={active === places.length - 1} onClick={() => select(active + 1)}><ChevronRight size={17} /></button>
     </div>
   </section>;
 }
