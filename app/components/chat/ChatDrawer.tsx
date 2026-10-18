@@ -87,6 +87,9 @@ export default function ChatDrawer({
   }, []);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(true);
+  function newChat() {
+    if (onNew()) setHistoryOpen(false);
+  }
   function startChat(prompt: string) {
     if (!onDraft(prompt)) return;
     const input = drawer.current?.querySelector("textarea");
@@ -121,6 +124,7 @@ export default function ChatDrawer({
         conversation={conversation}
         historyOpen={historyOpen}
         onHistory={() => setHistoryOpen(!historyOpen)}
+        onNew={newChat}
         onClose={onClose}
         onRename={onRename}
         onDelete={() => onDelete(conversation.id)}
@@ -171,9 +175,7 @@ export default function ChatDrawer({
               items={conversations}
               onDelete={onDelete}
               activeId={conversation.id}
-              onNew={() => {
-                if (onNew()) setHistoryOpen(false);
-              }}
+              onNew={newChat}
               onSelect={(id) => {
                 onSelect(id);
                 setHistoryOpen(false);

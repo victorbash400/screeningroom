@@ -1,4 +1,4 @@
-import { ArrowLeft, PanelLeft, PanelLeftClose, X } from "lucide-react";
+import { ArrowLeft, PanelLeft, PanelLeftClose, SquarePen, X } from "lucide-react";
 import type { Conversation } from "../../lib/types";
 import IconButton from "../controls/IconButton";
 import ActionMenu from "../controls/ActionMenu";
@@ -11,6 +11,7 @@ export default function ChatHeader({
   conversation,
   historyOpen,
   onHistory,
+  onNew,
   onClose,
   onRename,
   onDelete,
@@ -23,6 +24,7 @@ export default function ChatHeader({
   conversation: Conversation;
   historyOpen: boolean;
   onHistory: () => void;
+  onNew: () => void;
   onClose: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -44,6 +46,7 @@ export default function ChatHeader({
         </IconButton>
       )}
       <span>{label}</span>
+      <IconButton label="New chat" title="New chat" onClick={onNew}><SquarePen /></IconButton>
       {conversation.scope !== "workspace" && <ActionMenu
         label="Chat actions"
         onRename={onRename}
