@@ -1,4 +1,4 @@
-.options { position: absolute; bottom: 28px; right: 12px; z-index: 2; padding: 4px; border: 1px solid #e2e4e6; border-radius: 22px; background: white; color: #343b42; }
+.options { position: absolute; bottom: calc(var(--venue-carousel-height, 0px) + 36px); right: 12px; z-index: 2; padding: 4px; border: 1px solid #e2e4e6; border-radius: 22px; background: white; color: #343b42; }
 .actions { display: flex; align-items: center; gap: 12px; }
 .group { display: flex; align-items: center; gap: 2px; }
 .options button { color: inherit; font-size: 11px; border-radius: 50%; }

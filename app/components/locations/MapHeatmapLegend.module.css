@@ -1,4 +1,4 @@
-.legend { position: absolute; left: 12px; bottom: 80px; z-index: 1; width: 160px; padding: 9px 10px; background: white; border: 1px solid #e2e4e6; border-radius: 10px; color: #454c52; }
+.legend { position: absolute; left: 12px; bottom: calc(var(--venue-carousel-height, 0px) + 80px); z-index: 1; width: 160px; padding: 9px 10px; background: white; border: 1px solid #e2e4e6; border-radius: 10px; color: #454c52; }
 .legend strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 500; }
 .legend > i { display: block; height: 5px; margin: 7px 0 5px; border-radius: 3px; background: linear-gradient(to right, #d8e7e9, #729ba9, #d7a18b, #b76650); }
 .legend > div { display: flex; justify-content: space-between; gap: 10px; font-size: 8px; color: #7b7d80; }

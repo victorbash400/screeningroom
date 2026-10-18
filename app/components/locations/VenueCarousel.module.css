@@ -1,6 +1,6 @@
-.carousel { box-sizing: border-box; display: flex; flex-direction: column; flex: 1 1 220px; min-width: 0; min-height: 170px; padding: 12px 0 8px; background: white; }
-.list { position: relative; display: flex; flex: 1; min-height: 0; align-items: stretch; gap: 4px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; padding: 4px 18px; scrollbar-width: thin; scrollbar-color: #dedfe1 transparent; }
-.controls { display: flex; align-items: center; gap: 5px; padding: 8px 18px 0; }
+.carousel { box-sizing: border-box; display: flex; flex-direction: column; position: absolute; z-index: 3; left: 0; right: 0; bottom: 22px; height: var(--venue-carousel-height, 220px); min-width: 0; padding: 8px 0 0; pointer-events: none; }
+.list { pointer-events: auto; position: relative; display: flex; flex: 1; min-height: 0; align-items: stretch; gap: 4px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; padding: 4px 18px; scrollbar-width: thin; scrollbar-color: #dedfe1 transparent; }
+.controls { pointer-events: auto; display: flex; align-items: center; gap: 5px; padding: 8px 18px 0; }
 .progress { flex: 1; max-width: 90px; height: 2px; background: #eceeed; margin-right: auto; overflow: hidden; }
 .progress > span { display: block; height: 100%; background: #768b83; transition: width 180ms ease; }
 .controls output { display: flex; align-items: baseline; gap: 5px; margin: 0 9px; font-variant-numeric: tabular-nums; }

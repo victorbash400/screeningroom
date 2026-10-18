@@ -11,14 +11,13 @@ import styles from "./LocationMapCanvas.module.css";
 import { cleanMapStyle } from "./mapStyle";
 import { useMapScene } from "./useMapScene";
 import MapHeatmapLegend from "./MapHeatmapLegend";
-import VenueCard from "./VenueCard";
-import { useAudienceMap } from "./AudienceMapContext";
 import { useAudienceLayers } from "./useAudienceLayers";
 import type { MapPlace, MapScene } from "../../lib/mapScene";
 
 setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
 
-export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onLandmarks, onThreeD }: {
+export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onPlace, onLandmarks, onThreeD }: {
+  onPlace: (place: MapPlace) => void;
   onLandmarks: (enabled: boolean) => void;
   onThreeD: (enabled: boolean) => void;
   visible: boolean;
@@ -28,10 +27,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   threeD: boolean;
   onArea: (area?: LocationInterest) => void;
 }) {
-  const audience = useAudienceMap();
   const [layerError, setLayerError] = useState("");
-  const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null);
-  useEffect(() => { setSelectedPlace(scene?.presentation.focusIndex !== undefined ? scene.presentation.locations[scene.presentation.focusIndex] ?? null : null); }, [scene?.id]);
   const deviceLocation = useCurrentLocation(area, onArea);
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
@@ -44,6 +40,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     longitude: ((longitude + 180) % 360 + 360) % 360 - 180, latitude,
     name: name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, radius: area?.radius ?? 5_000, venueTypes: area?.venueTypes,
   }));
+  const selectPlace = useEffectEvent(onPlace);
   const initialArea = useRef(area);
   useEffect(() => {
     if (!container.current) return;
@@ -72,8 +69,8 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       const features = instance.queryRenderedFeatures(event.point);
       if (features.some((feature) => ["audience-venue", "audience-clusters", "audience-count"].includes(feature.layer.id))) return;
       const feature = features.find((item) => item.sourceLayer === "poi" && typeof item.properties?.name === "string");
-      if (feature) setSelectedPlace({ name: feature.properties.name, longitude: event.lngLat.lng, latitude: event.lngLat.lat, source: "OpenStreetMap" });
-      else { setSelectedPlace(null); select(event.lngLat.lng, event.lngLat.lat); }
+      if (feature) selectPlace({ name: feature.properties.name, longitude: event.lngLat.lng, latitude: event.lngLat.lat, source: "OpenStreetMap" });
+      else select(event.lngLat.lng, event.lngLat.lat);
     });
     let width = 0, height = 0;
     const observer = new ResizeObserver(([entry]) => {
@@ -130,16 +127,12 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     map.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: 450 });
   }, [ready, area?.latitude, area?.longitude, area?.radius]);
 
-  useAudienceLayers(map, ready, scene, (place) => {
-    setSelectedPlace(place);
-    if (place?.id && audience?.hasVenue(place.id)) audience.focusVenue(place.id);
-  }, setLayerError);
+  useAudienceLayers(map, ready, scene, onPlace, setLayerError);
   useMapScene(map, ready, scene, threeD, visible);
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}
     {(error || deviceLocation.error || layerError) && <div className={styles.error} role="alert"><span>{error ? "Map could not load." : deviceLocation.error || layerError}</span><button type="button" onClick={() => { if (error) setAttempt((value) => value + 1); else if (layerError) setLayerError(""); else deviceLocation.locate(); }} disabled={deviceLocation.busy}>Retry</button></div>}
-    {selectedPlace && <VenueCard busy={audience?.busy} place={selectedPlace} onClose={() => setSelectedPlace(null)} onSetArea={() => { onArea({ ...area ?? { radius: 5000 }, ...selectedPlace }); setSelectedPlace(null); }} onAsk={() => audience?.ask(`Tell me about ${selectedPlace.name} at ${selectedPlace.latitude.toFixed(5)}, ${selectedPlace.longitude.toFixed(5)}.`)} />}
     <LocationMapOptions area={area} onArea={onArea} landmarks={landmarks} threeD={threeD} onLandmarks={onLandmarks} onThreeD={onThreeD}
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCurrentLocation={deviceLocation.locate} locating={deviceLocation.busy} />
