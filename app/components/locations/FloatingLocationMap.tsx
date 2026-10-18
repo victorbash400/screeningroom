@@ -10,6 +10,7 @@ import MapSearchControls from "./MapSearchControls";
 import LocationMapCanvas from "./LocationMapCanvas";
 import { useMapFrame } from "./useMapFrame";
 import styles from "./FloatingLocationMap.module.css";
+import VenueCarousel from "./VenueCarousel";
 
 export default function FloatingLocationMap({ anchor, open, area = defaultLocationInterest, scene, onArea, onScene }: {
   onScene: (scene: MapScene) => boolean;
@@ -53,6 +54,7 @@ export default function FloatingLocationMap({ anchor, open, area = defaultLocati
     <LocationMapCanvas
       visible={open} scene={scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />
+    <VenueCarousel scene={scene} onScene={onScene} />
     <button type="button" className={styles.resize} aria-label="Resize map" onPointerDown={(event) => start(event, "resize")}
       onKeyDown={(event) => { if (adjust(event.key, "resize")) event.preventDefault(); }}><MoveDiagonal2 /></button>
   </section>, document.body);

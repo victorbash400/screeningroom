@@ -16,10 +16,15 @@ export function useMapFrame(anchor: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const rect = anchor.current?.getBoundingClientRect();
     const width = Math.min(520, Math.max(340, (rect?.left ?? 540) - 300));
-    setFrame(fit({ x: (rect?.left ?? 540) - width - 12, y: rect?.top ?? 12, width, height: 480 }));
-    const onResize = () => setFrame((value) => value && fit(value));
+    setFrame(fit({ x: (rect?.left ?? 540) - width - 12, y: rect?.top ?? 12, width, height: rect?.height ?? window.innerHeight - 80 }));
+    const onResize = () => {
+      const current = anchor.current?.getBoundingClientRect();
+      setFrame((value) => value && fit({ ...value, y: current?.top ?? value.y, height: current?.height ?? value.height }));
+    };
+    const observer = new ResizeObserver(onResize);
+    if (anchor.current) observer.observe(anchor.current);
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => { observer.disconnect(); window.removeEventListener("resize", onResize); };
   }, [anchor]);
 
   function start(event: PointerEvent<HTMLElement>, mode: "move" | "resize") {

@@ -110,17 +110,11 @@ test("research widgets render responsive comparisons, exact chart values and acc
   assert.ok(line.includes("Campaign B"));
 });
 
-test("toolbar and chat starters omit the retired performance and audience-fit entry points", async () => {
+test("toolbar exposes only Chat and Audience", async () => {
   const { default: ResearchTabs } = await import("../app/components/workspace/ResearchTabs.tsx");
-  const { default: ChatStarters } = await import("../app/components/chat/ChatStarters.tsx");
   const toolbar = renderToStaticMarkup(createElement(ResearchTabs, { selected: "locations", onSelect() {} }));
-  for (const label of ["Chat", "Similar media", "Compare", "Audience"]) assert.ok(toolbar.includes(`aria-label="${label}"`));
-  for (const label of ["Audience fit", "Performance"]) assert.equal(toolbar.includes(`aria-label="${label}"`), false);
-  const roots = renderToStaticMarkup(createElement(ChatStarters, { onSelect() {} }));
-  assert.ok(roots.includes("Find similar media"));
-  assert.ok(roots.includes("Compare with existing media"));
-  assert.equal(roots.includes("Explore audience fit"), false);
-  assert.equal(roots.includes("Check media or project performance"), false);
+  for (const label of ["Chat", "Audience"]) assert.ok(toolbar.includes(`aria-label="${label}"`));
+  for (const label of ["Similar media", "Compare", "Audience fit", "Performance"]) assert.equal(toolbar.includes(`aria-label="${label}"`), false);
 });
 
 test("media analysis widgets show sampled coverage, transcripts and explicit continuation", async () => {
@@ -144,4 +138,11 @@ test('video analysis exposes the complete speech transcript alongside visual sam
  assert.ok(html.includes('0:00–2:10'));
  assert.ok(html.includes('google.gemma-4-e2b'));
  assert.ok(!html.includes('Audio was not transcribed'));
+});
+
+test('venue carousel keeps map ordering, focus and query affinity without inventing percentages',async()=>{
+ const{default:VenueCarousel}=await import('../app/components/locations/VenueCarousel.tsx');
+ const html=renderToStaticMarkup(createElement(VenueCarousel,{scene:{id:'scene',presentation:{locations:[{...place,affinity:.73},{...place,id:'b',name:'Second venue'}],focusIndex:0}},onScene:()=>true}));
+ assert.ok(html.includes('aria-label="Venue shortlist"'));assert.ok(html.includes('aria-pressed="true"'));assert.ok(html.includes('Qloo venue affinity'));assert.ok(html.includes('0.73'));assert.equal(html.includes('73%'),false);assert.ok(html.indexOf('Cinema')<html.indexOf('Second venue'));
+ assert.equal(renderToStaticMarkup(createElement(VenueCarousel,{onScene:()=>true})), '');
 });

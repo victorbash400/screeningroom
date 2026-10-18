@@ -130,7 +130,10 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     map.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: 450 });
   }, [ready, area?.latitude, area?.longitude, area?.radius]);
 
-  useAudienceLayers(map, ready, scene, setSelectedPlace, setLayerError);
+  useAudienceLayers(map, ready, scene, (place) => {
+    setSelectedPlace(place);
+    if (place?.id && audience?.hasVenue(place.id)) audience.focusVenue(place.id);
+  }, setLayerError);
   useMapScene(map, ready, scene, threeD, visible);
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />

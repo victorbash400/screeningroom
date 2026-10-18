@@ -57,12 +57,15 @@ test('tool durations render independently and frozen calls do not need a live cl
  assert.ok(html.indexOf('Video analysis')<html.indexOf('Audio transcription'));
 });
 
-test('workflow cards appear only before the first message and existing chats keep their composer',async()=>{
+test('Chat accepts a first message directly without retired workflow cards',async()=>{
  const {default:ChatDrawer}=await import('../app/components/chat/ChatDrawer.tsx');
- const action=()=>true,props={onWorkflow:action,onAudienceWidget:action,onMapScene:action,onLocationInterest:action,busy:false,onStop:action,referenceRequest:0,draft:'',onThread:action,conversations:[],nodes:[],workspaces:[{id:'w',name:'Workspace'}],workspaceId:'w',onClose:action,onNew:action,onSelect:action,onRename:action,onDelete:action,onDraft:action,onSend:action,onReference:action};
+ const action=()=>true,props={onAudienceWidget:action,onMapScene:action,onLocationInterest:action,busy:false,onStop:action,referenceRequest:0,draft:'',onThread:action,conversations:[],nodes:[],workspaces:[{id:'w',name:'Workspace'}],workspaceId:'w',onClose:action,onNew:action,onSelect:action,onRename:action,onDelete:action,onDraft:action,onSend:action,onReference:action};
  const conversation={id:'c',workspaceId:'w',channel:'chat',title:'Chats',draft:'',messages:[]};
  const empty=renderToStaticMarkup(createElement(ChatDrawer,{...props,conversation}));
- assert.ok(empty.includes('Find similar media'));
+ assert.ok(empty.includes('aria-label="Message"'));
+ assert.ok(!empty.includes('Find similar media'));
+ assert.ok(!empty.includes('Compare with existing media'));
+ assert.ok(empty.includes('aria-label="New chat"'));
  const active=renderToStaticMarkup(createElement(ChatDrawer,{...props,conversation:{...conversation,messages:[{...reply,text:'Hello',blocks:[{id:'text',kind:'text',text:'Hello'}]}]}}));
  assert.ok(!active.includes('Find similar media'));
  assert.ok(active.includes('aria-label="Message"'));

@@ -472,10 +472,10 @@ follow-up context while remaining available to the map.
 
 ### Media workflows
 
-Chat offers Similar media and Compare; geographic Audience keeps its map and
-location tools. Performance and Audience fit toolbar entries have been removed.
-Existing saved conversations remain compatible. The toolbar stays right aligned
-and collapses labels on narrower workspace widths.
+The interface has Chat and Audience. Chat supports general conversation and
+media/audience questions directly. Audience handles local cultural fit, heatmaps
+and venue planning. Retired channels remain compatible with saved conversations.
+The toolbar stays right aligned and collapses labels on narrower workspace widths.
 
 Select files/folders or name media in the message. Selected text, briefs, subtitles,
 CSV and JSON are read from the authenticated user's S3-backed workspace. Folder
@@ -485,21 +485,17 @@ Selected file chips open the existing media preview without closing the chat.
 GLM-5 handles the conversation; dedicated Gemma 4 tools handle selected image,
 video-frame and speech analysis. PDF binaries still need a text export.
 
-- Similar uses `findComparableMedia`: Qloo recommendations from resolved titles
-  and/or real taste tags, enriched with linked title pages, artwork, IMDb ratings
-  and voting participation, Metacritic critic/user ratings and Qloo popularity.
-  Mandatory genre tags and year ranges can constrain the cohort. Taste affinity
-  stays separate from performance; this is not reverse-image or open-web search.
-- Compare prioritizes those reception and participation metrics. Same-source,
-  same-scale comparisons return leaders, ties, numeric gaps and metric coverage.
-  Tool output sent to the model omits plot descriptions and supplies metric
-  interpretation rules; the widget retains source-labelled values and links.
-- Compare also calculates observed totals, CTR, conversion rate and ROAS from
-  selected CSV/JSON exports, with exact column mappings and optional grouping.
-  Ratios use totals, zero denominators omit rates, and currencies cannot be mixed.
-- The connection supplies no YouTube/channel view counts, watch time, revenue,
-  ticket sales, release-window trends or predictive performance model. These
-  cannot be inferred from taste affinity, voting counts or a video's subject.
+- Chat can inspect selected work and use Qloo audience demographics and taste
+  profiles to discuss who may enjoy it. It has no required workflow selection.
+- Audience uses comparable works or genuine taste tags as interest signals in
+  the selected map area. Geographic heatmaps and Qloo venue affinity are separate
+  from ordinary geographic venue discovery. Media-to-tag matching is the model's
+  interpretation; Qloo supplies the resulting cultural-affinity signal.
+- Age/gender affinity currently comes from a separate, non-geographic Qloo query.
+  WorldPop supplies resident estimates, not taste data. The model chooses tools;
+  the Audience instructions connect selected media to local cultural references, comparable/tag heatmaps and optional affinity-ranked venues.
+- Legacy comparable-media and metric-comparison tools remain available to saved
+  channel contracts; their validated results and charts still reopen normally.
 
 Comparison tables and bar/line charts persist as validated tool results. Chart
 numbers are derived from tool evidence, not supplied freely by the language model.
@@ -570,3 +566,22 @@ model input/output frame counts and indices, and transcript chunk coverage. Logs
 exclude signed URLs, credentials, images, transcript text and provider reasoning.
 S3 object transfers use the chat operation’s transfer budget and abort signal; authentication and
 DynamoDB retain their short metadata timeouts.
+
+### Geographic taste queries
+
+Audience uses `getLocalTaste` with `signal.location` to discover local films,
+artists, shows, books, podcasts or games. Point signals leave signal radius unset
+for Qloo dynamic density discovery. Separate heatmap and venue calls retain the
+user-selected search radius as `filter.location.radius`. Original songs and live
+productions use explicit artist/comparable/tag proxies, not invented song/play IDs.
+
+Live checks returned local movie and artist results. Restricting location-only
+queries with `filter.results.entities` returned no rows for tested film IDs, so
+that operation is deliberately not exposed as a direct fit score. Heatmaps assess
+the geographic affinity of specific references instead. Do not compare relative
+normalized values across independent queries as absolute market scores.
+
+The floating Audience map starts at the chat panel's full height and follows
+layout resizing. Returned places form a vertical, scroll-snapping shortlist below
+the map; selecting a card focuses its map pin. Qloo venue affinity and surrounding
+heatmap affinity remain separate evidence. No synthetic combined score is used.

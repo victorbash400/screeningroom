@@ -181,15 +181,6 @@ export function useLocalChat(
     setLocationInterest: (locationInterest?: LocationInterest) => conversation ? update((previous) => ({
       ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, locationInterest } : item),
     })) : false,
-    chooseWorkflow: (targetChannel: ChatChannel) => {
-      if (!workspaceId || !ensureWorkspaceConversation(workspaceId, targetChannel)) return;
-      if (channel === "chat" && conversation?.draft) {
-        const target = workspaceConversation(workspaceId, targetChannel);
-        update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => item.id === target.id ? { ...item, draft: conversation.draft } : item) }));
-      }
-      setChannel(targetChannel);
-      setOpen(true);
-    },
     channel,
     discard: agent.discard,
     error: agent.error,
