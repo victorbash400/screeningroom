@@ -110,14 +110,17 @@ test("research widgets render responsive comparisons, exact chart values and acc
   assert.ok(line.includes("Campaign B"));
 });
 
-test("toolbar exposes all four roots beside geographic Audience and starters select a workflow", async () => {
+test("toolbar and chat starters omit the retired performance and audience-fit entry points", async () => {
   const { default: ResearchTabs } = await import("../app/components/workspace/ResearchTabs.tsx");
   const { default: ChatStarters } = await import("../app/components/chat/ChatStarters.tsx");
-  const toolbar = renderToStaticMarkup(createElement(ResearchTabs, { selected: "fit", onSelect() {} }));
-  for (const label of ["Similar media", "Compare", "Audience fit", "Performance", "Audience"]) assert.ok(toolbar.includes(`aria-label="${label}"`));
+  const toolbar = renderToStaticMarkup(createElement(ResearchTabs, { selected: "locations", onSelect() {} }));
+  for (const label of ["Chat", "Similar media", "Compare", "Audience"]) assert.ok(toolbar.includes(`aria-label="${label}"`));
+  for (const label of ["Audience fit", "Performance"]) assert.equal(toolbar.includes(`aria-label="${label}"`), false);
   const roots = renderToStaticMarkup(createElement(ChatStarters, { onSelect() {} }));
   assert.ok(roots.includes("Find similar media"));
   assert.ok(roots.includes("Compare with existing media"));
+  assert.equal(roots.includes("Explore audience fit"), false);
+  assert.equal(roots.includes("Check media or project performance"), false);
 });
 
 test("media analysis widgets show sampled coverage, transcripts and explicit continuation", async () => {
