@@ -10,7 +10,6 @@ import MapAttribution from "./MapAttribution";
 import styles from "./LocationMapCanvas.module.css";
 import { cleanMapStyle } from "./mapStyle";
 import { useMapScene } from "./useMapScene";
-import MapHeatmapLegend from "./MapHeatmapLegend";
 import { useAudienceLayers } from "./useAudienceLayers";
 import type { MapPlace, MapScene } from "../../lib/mapScene";
 
@@ -137,7 +136,6 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       onZoomIn={() => map.current?.zoomIn()} onZoomOut={() => map.current?.zoomOut()}
       onCurrentLocation={deviceLocation.locate} locating={deviceLocation.busy} />
     {pinElement && createPortal(<MapPin aria-hidden="true" />, pinElement)}
-    {scene?.presentation.heatmap && <MapHeatmapLegend heatmap={scene.presentation.heatmap} />}
     <MapAttribution />
   </div>;
 }

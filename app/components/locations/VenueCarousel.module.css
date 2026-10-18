@@ -1,4 +1,5 @@
 .carousel { box-sizing: border-box; display: flex; flex-direction: column; position: absolute; z-index: 3; left: 0; right: 0; bottom: 22px; height: var(--venue-carousel-height, 220px); min-width: 0; padding: 8px 0 0; pointer-events: none; }
+.track { position: relative; display: flex; flex: 1; min-height: 0; }
 .list { pointer-events: auto; position: relative; display: flex; flex: 1; min-height: 0; align-items: stretch; gap: 4px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; padding: 4px 18px; scrollbar-width: thin; scrollbar-color: #dedfe1 transparent; }
 .controls { pointer-events: auto; display: flex; align-items: center; gap: 5px; padding: 8px 18px 0; }
 .progress { flex: 1; max-width: 90px; height: 2px; background: #eceeed; margin-right: auto; overflow: hidden; }
@@ -6,10 +7,12 @@
 .controls output { display: flex; align-items: baseline; gap: 5px; margin: 0 9px; font-variant-numeric: tabular-nums; }
 .controls strong { font-size: 17px; font-weight: 550; color: #293a33; }
 .controls output > span { font-size: 10px; color: #8a918e; }
-.controls button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: #46574e; cursor: pointer; }
-.controls button:hover:not(:disabled) { background: #f0f3f1; }
-.controls button:disabled { opacity: .25; cursor: default; }
-.controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.previous, .next { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: white; color: #46574e; cursor: pointer; }
+.previous { left: 10px; }
+.next { right: 10px; }
+.previous:hover:not(:disabled), .next:hover:not(:disabled) { background: #f0f3f1; }
+.previous:disabled, .next:disabled { visibility: hidden; cursor: default; }
+.previous:focus-visible, .next:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .list::-webkit-scrollbar { height: 4px; }
 .list::-webkit-scrollbar-thumb { background: #dedfe1; border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { .progress > span { transition: none; } }

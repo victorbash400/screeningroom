@@ -33,14 +33,16 @@ export default function VenueCarousel({ scene, onScene }: { scene?: MapScene; on
   }
   if (!places.length) return null;
   return <section className={styles.carousel} role="region" aria-label="Venue shortlist" aria-roledescription="carousel">
+    <div className={styles.track}>
     <div ref={list} className={styles.list} onScroll={measure}>
       {places.map((place, index) => <VenueCarouselCard key={place.id ?? `${place.longitude}:${place.latitude}`} place={place} index={index} active={active === index} selected={selected === index} onSelect={() => select(index)} />)}
+    </div>
+    <button className={styles.previous} type="button" aria-label="Previous venue" disabled={active === 0} onClick={() => select(active - 1)}><ChevronLeft size={24} /></button>
+    <button className={styles.next} type="button" aria-label="Next venue" disabled={active === places.length - 1} onClick={() => select(active + 1)}><ChevronRight size={24} /></button>
     </div>
     <div className={styles.controls}>
       <span className={styles.progress} aria-hidden="true"><span style={{ width: `${(active + 1) / places.length * 100}%` }} /></span>
       <output aria-live="polite" aria-atomic="true"><strong>{String(active + 1).padStart(2, "0")}</strong><span>/ {String(places.length).padStart(2, "0")}</span></output>
-      <button type="button" aria-label="Previous venue" disabled={active === 0} onClick={() => select(active - 1)}><ChevronLeft size={17} /></button>
-      <button type="button" aria-label="Next venue" disabled={active === places.length - 1} onClick={() => select(active + 1)}><ChevronRight size={17} /></button>
     </div>
   </section>;
 }
