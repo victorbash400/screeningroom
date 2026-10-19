@@ -1,3 +1,4 @@
+import "./helpers/qloo-fetch.mjs";
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import{registerHooks}from'node:module';import{existsSync}from'node:fs';

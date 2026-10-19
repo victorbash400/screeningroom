@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
-import { createPortal } from "react-dom";
-import { MoveDiagonal2 } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { LocationInterest } from "../../lib/locationInterest";
 import type { MapPlace, MapScene } from "../../lib/mapScene";
 import { mapPresentationSchema } from "../../lib/mapScene";
@@ -8,19 +6,17 @@ import { defaultLocationInterest } from "../../lib/locationInterest";
 import { useAccount } from "../../state/AccountContext";
 import MapSearchControls from "./MapSearchControls";
 import LocationMapCanvas from "./LocationMapCanvas";
-import { useMapFrame } from "./useMapFrame";
-import styles from "./FloatingLocationMap.module.css";
+import styles from "./AudienceMap.module.css";
 import VenueCarousel from "./VenueCarousel";
 
-export default function FloatingLocationMap({ anchor, open, area = defaultLocationInterest, scene, onArea, onScene }: {
+export default function AudienceMap({ mode, open, area = defaultLocationInterest, scene, onArea, onScene }: {
   onScene: (scene: MapScene) => boolean;
-  anchor: RefObject<HTMLElement | null>;
+  mode: "live" | "digital";
   open: boolean;
   area?: LocationInterest;
   scene?: MapScene;
   onArea: (area?: LocationInterest) => boolean;
 }) {
-  const { frame, start, adjust } = useMapFrame(anchor);
   const account = useAccount();
   const request = useRef<AbortController | null>(null);
   const [searching, setSearching] = useState(false);
@@ -55,18 +51,14 @@ export default function FloatingLocationMap({ anchor, open, area = defaultLocati
   const [landmarks, setLandmarks] = useState(true);
   const [view, setView] = useState<{ sceneId?: string; threeD: boolean }>({ threeD: false });
   const threeD = view.sceneId === scene?.id ? view.threeD : scene?.presentation.threeD ?? false;
-  if (!frame) return null;
-  return createPortal(<section role="region" aria-label="Audience map" hidden={!open} className={styles.window}
-    style={{ left: frame.x, top: frame.y, width: frame.width, height: frame.height, "--venue-carousel-height": scene?.presentation.locations.length ? `${Math.min(300, Math.max(170, frame.height * .36))}px` : "0px" } as CSSProperties}>
+  return <section role="region" aria-label="Audience map" hidden={!open} className={styles.window}
+    style={{ "--venue-carousel-height": mode === "live" && scene?.presentation.locations.length ? "clamp(170px, 32cqh, 280px)" : "0px" } as CSSProperties}>
     <div className={styles.mapArea}>
-    <MapSearchControls area={area} onArea={onArea} searching={searching} error={searchError} onSearchArea={() => void searchArea()}
-      onMove={(event) => start(event, "move")} onMoveKey={(event) => { if (adjust(event.key, "move")) event.preventDefault(); }} />
+    <MapSearchControls live={mode === "live"} area={area} onArea={onArea} searching={searching} error={searchError} onSearchArea={mode === "live" ? () => void searchArea() : undefined} />
     <LocationMapCanvas
-      onPlace={selectPlace} visible={open} scene={scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
+      onPlace={selectPlace} visible={open} scene={mode === "digital" && scene ? { ...scene, presentation: { ...scene.presentation, locations: [], focusIndex: undefined } } : scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />
     </div>
-    <VenueCarousel scene={scene} onScene={onScene} />
-    <button type="button" className={styles.resize} aria-label="Resize map" onPointerDown={(event) => start(event, "resize")}
-      onKeyDown={(event) => { if (adjust(event.key, "resize")) event.preventDefault(); }}><MoveDiagonal2 /></button>
-  </section>, document.body);
+    {mode === "live" && <VenueCarousel scene={scene} onScene={onScene} />}
+  </section>;
 }

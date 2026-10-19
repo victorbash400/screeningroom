@@ -9,7 +9,7 @@ export function useMapScene(map: RefObject<Map | null>, ready: boolean, scene: M
     const camera = audienceCamera(value);
     if (!camera || (!value.reframe && applied.current?.map === instance && applied.current.key === camera.key)) return;
     const { center, zoom, bounds } = camera;
-    const overlayHeight = Number.parseFloat(getComputedStyle(instance.getContainer()).getPropertyValue("--venue-carousel-height")) || 0;
+    const overlayHeight = instance.getContainer().closest('[aria-label="Audience map"]')?.querySelector('[aria-roledescription="carousel"]')?.getBoundingClientRect().height ?? 0;
     const padding = { top: 40, left: 40, right: 40, bottom: overlayHeight + 40 };
     if (center) instance.flyTo({ center: [center.longitude, center.latitude], zoom: zoom ?? 14, padding, pitch: threeD ? 55 : 0, duration: 1400 });
     else instance.fitBounds(new LngLatBounds([bounds[0], bounds[1]], [bounds[2], bounds[3]]), { padding, maxZoom: zoom ?? 15, pitch: threeD ? 55 : 0, duration: 1400 });

@@ -148,6 +148,7 @@ export function parseData(raw: string): RoomData {
       !workspaces.has(item.workspaceId) ||
       !text(item.title) ||
       !text(item.draft) ||
+      (item.audienceMode !== undefined && item.audienceMode !== "live" && item.audienceMode !== "digital") ||
       (item.scope !== undefined && item.scope !== "workspace") ||
       (item.channel !== undefined && !["chat", "locations", "similar", "performance", "compare", "fit", "cvr", "compliance"].includes(item.channel as string)) ||
       !Array.isArray(item.messages) ||

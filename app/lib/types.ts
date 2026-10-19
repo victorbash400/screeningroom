@@ -61,6 +61,7 @@ export interface Message {
 }
 export type ChatChannel = "chat" | "locations" | "similar" | "performance" | "compare" | "fit";
 export interface Conversation {
+  audienceMode?: "live" | "digital";
   mapScene?: import("./mapScene").MapScene;
   locationInterest?: import("./locationInterest").LocationInterest;
   channel?: ChatChannel;

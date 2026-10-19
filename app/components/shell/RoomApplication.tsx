@@ -162,6 +162,7 @@ export default function RoomApplication() {
             chat={
               chat.open && conversation ? (
                 <ChatDrawer
+                  onAudienceMode={chat.setAudienceMode}
                   onMapScene={chat.setMapScene}
                   onAudienceWidget={chat.setAudienceWidget}
                   onLocationInterest={chat.setLocationInterest}

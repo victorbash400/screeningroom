@@ -8,6 +8,7 @@ import type { LocationInterest } from "../../lib/locationInterest";
 import type { Conversation, FileNode, Message, Workspace } from "../../lib/types";
 import { channelLabel } from "../../lib/mediaWorkflows";
 import { messageReferences } from "../../lib/chatSelection";
+import DigitalCatalogue from "../audience/DigitalCatalogue";
 import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
@@ -15,8 +16,9 @@ import ChatComposer from "./ChatComposer";
 import AudienceStarter from "./AudienceStarter";
 import type { MapScene } from "../../lib/mapScene";
 import styles from "./ChatDrawer.module.css";
-const FloatingLocationMap = dynamic(() => import("../locations/FloatingLocationMap"), { ssr: false });
+const AudienceMap = dynamic(() => import("../locations/AudienceMap"), { ssr: false });
 interface Props {
+  onAudienceMode: (mode: "live" | "digital") => boolean;
   onAudienceWidget: (toolId: string, widget: AudienceWidget) => boolean;
   onMapScene: (scene: MapScene) => boolean;
   onLocationInterest: (area?: LocationInterest) => boolean;
@@ -42,6 +44,7 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
+  onAudienceMode,
   onAudienceWidget,
   onMapScene,
   onLocationInterest,
@@ -96,6 +99,8 @@ export default function ChatDrawer({
     <aside
       ref={drawer}
       className={styles.drawer}
+      data-audience={channel === "locations"}
+      data-map-open={channel === "locations" && mapOpen}
       aria-label={label}
       onKeyDown={(event) => {
         if (
@@ -112,6 +117,9 @@ export default function ChatDrawer({
       }}
     >
       <ChatHeader
+        audienceMode={conversation.audienceMode}
+        onAudienceMode={channel === "locations" ? onAudienceMode : undefined}
+        busy={busy}
         mapOpen={mapOpen}
         onMapToggle={channel === "locations" ? setMapOpen : undefined}
         label={label}
@@ -125,8 +133,9 @@ export default function ChatDrawer({
         threadOpen={Boolean(thread)}
         onBack={() => onThread()}
       />
-      {channel === "locations" && <FloatingLocationMap anchor={drawer} open={mapOpen}
-        scene={conversation.mapScene} area={conversation.locationInterest} onArea={onLocationInterest} onScene={onMapScene} />}
+      <div className={styles.workspace}>
+      {channel === "locations" && mapOpen && (conversation.audienceMode === "digital" ? <DigitalCatalogue /> : <AudienceMap mode="live" open={mapOpen}
+        scene={conversation.mapScene} area={conversation.locationInterest} onArea={onLocationInterest} onScene={onMapScene} />)}
       <div className={styles.body}>
         {channel === "locations" && conversation.messages.length === 0 && !thread ? <AudienceStarter onSelect={() => startChat("Help me find an audience for ")} /> : <MessageList
           key={`messages-${conversation.id}-${thread?.id ?? "main"}`}
@@ -139,8 +148,8 @@ export default function ChatDrawer({
         <ChatComposer
           onOpenReference={onReference}
           initialReferenceIds={messageReferences(conversation.messages.findLast((message) => message.role !== "assistant") ?? { id: "", text: "", createdAt: "" }).map((reference) => reference.id)}
-          area={channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined}
-          onLocation={channel === "locations" ? () => setMapOpen(true) : undefined}
+          area={channel === "locations" && conversation.audienceMode !== "digital" ? conversation.locationInterest ?? defaultLocationInterest : undefined}
+          onLocation={channel === "locations" && conversation.audienceMode !== "digital" ? () => setMapOpen(true) : undefined}
           busy={busy}
           onStop={onStop}
           workspaces={workspaces}
@@ -172,6 +181,7 @@ export default function ChatDrawer({
             />
           </>
         )}
+      </div>
       </div>
     </aside>
     </AudienceMapProvider>

@@ -1,0 +1,257 @@
+[
+  {
+    "id": "amazon-music",
+    "file": "amazon-music.png",
+    "source": "https://www.google.com/s2/favicons?domain=music.amazon.com&sz=128"
+  },
+  {
+    "id": "apple-books",
+    "file": "apple-books.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.apple.com&sz=128"
+  },
+  {
+    "id": "apple-music",
+    "file": "apple-music.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/applemusic.svg",
+    "brandSource": "https://www.apple.com/itunes/marketing-on-music/identity-guidelines.html#apple-music-icon"
+  },
+  {
+    "id": "apple-podcasts",
+    "file": "apple-podcasts.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/applepodcasts.svg",
+    "brandSource": "https://www.apple.com/itunes/marketing-on-podcasts/identity-guidelines.html#apple-podcasts-icon"
+  },
+  {
+    "id": "apple-tv",
+    "file": "apple-tv.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/appletv.svg",
+    "brandSource": "https://en.wikipedia.org/wiki/File:Apple_TV_(logo).svg"
+  },
+  {
+    "id": "artstation",
+    "file": "artstation.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/artstation.svg",
+    "brandSource": "https://www.artstation.com/about/logo"
+  },
+  {
+    "id": "audible",
+    "file": "audible.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/audible.svg",
+    "brandSource": "https://commons.wikimedia.org/wiki/File:Audible_logo.svg"
+  },
+  {
+    "id": "audiomack",
+    "file": "audiomack.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/audiomack.svg",
+    "brandSource": "https://styleguide.audiomack.com"
+  },
+  {
+    "id": "bandcamp",
+    "file": "bandcamp.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/bandcamp.svg",
+    "brandSource": "https://bandcamp.com/buttons"
+  },
+  {
+    "id": "behance",
+    "file": "behance.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/behance.svg",
+    "brandSource": "https://www.behance.net"
+  },
+  {
+    "id": "criterion",
+    "file": "criterion.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.criterionchannel.com&sz=128"
+  },
+  {
+    "id": "deezer",
+    "file": "deezer.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/deezer.svg",
+    "brandSource": "https://deezerbrand.com/document/37#/-/logo"
+  },
+  {
+    "id": "disney-plus",
+    "file": "disney-plus.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.disneyplus.com&sz=128"
+  },
+  {
+    "id": "epic-games",
+    "file": "epic-games.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/epicgames.svg",
+    "brandSource": "https://dev.epicgames.com/docs/services/en-US/EpicAccountServices/DesignGuidelines/index.html#epicgamesbrandguidelines"
+  },
+  {
+    "id": "gog",
+    "file": "gog.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.gog.com&sz=128"
+  },
+  {
+    "id": "google-play-books",
+    "file": "google-play-books.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/googleplay.svg",
+    "brandSource": "https://partnermarketinghub.withgoogle.com/brands/google-play/visual-identity/primary-logos/"
+  },
+  {
+    "id": "gumroad",
+    "file": "gumroad.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/gumroad.svg",
+    "brandSource": "https://gumroad.com"
+  },
+  {
+    "id": "hulu",
+    "file": "hulu.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.hulu.com&sz=128"
+  },
+  {
+    "id": "instagram",
+    "file": "instagram.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/instagram.svg",
+    "brandSource": "https://about.meta.com/brand/resources/instagram"
+  },
+  {
+    "id": "itch",
+    "file": "itch.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/itchdotio.svg",
+    "brandSource": "https://itch.io/press-kit"
+  },
+  {
+    "id": "kindle",
+    "file": "kindle.png",
+    "source": "https://www.google.com/s2/favicons?domain=kdp.amazon.com&sz=128"
+  },
+  {
+    "id": "kobo",
+    "file": "kobo.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/rakutenkobo.svg",
+    "brandSource": "https://www.kobo.com"
+  },
+  {
+    "id": "mixcloud",
+    "file": "mixcloud.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/mixcloud.svg",
+    "brandSource": "https://www.mixcloud.com/about"
+  },
+  {
+    "id": "mubi",
+    "file": "mubi.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/mubi.svg",
+    "brandSource": "https://mubi.com"
+  },
+  {
+    "id": "netflix",
+    "file": "netflix.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/netflix.svg",
+    "brandSource": "https://brand.netflix.com/en/assets/logos"
+  },
+  {
+    "id": "overcast",
+    "file": "overcast.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/overcast.svg",
+    "brandSource": "https://overcast.fm"
+  },
+  {
+    "id": "patreon",
+    "file": "patreon.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/patreon.svg",
+    "brandSource": "https://www.patreon.com/brand"
+  },
+  {
+    "id": "pocket-casts",
+    "file": "pocket-casts.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/pocketcasts.svg",
+    "brandSource": "https://blog.pocketcasts.com/press/"
+  },
+  {
+    "id": "prime-video",
+    "file": "prime-video.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.primevideo.com&sz=128"
+  },
+  {
+    "id": "royal-road",
+    "file": "royal-road.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.royalroad.com&sz=128"
+  },
+  {
+    "id": "soundcloud",
+    "file": "soundcloud.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/soundcloud.svg",
+    "brandSource": "https://press.soundcloud.com"
+  },
+  {
+    "id": "spotify",
+    "file": "spotify.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/spotify.svg",
+    "brandSource": "https://developer.spotify.com/documentation/general/design-and-branding/#using-our-logo"
+  },
+  {
+    "id": "spotify-podcasts",
+    "file": "spotify-podcasts.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/spotify.svg",
+    "brandSource": "https://developer.spotify.com/documentation/general/design-and-branding/#using-our-logo"
+  },
+  {
+    "id": "steam",
+    "file": "steam.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/steam.svg",
+    "brandSource": "https://partner.steamgames.com/doc/marketing/branding"
+  },
+  {
+    "id": "substack",
+    "file": "substack.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/substack.svg",
+    "brandSource": "https://on.substack.com"
+  },
+  {
+    "id": "tapas",
+    "file": "tapas.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tapas.svg",
+    "brandSource": "https://tapas.io/site/about#media"
+  },
+  {
+    "id": "tidal",
+    "file": "tidal.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tidal.svg",
+    "brandSource": "https://tidal.com/press"
+  },
+  {
+    "id": "tiktok",
+    "file": "tiktok.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tiktok.svg",
+    "brandSource": "https://tiktok.com"
+  },
+  {
+    "id": "tubi",
+    "file": "tubi.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tubi.svg",
+    "brandSource": "https://gdpr.tubi.tv"
+  },
+  {
+    "id": "twitch",
+    "file": "twitch.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/twitch.svg",
+    "brandSource": "https://brand.twitch.tv"
+  },
+  {
+    "id": "vimeo",
+    "file": "vimeo.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/vimeo.svg",
+    "brandSource": "https://press.vimeo.com/brand-guidelines"
+  },
+  {
+    "id": "wattpad",
+    "file": "wattpad.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/wattpad.svg",
+    "brandSource": "https://company.wattpad.com/brandguideline"
+  },
+  {
+    "id": "webtoon",
+    "file": "webtoon.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/webtoon.svg",
+    "brandSource": "https://webtoons.com"
+  },
+  {
+    "id": "youtube",
+    "file": "youtube.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/youtube.svg",
+    "brandSource": "https://www.youtube.com/howyoutubeworks/resources/brand-resources/#logos-icons-and-colors"
+  }
+]

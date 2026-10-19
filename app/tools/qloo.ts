@@ -1,4 +1,5 @@
 import "server-only";
+import { qlooFetch } from "../server/qloo-fetch";
 import { z } from "zod";
 import { env } from "../server/config";
 import { ApiError } from "../server/http";
@@ -26,7 +27,7 @@ export async function qlooJson(path: "/search" | "/entities" | "/v2/analysis/com
   if (base.protocol !== "https:" || base.username || base.password) throw new Error("Configure a secure Qloo API URL.");
   const url = new URL(path, base);
   url.search = new URLSearchParams(parameters).toString();
-  const response = await fetch(url, {
+  const response = await qlooFetch(url, {
     headers: { "X-Api-Key": env("QLOO_HACKATHON_API_KEY"), Accept: "application/json" },
     cache: "no-store", redirect: "error",
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),

@@ -1,6 +1,0 @@
-.window { position: fixed; z-index: 8; display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid #dedfe1; border-radius: 14px; overflow: hidden; background: white; color: #2d2d2b; }
-.window[hidden] { display: none; }
-.mapArea { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.resize { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; padding: 2px; display: flex; border: 0; background: transparent; color: #535b65; border-radius: 50%; cursor: nwse-resize; touch-action: none; }
-.resize svg { width: 14px; height: 14px; }
-.resize:focus-visible { outline: 2px solid #9aa3ac; outline-offset: 2px; }

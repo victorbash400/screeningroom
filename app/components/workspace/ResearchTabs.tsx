@@ -1,10 +1,9 @@
 import type { ChatChannel } from "../../lib/types";
-import { UsersRound, MessageCircle } from "lucide-react";
+import { UsersRound } from "lucide-react";
 import IconButton from "../controls/IconButton";
 import styles from "./ResearchTabs.module.css";
 
 const tabs = [
-  { channel: "chat", label: "Chat", icon: MessageCircle },
   { channel: "locations", label: "Audience", icon: UsersRound },
 ] as const;
 export default function ResearchTabs({ selected, onSelect }: { selected: ChatChannel | null; onSelect: (channel: ChatChannel) => void }) {

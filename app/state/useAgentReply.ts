@@ -26,7 +26,7 @@ export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<
     return () => { for (const controller of active.values()) controller.abort(); active.clear(); };
   }, []);
 
-  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, locationInterest?: LocationInterest, initialScene?: MapScene) {
+  async function reply(conversationId: string, channel: ChatChannel, messages: Message[], threadId?: string, locationInterest?: LocationInterest, initialScene?: MapScene, audienceMode: "live" | "digital" = "live") {
     if (controllers.current.has(conversationId)) return;
     setError(null);
     const controller = new AbortController();
@@ -64,7 +64,7 @@ export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<
           text: message.parts.filter((part) => part.type === "text").map((part) => part.text).join("\n\n"),
         };
         setPending((previous) => ({ ...previous, [conversationId]: current }));
-      }, account.fetch, locationInterest, initialScene, selectedIds);
+      }, account.fetch, locationInterest, initialScene, selectedIds, audienceMode);
       current = finishReply(current, "complete");
     } catch (error) {
       if (!controllers.current.has(conversationId)) return;

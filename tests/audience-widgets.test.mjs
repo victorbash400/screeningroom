@@ -110,11 +110,11 @@ test("research widgets render responsive comparisons, exact chart values and acc
   assert.ok(line.includes("Campaign B"));
 });
 
-test("toolbar exposes only Chat and Audience", async () => {
+test("toolbar exposes only Audience", async () => {
   const { default: ResearchTabs } = await import("../app/components/workspace/ResearchTabs.tsx");
   const toolbar = renderToStaticMarkup(createElement(ResearchTabs, { selected: "locations", onSelect() {} }));
-  for (const label of ["Chat", "Audience"]) assert.ok(toolbar.includes(`aria-label="${label}"`));
-  for (const label of ["Similar media", "Compare", "Audience fit", "Performance"]) assert.equal(toolbar.includes(`aria-label="${label}"`), false);
+  assert.ok(toolbar.includes('aria-label="Audience"'));
+  for (const label of ["Chat", "Similar media", "Compare", "Audience fit", "Performance"]) assert.equal(toolbar.includes(`aria-label="${label}"`), false);
 });
 
 test("media analysis widgets show sampled coverage, transcripts and explicit continuation", async () => {
@@ -145,4 +145,17 @@ test('venue carousel keeps map ordering, focus and query affinity without invent
  const html=renderToStaticMarkup(createElement(VenueCarousel,{scene:{id:'scene',presentation:{locations:[{...place,affinity:.73},{...place,id:'b',name:'Second venue'}],focusIndex:0}},onScene:()=>true}));
  assert.ok(html.includes('aria-label="Venue shortlist"'));assert.ok(html.includes('aria-pressed="true"'));assert.ok(html.includes('Qloo venue affinity'));assert.ok(html.includes('0.73'));assert.equal(html.includes('73%'),false);assert.ok(html.indexOf('Cinema')<html.indexOf('Second venue'));
  assert.equal(renderToStaticMarkup(createElement(VenueCarousel,{onScene:()=>true})), '');
+});
+
+
+test("digital catalogue displays real platform assets without selection or search controls", async () => {
+  const { default: DigitalCatalogue } = await import("../app/components/audience/DigitalCatalogue.tsx");
+  const { default: AudienceModeToggle } = await import("../app/components/chat/AudienceModeToggle.tsx");
+  const html = renderToStaticMarkup(createElement(DigitalCatalogue));
+  for (const label of ["Video", "Music", "Podcasts", "Books", "Games", "Art &amp; writing", "YouTube", "Netflix", "Apple TV", "Kindle"]) assert.ok(html.includes(label), label);
+  assert.ok(html.includes('/platforms/youtube.svg'));
+  for (const control of ['<button', '<input', 'aria-pressed', 'Selected (']) assert.equal(html.includes(control), false, control);
+  const toggle = renderToStaticMarkup(createElement(AudienceModeToggle, { value: "digital", onChange: () => true }));
+  assert.ok(toggle.includes('aria-label="Audience format"'));
+  assert.ok(toggle.includes('aria-pressed="true"'));
 });

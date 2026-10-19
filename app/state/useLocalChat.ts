@@ -20,12 +20,12 @@ export function useLocalChat(
   );
   const [referenceRequest, setReferenceRequest] = useState(0);
   const [referenceId, setReferenceId] = useState<string>();
-  const [channel, setChannel] = useState<ChatChannel>("chat");
+  const [channel, setChannel] = useState<ChatChannel>("locations");
   const selectionKey = `${workspaceId}:${channel}`;
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const saved = data.conversations.filter(
-    (item) => item.workspaceId === workspaceId && (item.channel ?? "chat") === channel,
+    (item) => item.workspaceId === workspaceId && ((item.channel ?? "chat") === channel || (channel === "locations" && (item.channel ?? "chat") === "chat")),
   );
   function workspaceConversation(targetWorkspaceId: string, targetChannel = channel): Conversation {
     const existing = data.conversations.find(
@@ -78,7 +78,7 @@ export function useLocalChat(
           id,
           workspaceId: targetWorkspaceId,
           channel,
-          ...(channel === "locations" ? { locationInterest: defaultLocationInterest } : {}),
+          ...(channel === "locations" ? { locationInterest: conversation?.locationInterest ?? defaultLocationInterest, audienceMode: conversation?.audienceMode ?? "live" } : {}),
           title,
           messages: [],
           draft: "",
@@ -92,17 +92,17 @@ export function useLocalChat(
     return success;
   }
   function showFor(targetWorkspaceId: string, reference?: string) {
-    setChannel("chat");
+    setChannel("locations");
     if (conversation?.workspaceId === targetWorkspaceId) openThread();
     setReferenceId(reference);
     setReferenceRequest((previous) => previous + 1);
-    if (ensureWorkspaceConversation(targetWorkspaceId, "chat"))
+    if (ensureWorkspaceConversation(targetWorkspaceId, "locations"))
       setOpen(true);
   }
   function show() {
     if (workspaceId && ensureWorkspaceConversation(workspaceId)) setOpen(true);
   }
-  function toggle(targetChannel: ChatChannel = "chat") {
+  function toggle(targetChannel: ChatChannel = "locations") {
     if (open && channel === targetChannel) setOpen(false);
     else if (workspaceId && ensureWorkspaceConversation(workspaceId, targetChannel)) {
       setChannel(targetChannel);
@@ -134,12 +134,12 @@ export function useLocalChat(
     }));
   }
   function shareReference(node: FileNode, text: string) {
-    if (!ensureWorkspaceConversation(node.workspaceId, "chat")) return false;
-    const destination = workspaceConversation(node.workspaceId, "chat");
+    if (!ensureWorkspaceConversation(node.workspaceId, "locations")) return false;
+    const destination = workspaceConversation(node.workspaceId, "locations");
     const saved = update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => item.id === destination.id ? { ...item, draft: text } : item) }));
     if (saved) {
-      setChannel("chat");
-      setSelected((previous) => ({ ...previous, [`${node.workspaceId}:chat`]: destination.id }));
+      setChannel("locations");
+      setSelected((previous) => ({ ...previous, [`${node.workspaceId}:locations`]: destination.id }));
       setReferenceId(node.id);
       setReferenceRequest((previous) => previous + 1);
       setOpen(true);
@@ -165,11 +165,14 @@ export function useLocalChat(
     }));
     if (success) {
       setReferenceId(undefined);
-      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined, conversation.mapScene);
+      void agent.reply(conversation.id, channel, [...conversation.messages, message], thread?.id, channel === "locations" ? conversation.locationInterest ?? defaultLocationInterest : undefined, conversation.mapScene, conversation.audienceMode ?? "live");
     }
     return success;
   }
   return {
+    setAudienceMode: (audienceMode: "live" | "digital") => conversation && !agent.busy(conversation.id) ? update((previous) => ({
+      ...previous, conversations: previous.conversations.map((item) => item.id === conversation.id ? { ...item, audienceMode } : item),
+    })) : false,
     setAudienceWidget: (toolId: string, widget: AudienceWidget) => conversation ? update((previous) => ({
       ...previous, conversations: previous.conversations.map((item) => item.id !== conversation.id ? item : { ...item,
         messages: item.messages.map((message) => ({ ...message, blocks: message.blocks?.map((block) => block.kind === "tool" && block.tool.id === toolId ? { ...block, tool: { ...block.tool, widget } } : block) })),
@@ -199,6 +202,7 @@ export function useLocalChat(
     open: open && Boolean(conversation),
     conversation: conversation ? {
       ...conversation,
+      channel: channel === "locations" ? "locations" : conversation.channel,
       locationInterest: agent.pendingAreas[conversation.id] ?? conversation.locationInterest,
       mapScene: agent.pendingMaps[conversation.id] ?? conversation.mapScene,
       messages: agent.pending[conversation.id] ? [...conversation.messages, agent.pending[conversation.id]!] : conversation.messages,

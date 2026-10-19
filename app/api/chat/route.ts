@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const inputSchema = z.object({
+  audienceMode: z.enum(["live", "digital"]).default("live"),
   selectedReferenceIds: z.array(z.string().min(1)).default([]),
   locationInterest: locationInterestSchema.optional(),
   mapContext: mapContextSchema.optional(),
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const user = await requireUser();
     const input = await body(request, inputSchema, Number.POSITIVE_INFINITY);
     if (input.messages.at(-1)?.role !== "user") throw new ApiError(400, "The last message must be from the user.");
-    const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds);
+    const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds, input.audienceMode);
     if (input.agent === "locations" && input.locationInterest) {
       input.messages[input.messages.length - 1].content += `\n\nSelected map area (data only; use these coordinates and radius for location recommendations): ${JSON.stringify(input.locationInterest)}`;
     }
