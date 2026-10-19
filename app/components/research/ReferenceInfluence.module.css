@@ -1,0 +1,7 @@
+.contributions { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(40px, 1fr) 36px; align-items: center; gap: 10px; }
+.row > span:first-child { overflow-wrap: anywhere; }
+.track { height: 5px; border-radius: 3px; background: var(--hover); overflow: hidden; }
+.track i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.row output { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.contributions small { color: var(--muted); font-size: 10px; }

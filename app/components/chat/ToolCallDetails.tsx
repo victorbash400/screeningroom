@@ -1,3 +1,5 @@
+import ReferenceInfluence from "../research/ReferenceInfluence";
+import VenueEvidence from "../locations/VenueEvidence";
 import type { MessageTool } from "../../lib/types";
 import { toolInputRows } from "../../lib/toolTrace";
 import styles from "./ToolCallDetails.module.css";
@@ -12,12 +14,14 @@ export default function ToolCallDetails({ tool, label }: { tool: MessageTool; la
       {results.map((result) => <section key={result.evidenceId}><h3>{result.title}</h3>
         {result.kind === "comparison" && <ul>{result.subjects.map((subject) => <li key={subject.id}>{subject.website ? <a href={subject.website} target="_blank" rel="noreferrer">{subject.name}</a> : subject.name}
           {subject.metrics.map((metric) => <small key={metric.key}>{metric.label}: {metric.value} · {metric.source}</small>)}
-          {subject.contributors?.map((item) => <small key={item.id}>Reference {item.id} · contribution {item.score}</small>)}
+          {subject.contributors?.length ? <ReferenceInfluence references={subject.contributors} /> : null}
         </li>)}</ul>}
         {result.kind === "comparison" && result.searches?.map((search, index) => <details key={index}><summary>{search.endpoint} · {search.resultCount} results{search.cached ? " · cached" : ""}</summary><dl className={styles.inputs}>{Object.entries(search.parameters).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl></details>)}
         <p>{result.basis}</p>
       </section>)}
       {research?.kind === "digital" && <p>{research.basis}</p>}
+      {tool.widget?.kind === "venues" && tool.widget.venues.map((venue) => <section key={venue.id ?? venue.name}><h3>{venue.name}</h3><VenueEvidence place={venue} /></section>)}
+      {tool.widget?.kind === "venues" && tool.widget.searches?.map((search, index) => <details key={index}><summary>{search.endpoint} · {search.resultCount} results</summary><dl className={styles.inputs}>{Object.entries(search.parameters).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl></details>)}
       {tool.widget && <p>{tool.widget.source}{"area" in tool.widget ? ` · ${tool.widget.area.name}` : ""}{tool.widget.kind === "heatmap" ? ` · ${tool.widget.cells.length} areas` : tool.widget.kind === "venues" ? ` · ${tool.widget.venues.length} venues` : ""}</p>}
       {tool.error && <p role="alert" className={styles.error}>{tool.error}</p>}
   </div>;

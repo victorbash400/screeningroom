@@ -1,4 +1,5 @@
 import "server-only";
+import { qlooRequestContext, checkQlooSignals, rememberQlooSignals } from "../server/qloo-request-cache";
 import { qlooFetch } from "../server/qloo-fetch";
 import { z } from "zod";
 import { env } from "../server/config";
@@ -12,7 +13,8 @@ const entity = z.object({
   location: z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }).nullish(),
   types: z.array(z.string()).nullish().transform((value) => value ?? undefined), subtype: optionalText,
   properties: z.object({
-    address: optionalText, description: optionalText,
+    address: optionalText, description: optionalText, customer_demographics_description: optionalText,
+    primary_genre: z.object({ name: z.string() }).nullish(),
     release_year: z.number().nullish().transform((value) => value ?? undefined), website: optionalText,
     image: z.object({ url: optionalText }).nullish().transform((value) => value?.url ? { url: value.url } : undefined),
     geocode: z.unknown().optional(),
@@ -28,14 +30,26 @@ export async function qlooJson(path: "/search" | "/entities" | "/v2/analysis/com
   if (base.protocol !== "https:" || base.username || base.password) throw new Error("Configure a secure Qloo API URL.");
   const url = new URL(path, base);
   url.search = new URLSearchParams(parameters).toString();
-  const response = await qlooFetch(url, {
-    headers: { "X-Api-Key": env("QLOO_HACKATHON_API_KEY"), Accept: "application/json" },
-    cache: "no-store", redirect: "error",
-    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
-  });
-  if (response.status === 429) throw new ApiError(429, "Qloo is temporarily rate limiting requests. Try again shortly.");
-  if (!response.ok) throw new Error(`Qloo request failed (${response.status}).`);
-  return response.json() as Promise<unknown>;
+  url.searchParams.sort();
+  checkQlooSignals(parameters);
+  const requests = qlooRequestContext.getStore()?.requests;
+  const key = url.href;
+  const existing = requests?.get(key);
+  if (existing) { signal?.throwIfAborted(); return existing; }
+  const request = (async () => {
+    const response = await qlooFetch(url, {
+      headers: { "X-Api-Key": env("QLOO_HACKATHON_API_KEY"), Accept: "application/json" },
+      cache: "no-store", redirect: "error",
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
+    });
+    if (response.status === 429) throw new ApiError(429, "Qloo is temporarily rate limiting requests. Try again shortly.");
+    if (!response.ok) throw new Error(`Qloo request failed (${response.status}).`);
+    const value: unknown = await response.json();
+    rememberQlooSignals(value);
+    return value;
+  })();
+  requests?.set(key, request);
+  try { return await request; } catch (error) { if (requests?.get(key) === request) requests.delete(key); throw error; }
 }
 
 export async function qlooRequest(path: "/search" | "/v2/insights", parameters: Record<string, string>, signal?: AbortSignal) {

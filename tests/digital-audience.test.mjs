@@ -18,12 +18,13 @@ test('digital research preserves comparable reception, platform affinity, source
  let brandSearches=0, failPlatforms=false, failComparables=false;
  globalThis.fetch=async url=>{
   if(url.pathname==='/search'){brandSearches++;return Response.json({results:[{entity_id:brand,name:'Hulu',types:['urn:entity:brand']}]});}
+  if(url.pathname==='/entities'&&url.searchParams.get('entity_ids')===ref)return Response.json({results:[{entity_id:ref,name:'Inception'}]});
   if(url.pathname==='/entities')return Response.json({results:[{entity_id:movie,name:'The Matrix',popularity:.9,tags:[],properties:{external:{imdb:{id:'tt0133093',user_rating:8.7,user_rating_count:2000}}}}]});
   assert.equal(url.searchParams.get('feature.explainability'),'true');
   if(url.searchParams.get('filter.type')==='urn:entity:brand'){
    if(failPlatforms)return Response.json({error:'throttled'},{status:429});
    assert.equal(url.searchParams.get('filter.results.entities'),brand);
-   return Response.json({success:true,results:{entities:[{entity_id:brand,name:'Hulu',subtype:'urn:entity:brand',query:{affinity:.8}}]}});
+   return Response.json({success:true,results:{entities:[{entity_id:brand,name:'Hulu',subtype:'urn:entity:brand',query:{affinity:.8,explainability:{'signal.interests.entities':[{entity_id:ref,score:1}]}}}]}});
   }
   if(failComparables)return Response.json({error:'throttled'},{status:429});
   assert.equal(url.searchParams.get('filter.exclude.entities'),ref);
@@ -34,6 +35,8 @@ test('digital research preserves comparable reception, platform affinity, source
   const result=await tool.execute(input,options);
   assert.deepEqual(result.errors,[]);
   assert.equal(result.platforms.subjects[0].metrics[0].value,.8);
+  assert.deepEqual(result.platforms.subjects[0].contributors,[{id:ref,name:'Inception',score:1}]);
+  assert.equal(tool.toModelOutput({output:result,toolCallId:'digital',input}).value.platforms.subjects[0].contributors[0].name,'Inception');
   assert.equal(result.comparables.subjects[0].metrics.find(x=>x.key==='imdbRating').value,8.7);
   assert.equal(result.comparables.subjects[0].links[0].url,'https://www.netflix.com/title/20557937');
   assert.deepEqual(result.comparables.subjects[0].contributors,[{id:ref,score:1}]);

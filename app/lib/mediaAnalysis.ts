@@ -1,8 +1,10 @@
+import { parseLink, youtubeVideo } from "./linkFiles.ts";
 import { z } from "zod";
 import type { FileNode } from "./types.ts";
 
-export function mediaKind(node: Pick<FileNode, "name" | "mimeType" | "kind">): "image" | "video" | "audio" | undefined {
+export function mediaKind(node: Pick<FileNode, "name" | "mimeType" | "kind" | "sourceUrl">): "image" | "video" | "audio" | undefined {
   if (node.kind !== "file") return;
+  if (node.sourceUrl && youtubeVideo(parseLink(node.sourceUrl))) return "video";
   for (const kind of ["image", "video", "audio"] as const) if (node.mimeType?.startsWith(`${kind}/`)) return kind;
   const extension = node.name.slice(node.name.lastIndexOf(".") + 1).toLowerCase();
   if (["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "bmp", "tif", "tiff"].includes(extension)) return "image";
@@ -13,6 +15,7 @@ export const transcriptSchema = z.object({ model: z.string().min(1), start: z.nu
 export type MediaTranscript = z.infer<typeof transcriptSchema>;
 export const mediaAnalysisSchema = z.object({
   kind: z.literal("media"), fileId: z.string().min(1), name: z.string().min(1), modality: z.enum(["image", "video", "audio"]), model: z.string().min(1),
+  sourceUrl: z.string().url().optional(),
   summary: z.string(), visibleText: z.string(), uncertainties: z.array(z.string()),
   duration: z.number().nonnegative().optional(), start: z.number().nonnegative().optional(), end: z.number().nonnegative().optional(),
   hasAudio: z.boolean().optional(),

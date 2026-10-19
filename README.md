@@ -586,3 +586,5 @@ resizing. Its map retains the previous 480px footprint where space permits;
 the added height belongs to the venue carousel. Returned places form a horizontal, scroll-snapping carousel with previous/next controls below
 the map; selecting a card focuses its map pin. Qloo venue affinity and surrounding
 heatmap affinity remain separate evidence. No synthetic combined score is used.
+
+YouTube links use the same sampled visuals and full speech transcription as uploads. Builds prepare a checksum-verified standalone yt-dlp executable from its official release, included in the chat function bundle. Local development can prepare the same binary with `node scripts/prepare-youtube.mjs` or use yt-dlp on PATH; `YTDLP_PATH` can select an existing executable. Restricted or unavailable videos fail explicitly; upload a copy or transcript when a source cannot be accessed.

@@ -1,3 +1,4 @@
+import { contributionSchema } from "./affinityEvidence.ts";
 import { z } from "zod";
 import { publicWebUrl } from "./similarResults.ts";
 import { audienceHeatmapSchema } from "./audienceHeatmap.ts";
@@ -5,6 +6,7 @@ import { audienceHeatmapSchema } from "./audienceHeatmap.ts";
 export const mapPlaceSchema = z.object({
   id: z.string().optional(),
   description: z.string().optional(),
+  audienceProfile: z.string().optional(), distanceMeters: z.number().nonnegative().optional(), contributions: z.array(contributionSchema).optional(),
   category: z.string().optional(), address: z.string().optional(), website: publicWebUrl.optional(),
   image: publicWebUrl.optional(), affinity: z.number().optional(), source: z.enum(["Qloo", "OpenStreetMap", "Photon", "Geoapify"]).optional(),
   name: z.string().trim().min(1),

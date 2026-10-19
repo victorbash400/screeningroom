@@ -8,7 +8,8 @@ export function captureToolTrace(input: unknown, output?: unknown): ToolTrace | 
   const parsed = z.record(z.string(), z.json()).safeParse(input);
   if (!parsed.success) return undefined;
   const matches = matchesSchema.safeParse(output);
-  return { input: parsed.data, ...(matches.success ? { matches: matches.data.map((item) => ({ id: item.entity_id, name: item.name })) } : {}) };
+  const tags = z.array(z.object({ id: z.string().startsWith("urn:tag:"), name: z.string() })).safeParse(output);
+  return { input: parsed.data, ...(matches.success ? { matches: matches.data.map((item) => ({ id: item.entity_id, name: item.name })) } : tags.success ? { matches: tags.data } : {}) };
 }
 const labels: Record<string, string> = { query: "Search", type: "Media type", entityIds: "Comparable IDs", tagIds: "Interest tags", requiredTagIds: "Required tags", platformIds: "Platforms", take: "Requested results", title: "Analysis", fileId: "Selected file", groupBy: "Group by", area: "Search area", latitude: "Latitude", longitude: "Longitude", radius: "Radius (m)", venueTypes: "Venue types" };
 export function toolInputRows(input: ToolTrace["input"], prefix = ""): { label: string; value: string }[] {

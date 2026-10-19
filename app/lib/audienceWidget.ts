@@ -1,10 +1,11 @@
+import { evidenceSearchSchema } from "./affinityEvidence.ts";
 import { z } from "zod";
 import { locationInterestSchema } from "./locationInterest.ts";
 import { mapPlaceSchema } from "./mapScene.ts";
 import { audienceHeatmapSchema } from "./audienceHeatmap.ts";
 
 export const venueResultsSchema = z.object({
-  kind: z.literal("venues"), basis: z.enum(["geographic", "taste"]).optional(), area: locationInterestSchema, source: z.enum(["Qloo", "OpenStreetMap", "Geoapify"]), venues: z.array(mapPlaceSchema),
+  kind: z.literal("venues"), searches: z.array(evidenceSearchSchema).optional(), basis: z.enum(["geographic", "taste"]).optional(), area: locationInterestSchema, source: z.enum(["Qloo", "OpenStreetMap", "Geoapify"]), venues: z.array(mapPlaceSchema),
 }).strict();
 const affinityBar = z.object({ label: z.string(), value: z.number().min(-1).max(1) }).strict();
 export const audienceDemographicsSchema = z.object({

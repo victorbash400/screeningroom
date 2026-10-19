@@ -10,7 +10,7 @@ export default function VenueCarouselCard({ place, index, active, selected, onSe
     <button type="button" className={styles.select} aria-pressed={selected} onClick={onSelect}>
     <span className={styles.top}><span>{String(index + 1).padStart(2, "0")}</span>{place.category && <span>{place.category}</span>}</span>
     <span className={styles.body}>
-      <span className={styles.identity}><strong>{place.name}</strong>{place.address && <small title={place.address}>{place.address}</small>}
+      <span className={styles.identity}><strong>{place.name}</strong>{place.address && <small title={place.address}>{place.address}</small>}{place.distanceMeters !== undefined && <small>{(place.distanceMeters / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} km</small>}
       </span>
     </span>
     {place.description && <span className={styles.description}>{place.description}</span>}

@@ -18,7 +18,7 @@ export function audienceHistory(message: Message): HistoryTool[] {
       const widget = tool.widget;
       output = widget.kind === "heatmap" ? { ...widget, cells: undefined, cellCount: widget.cells.length, strongestAreas: widget.cells.toSorted((a, b) => b.rank - a.rank).slice(0, 8) } : widget;
     } else if (tool.results) output = tool.results;
-    else if (tool.trace?.matches) output = tool.trace.matches.map((match) => ({ entity_id: match.id, name: match.name }));
+    else if (tool.trace?.matches) output = tool.trace.matches.map((match) => tool.name === "searchAudienceTags" ? { id: match.id, name: match.name } : { entity_id: match.id, name: match.name });
     else if (tool.name === "establishAudienceWork" && tool.trace) output = { work: tool.trace.input, established: true };
     if (output === undefined) return [];
     return [{ id: tool.id, name: tool.name, input: tool.trace?.input ?? {}, output: z.json().parse(JSON.parse(JSON.stringify(output))) }];

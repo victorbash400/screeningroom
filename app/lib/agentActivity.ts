@@ -19,7 +19,7 @@ export function agentBlocks(message: UIMessage, activity?: Map<string, MessageTo
         startedAt: cached?.startedAt ?? now,
         ...(terminal ? { endedAt: now } : {}),
         ...(widget ? { widget } : {}),
-        ...(part.state === "output-available" && ["inspectImage", "inspectVideo", "transcribeMedia"].includes(getToolName(part)) ? { media: mediaAnalysisSchema.parse(part.output) } : {}),
+        ...(part.state === "output-available" && ["inspectImage", "inspectVideo", "inspectLinkedVideo", "transcribeMedia"].includes(getToolName(part)) ? { media: mediaAnalysisSchema.parse(part.output) } : {}),
         ...(part.state === "output-available" && ["analyzeDigitalAudience", "getDigitalPlatformFit", "getLocalTaste", "findComparableMedia", "getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
         id: part.toolCallId, name: getToolName(part),
         ...(getToolName(part) === "findSimilar" && part.state === "output-available" ? { results: similarResultsSchema.parse(part.output) } : {}),

@@ -22,7 +22,7 @@ test('media evidence persists in stream order and is available for grounded foll
  const message={id:'m',role:'assistant',text:'The clip mentions the start time.',createdAt:new Date().toISOString(),blocks};
  const data={version:1,workspaces:[{id:'w',name:'Workspace'}],nodes:[],conversations:[{id:'c',workspaceId:'w',channel:'similar',title:'Media',draft:'',messages:[message]}]};
  assert.equal(parseData(JSON.stringify(data)).conversations[0].messages[0].blocks[0].tool.media.nextStart,120);
- assert.ok(chatHistory([message])[0].content.includes('The screening starts at seven.'));
+ assert.ok(chatHistory([message])[0].tools[0].output.segments[0].text.includes('The screening starts at seven.'));
  assert.equal(mediaAnalysisSchema.safeParse({...analysis,segments:[{start:-2,text:'invalid'}]}).success,false);
 });
 test('analysis cache is owner/content/model scoped and does not hide storage or malformed-result failures',async()=>{
@@ -100,7 +100,7 @@ test('video evidence retains full speech and rejects misleading full-coverage fl
  const video={...analysis,modality:'video',hasAudio:true,transcript};delete video.nextStart;
  assert.equal(mediaAnalysisSchema.safeParse(video).success,true);
  assert.equal(mediaAnalysisSchema.safeParse({...video,transcript:{...transcript,start:30}}).success,false);
- assert.ok(chatHistory([{id:'v',role:'assistant',text:'Technology analysis.',createdAt:'2026-10-18T10:00:00Z',blocks:[{id:'t',kind:'tool',tool:{id:'t',name:'inspectVideo',state:'done',media:video}}]}])[0].content.includes('Compare energy costs'));
+ assert.ok(chatHistory([{id:'v',role:'assistant',text:'Technology analysis.',createdAt:'2026-10-18T10:00:00Z',blocks:[{id:'t',kind:'tool',tool:{id:'t',name:'inspectVideo',state:'done',media:video}}]}])[0].tools[0].output.transcript.segments[0].text.includes('Compare energy costs'));
 });
 
 test('video and audio share one streamed source and cache-only analysis does not download it',async()=>{

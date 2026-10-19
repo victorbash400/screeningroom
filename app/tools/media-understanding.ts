@@ -20,7 +20,7 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       execute: async ({ fileId, question }, { abortSignal }) => {
         const node = await files.node(fileId);
         if (mediaKind(node) !== "image") throw new ApiError(400, "Select an image file.");
-        return cachedMediaAnalysis(userId, { version: 2, content: node.content, fileId, name: node.name, model: visualModelId(), question }, () => files.withSource(node, async (source) => {
+        return cachedMediaAnalysis(userId, { version: 2, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), question }, () => files.withSource(node, async (source) => {
           const bytes = await imageFrame(source, undefined, mediaInputFormat(node), abortSignal);
           const result = await describeFrames([{ bytes }], question, abortSignal);
           return { kind: "media", fileId, name: node.name, modality: "image", model: visualModelId(), summary: result.summary, visibleText: result.visibleText, uncertainties: result.uncertainties, segments: [] };
@@ -33,7 +33,7 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       execute: async ({ fileId, question, samples, sampling, includeAudio, startSeconds, endSeconds }, { abortSignal }) => diagnoseMedia("video", fileId, async (log) => {
         const node = await files.node(fileId);
         if (mediaKind(node) !== "video") throw new ApiError(400, "Select a video file.");
-        return cachedMediaAnalysis(userId, { version: 9, content: node.content, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
+        return cachedMediaAnalysis(userId, { version: 10, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
           const prepared = await videoFrames(userId, node, samples, startSeconds, endSeconds, (prepare) => withSource(prepare), abortSignal, sampling, log);
           const { duration, hasAudio, start, end, frames } = prepared;
           const speech = hasAudio && includeAudio ? transcribeFile(userId, node, { withSource: (_node, operation) => withSource(operation) }, startSeconds, endSeconds, undefined, abortSignal, log) : undefined;

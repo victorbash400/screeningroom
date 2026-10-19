@@ -1,0 +1,8 @@
+.evidence { margin: 6px 0 8px; min-width: 0; font-size: 11px; }
+.evidence summary { display: flex; align-items: center; gap: 6px; width: fit-content; list-style: none; cursor: pointer; color: var(--muted); }
+.evidence summary::-webkit-details-marker { display: none; }
+.evidence[open] > summary svg { transform: rotate(180deg); }
+.evidence summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.profile { margin-top: 12px; }
+.profile > span { color: var(--muted); font-size: 10px; }
+.profile p { margin: 5px 0 0; line-height: 1.5; }

@@ -1,3 +1,6 @@
+import { compareAudienceSignals } from "./compare-audience";
+import { parseLink, youtubeVideo } from "../lib/linkFiles";
+import { youtubeMetadata } from "../server/youtube-media";
 import { tool } from "ai";
 import { z } from "zod";
 import { mediaEvidence } from "../server/media-evidence";
@@ -18,6 +21,7 @@ const referenceIds = z.array(z.uuid()).min(1);
 export function mediaResearchTools(userId: string, selectedIds: string[], files = selectedMedia(userId, selectedIds), area?: LocationInterest) {
   const charts = evidenceCharts(files.evidence);
   return {
+    compareAudienceSignals: { ...compareAudienceSignals, execute: async (input: { title: string; first: string[]; second: string[]; take: number }, options: Parameters<NonNullable<typeof compareAudienceSignals.execute>>[1]) => charts.remember(researchChartSchema.parse(await compareAudienceSignals.execute!(input, options))) },
     analyzeDigitalAudience: digitalAudienceTool(charts.remember),
     getDigitalPlatformFit: digitalPlatformFitTool(charts.remember),
     getLocalTaste: localTasteTool(area, charts.remember),
@@ -29,6 +33,11 @@ export function mediaResearchTools(userId: string, selectedIds: string[], files 
       execute: async ({ fileId }, { abortSignal }) => {
         if (!fileId) return { files: (await files.nodes()).map(({ id, name, kind, mimeType, size }) => ({ id, name, kind, mimeType, size })) };
         const node = await files.node(fileId);
+        if (node.sourceUrl && youtubeVideo(parseLink(node.sourceUrl))) {
+          const info = await youtubeMetadata(node.sourceUrl, abortSignal);
+          return { id: node.id, name: info.title, sourceUrl: node.sourceUrl, channel: info.channel, duration: info.duration, description: info.description, access: "YouTube metadata only", limitation: "Title and description are publisher metadata, not observed footage or speech. Use inspectVideo for visuals and the full speech transcript." };
+        }
+        if (node.sourceUrl) return { id: node.id, name: node.name, sourceUrl: node.sourceUrl, access: "Link only", limitation: "Upload this media or provide its transcript for content analysis." };
         const extension = node.name.slice(node.name.lastIndexOf(".") + 1).toLowerCase();
         const readable = node.kind === "file" && (node.mimeType?.startsWith("text/") || ["txt", "md", "csv", "json", "srt", "vtt"].includes(extension));
         return { id: node.id, name: node.name, kind: node.kind, mimeType: node.mimeType, size: node.size, sourceUrl: node.sourceUrl,

@@ -32,3 +32,5 @@ next-env.d.ts
 /public/individual-image-pack/
 
 /testassets/
+
+.media-bin/

@@ -21,6 +21,7 @@ function ffmpegBinary() {
   return path;
 }
 export function mediaInputFormat(node: FileNode) {
+  if (node.sourceUrl && mediaKind(node) === "video") return "mov";
   if (mediaKind(node) === "image") return "image2pipe";
   const formats: Record<string, string> = { mp4: "mov", mov: "mov", m4v: "mov", m4a: "mov", webm: "matroska", mkv: "matroska", avi: "avi", mpeg: "mpeg", mpg: "mpeg", mp3: "mp3", wav: "wav", aac: "aac", flac: "flac", ogg: "ogg", opus: "ogg", aiff: "aiff", aif: "aiff" };
   const extension = node.name.slice(node.name.lastIndexOf(".") + 1).toLowerCase();

@@ -1,4 +1,6 @@
 import "server-only";
+import { youtubeMetadata } from "./youtube-media";
+import { parseLink, youtubeVideo } from "../lib/linkFiles";
 import { withPreparedMedia } from "./prepared-media";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { selectedMediaNodes } from "../lib/selectedMediaNodes";
@@ -19,6 +21,10 @@ export function selectedMedia(userId: string, selectedIds: string[]) {
   async function node(id: string) {
     const item = (await nodes()).find((item) => item.id === id);
     if (!item) throw new ApiError(404, "Select this file in the chat first. If it was just uploaded, let the workspace finish syncing.");
+    if (item.sourceUrl && youtubeVideo(parseLink(item.sourceUrl))) {
+      const info = await youtubeMetadata(item.sourceUrl);
+      return { ...item, name: `${info.title}.mp4`, mimeType: "video/mp4" };
+    }
     return item;
   }
   async function text(item: FileNode, signal?: AbortSignal) {

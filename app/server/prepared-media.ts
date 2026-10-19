@@ -1,4 +1,5 @@
 import "server-only";
+import { withYoutubeMedia } from "./youtube-media";
 import { createWriteStream } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -15,6 +16,9 @@ import type { MediaLog } from "./media-diagnostics";
 
 type Source = <T>(operation: (source: string) => Promise<T>) => Promise<T>;
 export async function withPreparedMedia<T>(userId: string, node: FileNode, run: (withSource: Source) => Promise<T>, signal?: AbortSignal, log?: MediaLog) {
+  if (node.sourceUrl) {
+    return withYoutubeMedia(node.sourceUrl, run, signal, log);
+  }
   if (node.kind !== "file" || !node.content?.startsWith("cloud-file:")) throw new ApiError(400, "Upload the media file before analyzing it.");
   let directory: string | undefined, prepared: Promise<string> | undefined;
   async function prepare() {

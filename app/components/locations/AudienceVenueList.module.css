@@ -12,3 +12,5 @@
 .list::-webkit-scrollbar-thumb { border-radius: 5px; background: var(--border); }
 
 .photo { --entity-image-width: 40px; --entity-image-height: 40px; }
+
+.entry { min-width: 0; }

@@ -13,7 +13,7 @@ import type { FileNode } from "../lib/types";
 const frameSet = z.object({ duration: z.number().positive(), hasAudio: z.boolean(), start: z.number().nonnegative(), end: z.number().positive(), frames: z.array(z.object({ time: z.number().nonnegative(), image: z.string().min(1) }).strict()).min(1).max(8) }).strict();
 type FrameSet = z.infer<typeof frameSet>;
 export async function videoFrames(userId: string, node: FileNode, samples: number, start: number, endSeconds: number | undefined, withSource: (prepare: (url: string) => Promise<FrameSet>) => Promise<FrameSet>, signal?: AbortSignal, strategy: "uniform" | "overview" = "uniform", log?: MediaLog) {
-  const key = createHash("sha256").update(JSON.stringify({ version: 2, content: node.content, samples, start, endSeconds, strategy })).digest("hex");
+  const key = createHash("sha256").update(JSON.stringify({ version: 2, content: node.content, sourceUrl: node.sourceUrl, samples, start, endSeconds, strategy })).digest("hex");
   const location = { Bucket: env("S3_BUCKET_NAME"), Key: `users/${userId}/media-frames/${key}.json` };
   let result: FrameSet;
   try {

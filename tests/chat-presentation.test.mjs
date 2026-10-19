@@ -90,3 +90,22 @@ test('platform comparisons use local uncropped logos rather than provider poster
  for(const logo of ['spotify.svg','apple-music.svg','bandcamp.svg'])assert.ok(html.includes('/platforms/'+logo));
  assert.equal(html.includes('cropped-brand.jpg'),false);
 });
+
+test('joined Audience keeps history in the chat header and a labelled map toggle in the left controls',async()=>{
+ const {default:ChatHeader}=await import('../app/components/chat/ChatHeader.tsx');
+ const action=()=>true;
+ const html=renderToStaticMarkup(createElement(ChatHeader,{label:'Audience',audienceMode:'live',onAudienceMode:action,mapOpen:true,onMapToggle:action,conversation:{id:'c',scope:'workspace'},historyOpen:false,onHistory:action,onNew:action,onClose:action,onRename:action,onDelete:action,threadOpen:false,onBack:action}));
+ const map=html.indexOf('class="mapControls"'),chat=html.indexOf('class="chatControls"'),history=html.indexOf('aria-label="Chats"');
+ assert.ok(map>=0&&map<chat&&chat<history);
+ assert.ok(html.includes('<span>Map</span>'));
+ assert.ok(html.includes('role="switch"'));
+ const drawerCss=readFileSync(new URL('../app/components/chat/ChatDrawer.module.css',import.meta.url),'utf8');
+ assert.ok(drawerCss.includes('.workspace > .body { min-width: 0; overflow: hidden; }'));
+});
+
+test('venue explanations disclose named contributions inline with exact weights and the source profile',async()=>{
+ const {default:VenueEvidence}=await import('../app/components/locations/VenueEvidence.tsx');
+ const html=renderToStaticMarkup(createElement(VenueEvidence,{place:{name:'Everyman',contributions:[{id:'ref',name:'Inception',score:.55}],audienceProfile:'Provider-described visitor mix.'}}));
+ for(const value of ['<details','<summary','Why this venue','Inception','0.550','width:55','Qloo venue profile','Provider-described visitor mix.'])assert.ok(html.includes(value),value);
+ assert.equal(html.includes('<dialog'),false);
+});

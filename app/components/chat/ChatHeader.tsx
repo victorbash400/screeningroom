@@ -40,30 +40,34 @@ export default function ChatHeader({
 }) {
   const Icon = historyOpen ? PanelLeftClose : PanelLeft;
   return (
-    <header className={styles.header}>
-      <IconButton
-        label={historyOpen ? "Close chats" : "Chats"}
-        onClick={onHistory}
-      >
-        <Icon />
-      </IconButton>
-      {threadOpen && (
-        <IconButton label="Back to chat" onClick={onBack}>
-          <ArrowLeft />
+    <header className={styles.header} data-joined={Boolean(onMapToggle && mapOpen)}>
+      {onMapToggle && <div className={styles.mapControls}>
+        {onAudienceMode && <AudienceModeToggle value={audienceMode ?? "live"} disabled={busy} onChange={onAudienceMode} />}
+        <label className={styles.mapToggle}><span>{audienceMode === "digital" ? "Platforms" : "Map"}</span><ToggleSwitch label={audienceMode === "digital" ? "Platforms" : "Map"} checked={Boolean(mapOpen)} onChange={onMapToggle} /></label>
+      </div>}
+      <div className={styles.chatControls}>
+        <IconButton
+          label={historyOpen ? "Close chats" : "Chats"}
+          onClick={onHistory}
+        >
+          <Icon />
         </IconButton>
-      )}
-      <span>{label}</span>
-      {onAudienceMode && <AudienceModeToggle value={audienceMode ?? "live"} disabled={busy} onChange={onAudienceMode} />}
-      <IconButton label="New chat" title="New chat" onClick={onNew}><SquarePen /></IconButton>
-      {conversation.scope !== "workspace" && <ActionMenu
-        label="Chat actions"
-        onRename={onRename}
-        onDelete={onDelete}
-      />}
-      {onMapToggle && <ToggleSwitch label={audienceMode === "digital" ? "Platforms" : "Map"} checked={Boolean(mapOpen)} onChange={onMapToggle} />}
-      <IconButton label={`Close ${label.toLowerCase()}`} onClick={onClose}>
-        <X />
-      </IconButton>
+        {threadOpen && (
+          <IconButton label="Back to chat" onClick={onBack}>
+            <ArrowLeft />
+          </IconButton>
+        )}
+        <span>{label}</span>
+        <IconButton label="New chat" title="New chat" onClick={onNew}><SquarePen /></IconButton>
+        {conversation.scope !== "workspace" && <ActionMenu
+          label="Chat actions"
+          onRename={onRename}
+          onDelete={onDelete}
+        />}
+        <IconButton label={`Close ${label.toLowerCase()}`} onClick={onClose}>
+          <X />
+        </IconButton>
+      </div>
     </header>
   );
 }
