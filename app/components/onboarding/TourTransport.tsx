@@ -17,7 +17,7 @@ export default function TourTransport({ time, duration, playing, onToggle, onRep
       <input type="range" aria-label="Example progress" aria-valuetext={`${timestamp(time)} of ${timestamp(duration)}`} min={0} max={duration} step={50} value={time} onChange={event => onSeek(Number(event.target.value))} style={{ "--progress": `${time / duration * 100}%` } as CSSProperties} />
       <span>{timestamp(duration)}</span>
     </div>
-    <IconButton label="Previous chapter" disabled={index === 0} onClick={() => onStep(index - 1)}><ArrowLeft size={16} /></IconButton>
+    <IconButton label={index === 0 ? "Back to welcome" : "Previous chapter"} onClick={() => onStep(index - 1)}><ArrowLeft size={16} /></IconButton>
     {index === count - 1 ? <PillButton secondary onClick={onClose}>Finish</PillButton> : <IconButton label="Next chapter" onClick={() => onStep(index + 1)}><ArrowRight size={16} /></IconButton>}
   </div>;
 }

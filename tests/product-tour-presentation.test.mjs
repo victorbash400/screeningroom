@@ -44,7 +44,8 @@ test('player exposes playback, replay, accessible seeking and chapter navigation
  const props={time:0,duration:8000,playing:false,onToggle:action,onReplay:action,onSeek:action,count:5,onStep:action,onClose:action};
  const first=renderToStaticMarkup(createElement(TourTransport,{...props,index:0}));
  const last=renderToStaticMarkup(createElement(TourTransport,{...props,index:4}));
- assert.ok(first.includes('disabled=""'));
+ assert.ok(first.includes('Back to welcome'));
+ assert.ok(!first.includes('disabled=""'));
  for(const label of ['Play example','Replay example','Example progress','Next chapter'])assert.ok(first.includes(label));
  assert.ok(last.includes('Finish'));
  for(const step of tourSteps)assert.ok(navigation.includes(step.title));
@@ -61,4 +62,16 @@ test('the embedded picker preserves the actual tree and selection controls',()=>
  for(const label of ['Select files','Trailer.mp4','Production brief.txt','Poster.jpg','Selected (1)','Done'])assert.ok(html.includes(label));
  assert.ok(html.includes('data-embedded="true"'));
  assert.ok(html.includes('open=""'));
+});
+
+test('welcome introduces the guide before the numbered demos', async()=>{
+ const {default:TourWelcome}=await import('../app/components/onboarding/TourWelcome.tsx');
+ const html=renderToStaticMarkup(createElement(TourWelcome,{titleRef:{current:null},onStart:action}));
+ for(const text of ['Welcome to Screening Room','Start walkthrough','5 demos'])assert.ok(html.includes(text));
+ const intro=renderToStaticMarkup(createElement(TourNavigation,{index:0,onStep:action}));
+ const chapter=renderToStaticMarkup(createElement(TourNavigation,{index:3,onStep:action}));
+ assert.ok(intro.includes('aria-label="1. Welcome" aria-current="step"'));
+ assert.ok(chapter.includes('aria-label="4. Find a live audience" aria-current="step"'));
+ assert.equal(chapter.split('aria-current="step"').length - 1,1);
+ assert.equal(chapter.split('<li ').length - 1,6);
 });

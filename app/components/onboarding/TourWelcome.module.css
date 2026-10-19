@@ -1,0 +1,8 @@
+.welcome { display: flex; flex: 1; min-height: 0; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+.welcome h2 { margin: 24px 0 0; font-size: 36px; line-height: 1.15; font-weight: 500; letter-spacing: -1.2px; outline: none; }
+.welcome p { margin: 12px 0 0; color: var(--muted); font-size: 18px; line-height: 1.5; }
+.welcome .detail { max-width: 380px; margin-top: 18px; font-size: 13px; }
+.welcome button { margin-top: 28px; gap: 10px; }
+.duration { margin-top: 12px; color: var(--muted); font-size: 11px; }
+@media (max-width: 600px) { .welcome { padding: 20px; } .welcome h2 { max-width: 300px; font-size: 30px; } .welcome p { font-size: 15px; } .welcome .detail { font-size: 12px; } }
+@media (max-height: 600px) { .welcome { padding: 12px 24px; } .welcome > span:first-child { width: 40px !important; height: 40px !important; } .welcome h2 { margin-top: 12px; font-size: 28px; } .welcome p { margin-top: 8px; } .welcome .detail { margin-top: 8px; } .welcome button { margin-top: 14px; } }

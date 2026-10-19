@@ -6,7 +6,6 @@ import { useTourPlayback } from "./useTourPlayback";
 import TourViewport from "./TourViewport";
 import TourStage from "./TourStage";
 import TourTransport from "./TourTransport";
-import TourNavigation from "./TourNavigation";
 import styles from "./TourPlayer.module.css";
 
 export default function TourPlayer({ step, index, count, onStep, onClose }: { step: TourStep; index: number; count: number; onStep: (index: number) => void; onClose: () => void }) {
@@ -34,7 +33,6 @@ export default function TourPlayer({ step, index, count, onStep, onClose }: { st
     <div className={styles.controls}>
       <div className={styles.action} aria-live="polite">{playback.time >= script.duration ? "Example complete" : cue.label}</div>
       <TourTransport time={playback.time} duration={script.duration} playing={playback.playing} onToggle={playback.toggle} onReplay={playback.replay} onSeek={playback.seek} index={index} count={count} onStep={onStep} onClose={onClose} />
-      <TourNavigation index={index} onStep={onStep} />
     </div>
   </div>;
 }
