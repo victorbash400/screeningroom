@@ -23,7 +23,7 @@ function run(args: string[], signal?: AbortSignal): Promise<string> {
   return new Promise((resolve, reject) => {
     const binaryName = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
     const bundled = join(process.cwd(), ".media-bin", binaryName);
-    execFile(process.env.YTDLP_PATH || (process.platform === "linux" || existsSync(bundled) ? bundled : binaryName), ["--ignore-config", "--js-runtimes", "node", "--no-playlist", "--no-warnings", "--socket-timeout", "15", "--retries", "0", "--extractor-retries", "0", ...args], { signal, maxBuffer: 16 * 1024 * 1024, encoding: "utf8" }, (error, stdout) => {
+    execFile(/* turbopackIgnore: true */ process.env.YTDLP_PATH || (process.platform === "linux" || existsSync(bundled) ? bundled : binaryName), ["--ignore-config", "--js-runtimes", "node", "--no-playlist", "--no-warnings", "--socket-timeout", "15", "--retries", "0", "--extractor-retries", "0", ...args], { signal, maxBuffer: 16 * 1024 * 1024, encoding: "utf8" }, (error, stdout) => {
       if (error) {
         if (signal?.aborted) { reject(signal.reason); return; }
         reject(new ApiError(error.code === "ENOENT" ? 503 : 422, error.code === "ENOENT" ? "YouTube processing is unavailable on this server. Configure yt-dlp or upload the video." : "YouTube could not provide this public video. Upload the video or its transcript."));
