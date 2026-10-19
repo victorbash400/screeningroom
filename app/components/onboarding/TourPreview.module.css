@@ -10,3 +10,6 @@
   .canvas > aside[data-open="true"] { display: flex; position: absolute; inset: 0 auto 0 0; z-index: 9; background: var(--panel); }
   .navigationBackdrop { display: block; position: absolute; inset: 0; z-index: 8; padding: 0; border: 0; background: #0000001a; }
 }
+.home { display: flex; flex: 1; min-height: 0; }
+.preview[data-audience-open="true"] .canvas { grid-template-columns: minmax(0, 1fr); }
+.preview[data-audience-open="true"] .canvas > aside, .preview[data-audience-open="true"] .workspace > header { display: none; }

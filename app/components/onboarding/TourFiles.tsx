@@ -18,7 +18,7 @@ export default function TourFiles({ workspaceOpen, uploaded, mode, selected, onO
     {!uploaded ? <div className={styles.import}><PillButton onClick={onImport}><Import size={16} />Import</PillButton></div> : <>
       {mode !== "grid" && <DirectoryHeader column={mode === "columns"} />}
       <div className={styles.list}>{files.map(node => { const Icon = fileIcon(node.name, node.sourceUrl); return <div key={node.id} className={`${row.row} ${mode === "grid" ? row.grid : mode === "columns" ? row.column : ""} ${node.id === selected ? row.selected : ""}`}>
-        <button type="button" className={row.open} aria-pressed={node.id === selected} onClick={() => onSelect(node.id)}><Icon size={mode === "grid" ? 56 : 24} strokeWidth={1.7} /><span>{node.name}</span>{mode === "list" && <NodeValues node={node} />}</button>
+        <button type="button" data-tour-file={node.id} className={row.open} aria-pressed={node.id === selected} onClick={() => onSelect(node.id)}><Icon size={mode === "grid" ? 56 : 24} strokeWidth={1.7} /><span>{node.name}</span>{mode === "list" && <NodeValues node={node} />}</button>
       </div>; })}</div>
       {selected && <div className={styles.preview}>{selected === "tour-link" ? <p>{linked?.sourceUrl}</p> : selected === "tour-brief" ? <div><strong>Night Signals</strong><p>A short documentary about independent music and the spaces that bring listeners together.</p></div> : <img src="/auth/media-01.webp" alt="Example media thumbnail: a record playing on a turntable" width={400} height={400} />}</div>}
     </>}

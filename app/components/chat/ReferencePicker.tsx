@@ -75,7 +75,7 @@ export default function ReferencePicker({ embedded = false, nodes, workspaces, w
     <footer className={styles.footer}>
       <span>Selected ({effective.length})</span>
       <SettingsInlineButton onClick={onClose}>Cancel</SettingsInlineButton>
-      <SettingsInlineButton primary onClick={() => onSelect(effective.map((node) => node.id))}>Done</SettingsInlineButton>
+      <SettingsInlineButton primary aria-label="Done" onClick={() => onSelect(effective.map((node) => node.id))}>Done</SettingsInlineButton>
     </footer>
   </dialog></>;
 }

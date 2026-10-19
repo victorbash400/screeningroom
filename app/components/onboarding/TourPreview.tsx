@@ -1,43 +1,33 @@
-import { useState } from "react";
-import type { FileNode, ViewMode } from "../../lib/types";
-import type { TourStep } from "../../lib/productTour";
+import { memo } from "react";
+import WorkspaceHome from "../workspace/WorkspaceHome";
+import TourWorkspaceName from "./TourWorkspaceName";
 import WorkspaceToolbar from "../workspace/WorkspaceToolbar";
 import TourAccountProvider from "./TourAccountProvider";
 import TourSidebar from "./TourSidebar";
 import TourFiles from "./TourFiles";
 import TourImport from "./TourImport";
 import TourChat from "./TourChat";
-import { exampleLinkedFile, exampleWorkspace } from "./tourExample";
+import type { TourScene } from "./tourScript";
+import { exampleWorkspace } from "./tourExample";
 import styles from "./TourPreview.module.css";
+const ignore = () => {};
 
-export default function TourPreview({ step, onRestart }: { step: TourStep; onRestart: () => void }) {
-  const [workspaceOpen, setWorkspaceOpen] = useState(step !== "workspace");
-  const [uploaded, setUploaded] = useState(step !== "import");
-  const [linked, setLinked] = useState<FileNode>();
-  const [query, setQuery] = useState("");
-  const [importOpen, setImportOpen] = useState(false);
-  const [navigationOpen, setNavigationOpen] = useState(false);
-  const [file, setFile] = useState<string>();
-  const [view, setView] = useState<ViewMode>("list");
-  const [audienceOpen, setAudienceOpen] = useState(!["workspace", "import"].includes(step));
-
-  return <TourAccountProvider><div className={styles.preview} data-audience-open={audienceOpen} aria-label="Interactive example workspace">
-    <div className={styles.canvas} inert={importOpen}>
-      {navigationOpen && <button type="button" className={styles.navigationBackdrop} aria-label="Close example navigation" onClick={() => setNavigationOpen(false)} tabIndex={-1} />}
-      <TourSidebar query={query} navigationOpen={navigationOpen} onClose={() => setNavigationOpen(false)} onSearch={next => { setQuery(next); setWorkspaceOpen(true); setAudienceOpen(false); setNavigationOpen(false); }} open={workspaceOpen} onOpen={() => { setWorkspaceOpen(true); setNavigationOpen(false); }} onHome={() => { setWorkspaceOpen(false); setAudienceOpen(false); setQuery(""); setNavigationOpen(false); }} />
+function TourPreview({ scene }: { scene: TourScene }) {
+  return <TourAccountProvider><div className={styles.preview} data-audience-open={scene.audienceOpen} aria-label="Example workspace">
+    <div className={styles.canvas}>
+      <TourSidebar hasWorkspace={scene.workspaceExists} query="" navigationOpen={false} onClose={ignore} onSearch={ignore} open={scene.workspaceOpen} onOpen={ignore} onHome={ignore} />
       <div className={styles.workspace}>
-        <WorkspaceToolbar workspace={exampleWorkspace} path={[]} mode={view} chatOpen={audienceOpen} chatChannel="locations" importing={false}
-          onMode={setView} onNavigate={id => { setWorkspaceOpen(Boolean(id)); if (!id) setAudienceOpen(false); }} canShare={false} onShare={() => {}}
-          onChat={() => { setWorkspaceOpen(true); setAudienceOpen(!audienceOpen); }} onImport={() => { setWorkspaceOpen(true); setImportOpen(true); }}
-          onInfo={onRestart} onNavigation={() => setNavigationOpen(true)} />
+        {scene.workspaceOpen ? <><WorkspaceToolbar workspace={exampleWorkspace} path={[]} mode={scene.view} chatOpen={scene.audienceOpen} chatChannel="locations" importing={false} onMode={ignore} onNavigate={ignore} canShare={false} onShare={ignore} onChat={ignore} onImport={ignore} onInfo={ignore} onNavigation={ignore} />
         <div className={styles.content}>
-          <TourFiles query={query} linked={linked} workspaceOpen={workspaceOpen} uploaded={uploaded} mode={view} selected={file} onOpen={() => setWorkspaceOpen(true)} onImport={() => setImportOpen(true)} onSelect={setFile} />
-          {audienceOpen && <TourChat step={step} selected={step === "select" ? [] : ["tour-trailer", "tour-brief"]} onClose={() => setAudienceOpen(false)} onReference={id => { setFile(id); setAudienceOpen(false); }} />}
+          <TourFiles query="" workspaceOpen={scene.workspaceOpen} uploaded={scene.uploaded} mode={scene.view} selected={scene.file} onOpen={ignore} onImport={ignore} onSelect={ignore} />
+          {scene.audienceOpen && <TourChat scene={scene} />}
         </div>
-        {!audienceOpen && <div className={styles.count}>{workspaceOpen ? uploaded ? linked ? "1 item" : "3 items" : "0 items" : "1 workspace"}</div>}
+        {!scene.audienceOpen && <div className={styles.count}>{scene.uploaded ? "3 items" : "0 items"}</div>}
+        </> : <div className={styles.home} data-tour-home><WorkspaceHome ready workspaces={scene.workspaceExists ? [exampleWorkspace] : []} onCreate={ignore} onOpen={ignore} onNavigation={ignore} onRefresh={ignore} /></div>}
       </div>
     </div>
-    {importOpen && <TourImport onClose={() => setImportOpen(false)} onImport={(source, link) => { setLinked(source === "link" && link ? { ...exampleLinkedFile, name: link.name || link.url, sourceUrl: link.url } : undefined); setUploaded(true); setImportOpen(false); }} />}
-
+    {scene.createOpen && <TourWorkspaceName name={scene.workspaceName} />}
+    {scene.importOpen && <TourImport busy={scene.importBusy} items={scene.importItems} onClose={ignore} onImport={ignore} />}
   </div></TourAccountProvider>;
 }
+export default memo(TourPreview);

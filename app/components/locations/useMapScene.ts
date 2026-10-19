@@ -3,7 +3,7 @@ import { LngLatBounds, Map } from "maplibre-gl";
 import { audienceCamera } from "../../lib/audienceCamera";
 import type { MapScene } from "../../lib/mapScene";
 
-export function useMapScene(map: RefObject<Map | null>, ready: boolean, scene: MapScene | undefined, threeD: boolean, visible: boolean) {
+export function useMapScene(map: RefObject<Map | null>, ready: boolean, scene: MapScene | undefined, threeD: boolean, visible: boolean, animate = true) {
   const applied = useRef<{ map: Map; key: string } | null>(null);
   const present = useEffectEvent((instance: Map, value: MapScene) => {
     const camera = audienceCamera(value);
@@ -11,8 +11,8 @@ export function useMapScene(map: RefObject<Map | null>, ready: boolean, scene: M
     const { center, zoom, bounds } = camera;
     const overlayHeight = instance.getContainer().closest('[aria-label="Audience map"]')?.querySelector('[aria-roledescription="carousel"]')?.getBoundingClientRect().height ?? 0;
     const padding = { top: 40, left: 40, right: 40, bottom: overlayHeight + 40 };
-    if (center) instance.flyTo({ center: [center.longitude, center.latitude], zoom: zoom ?? 14, padding, pitch: threeD ? 55 : 0, duration: 1400 });
-    else instance.fitBounds(new LngLatBounds([bounds[0], bounds[1]], [bounds[2], bounds[3]]), { padding, maxZoom: zoom ?? 15, pitch: threeD ? 55 : 0, duration: 1400 });
+    if (center) instance.flyTo({ center: [center.longitude, center.latitude], zoom: zoom ?? 14, padding, pitch: threeD ? 55 : 0, duration: animate ? 1400 : 0 });
+    else instance.fitBounds(new LngLatBounds([bounds[0], bounds[1]], [bounds[2], bounds[3]]), { padding, maxZoom: zoom ?? 15, pitch: threeD ? 55 : 0, duration: animate ? 1400 : 0 });
     applied.current = { map: instance, key: camera.key };
   });
   useEffect(() => {

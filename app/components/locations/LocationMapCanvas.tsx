@@ -15,7 +15,8 @@ import type { MapPlace, MapScene } from "../../lib/mapScene";
 
 setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
 
-export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onPlace, onLandmarks, onThreeD }: {
+export default function LocationMapCanvas({ area, landmarks, threeD, scene, visible, onArea, onPlace, onLandmarks, onThreeD, animate = true }: {
+  animate?: boolean;
   onPlace: (place: MapPlace) => void;
   onLandmarks: (enabled: boolean) => void;
   onThreeD: (enabled: boolean) => void;
@@ -99,8 +100,8 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     instance.setLayoutProperty("building", "visibility", threeD ? "none" : "visible");
     if (threeD) { instance.dragRotate.enable(); instance.touchPitch.enable(); }
     else { instance.dragRotate.disable(); instance.touchPitch.disable(); }
-    instance.easeTo({ pitch: threeD ? 55 : 0, bearing: threeD ? instance.getBearing() : 0, duration: 400 });
-  }, [ready, threeD]);
+    instance.easeTo({ pitch: threeD ? 55 : 0, bearing: threeD ? instance.getBearing() : 0, duration: animate ? 400 : 0 });
+  }, [ready, threeD, animate]);
   useEffect(() => {
     const instance = map.current;
     if (!ready || !instance) return;
@@ -125,11 +126,11 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     if (!ready || !area || !map.current) return;
     const bounds = new LngLatBounds();
     for (const coordinate of areaBoundary(area).geometry.coordinates[0]) bounds.extend([coordinate[0], coordinate[1]]);
-    map.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: 450 });
-  }, [ready, area?.latitude, area?.longitude, area?.radius]);
+    map.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: animate ? 450 : 0 });
+  }, [ready, area?.latitude, area?.longitude, area?.radius, animate]);
 
   useAudienceLayers(map, ready, scene, onPlace, setLayerError);
-  useMapScene(map, ready, scene, threeD, visible);
+  useMapScene(map, ready, scene, threeD, visible, animate);
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}

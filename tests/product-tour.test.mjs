@@ -19,7 +19,7 @@ test('demo reopens on every mount, while only an unseen empty real account opens
     assert.equal(shouldOpenTour({ demo, seen }, empty), demo || empty && !seen);
   }
   assert.equal(tourStatusSchema.safeParse({ demo: null, seen: true }).success, false);
-  assert.deepEqual(tourSteps.map(step => step.id), ['workspace', 'import', 'select', 'question', 'live', 'digital', 'evidence']);
+  assert.deepEqual(tourSteps.map(step => step.id), ['workspace', 'question', 'live', 'digital', 'evidence']);
 });
 
 test('walkthrough requests never reach the network or save another session’s home', async () => {

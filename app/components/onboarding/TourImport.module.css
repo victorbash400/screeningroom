@@ -1,1 +1,5 @@
 .panel { position: absolute; inset: 16px; margin: auto; width: min(640px, calc(100% - 32px)); height: fit-content; max-height: calc(100% - 32px); z-index: 10; }
+.upload > div { min-height: 190px; padding: 16px; }
+.upload > div > svg { height: 76px; margin-bottom: 12px; }
+.upload[data-busy="true"] > div { min-height: 0; padding: 10px; }
+.upload[data-busy="true"] > div > svg { display: none; }

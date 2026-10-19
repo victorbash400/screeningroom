@@ -35,7 +35,7 @@ export default function ImportUploadArea({ busy, onFiles, onDrop, onClose }: {
         if (!busy && event.dataTransfer.types.includes("Files") && await onDrop(event.dataTransfer.items)) onClose();
       }}>
       <ImportArtwork />
-      <PillButton disabled={busy} onClick={() => files.current?.click()}>
+      <PillButton aria-label="Browse files" disabled={busy} onClick={() => files.current?.click()}>
         {busy ? "Importing…" : "Browse files"}
       </PillButton>
       <button className={styles.folder} disabled={busy} onClick={() => folders.current?.click()}>Choose folder</button>

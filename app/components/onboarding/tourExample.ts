@@ -15,9 +15,9 @@ export const exampleMap = {
   presentation: {
     threeD: true,
     locations: [
-      { name: "BFI Southbank", category: "Cinema", latitude: 51.5068, longitude: -.115, description: "South Bank · example screening location" },
-      { name: "Curzon Soho", category: "Cinema", latitude: 51.5126, longitude: -.1301, description: "Soho · example screening location" },
-      { name: "Prince Charles Cinema", category: "Cinema", latitude: 51.5113, longitude: -.1305, description: "Leicester Square · example screening location" },
+      { name: "BFI Southbank", category: "Cinema", latitude: 51.5068, longitude: -.115 },
+      { name: "Curzon Soho", category: "Cinema", latitude: 51.5126, longitude: -.1301 },
+      { name: "Prince Charles Cinema", category: "Cinema", latitude: 51.5113, longitude: -.1305 },
     ],
   },
 };

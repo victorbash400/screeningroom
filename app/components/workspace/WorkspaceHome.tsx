@@ -29,7 +29,7 @@ export default function WorkspaceHome({
             <PanelLeft />
           </IconButton>
         </div>
-        <PillButton disabled={!ready} onClick={onCreate}>
+        <PillButton aria-label="Create workspace" disabled={!ready} onClick={onCreate}>
           <Plus />
           Create workspace
         </PillButton>

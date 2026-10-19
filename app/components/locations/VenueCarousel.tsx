@@ -4,7 +4,7 @@ import type { MapScene } from "../../lib/mapScene";
 import VenueCarouselCard from "./VenueCarouselCard";
 import styles from "./VenueCarousel.module.css";
 
-export default function VenueCarousel({ scene, onScene }: { scene?: MapScene; onScene: (scene: MapScene) => boolean }) {
+export default function VenueCarousel({ scene, onScene, animate = true }: { scene?: MapScene; onScene: (scene: MapScene) => boolean; animate?: boolean }) {
   const list = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(0);
   const places = scene?.presentation.locations ?? [];
@@ -12,7 +12,7 @@ export default function VenueCarousel({ scene, onScene }: { scene?: MapScene; on
   const active = Math.min(visible, Math.max(0, places.length - 1));
   function center(index: number) {
     const element = list.current, card = element?.children[index];
-    if (element && card instanceof HTMLElement) element.scrollTo({ left: card.offsetLeft - (element.clientWidth - card.offsetWidth) / 2, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    if (element && card instanceof HTMLElement) element.scrollTo({ left: card.offsetLeft - (element.clientWidth - card.offsetWidth) / 2, behavior: !animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }
   useEffect(() => { if (selected !== undefined) { setVisible(selected); center(selected); } }, [selected, places]);
   function measure() {

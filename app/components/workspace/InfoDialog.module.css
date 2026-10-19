@@ -1,11 +1,10 @@
-.dialog { width: min(1200px, calc(100vw - 32px)); max-width: calc(100vw - 32px); height: min(800px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 20px; box-sizing: border-box; overflow: hidden; border: 1px solid var(--border); border-radius: 24px; background: var(--panel); color: var(--ink); box-shadow: 0 16px 64px #00000014; }
+.dialog { width: min(900px, calc(100vw - 32px)); max-width: calc(100vw - 32px); height: min(650px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 0; box-sizing: border-box; overflow: hidden; border: 1px solid var(--border); border-radius: 24px; background: var(--panel); color: var(--ink); box-shadow: 0 16px 64px #00000014; }
 .dialog[open] { display: flex; flex-direction: column; }
 .dialog::backdrop { background: #0000001a; backdrop-filter: none; }
-.header { display: flex; align-items: center; flex-shrink: 0; gap: 8px; padding-bottom: 16px; font-size: 13px; font-weight: 500; }
-.header > button { margin-left: 4px; }
-.example { margin-left: auto; color: var(--muted); font-size: 11px; font-weight: 400; }
-.caption { flex-shrink: 0; padding: 18px 6px 0; }
-.caption h2 { margin: 0; font-size: 19px; line-height: 1.4; font-weight: 500; letter-spacing: -.3px; outline: none; }
-.caption p { margin: 7px 0 0; max-width: 680px; font-size: 13px; line-height: 1.6; color: var(--muted); }
-@media (max-width: 600px) { .dialog { width: calc(100vw - 16px); max-width: calc(100vw - 16px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); padding: 12px; border-radius: 20px; } .header { padding-bottom: 10px; } .caption { padding: 10px 2px 0; } .caption h2 { font-size: 17px; } .caption p { font-size: 12px; } .example { font-size: 10px; } }
-@media (max-height: 520px) { .dialog { padding: 10px 14px; } .header { padding-bottom: 6px; } .caption { padding-top: 7px; } .caption p { margin-top: 3px; font-size: 11px; } .caption h2 { font-size: 15px; } }
+.header { display: flex; align-items: center; flex-shrink: 0; gap: 8px; padding: 10px 20px 0; font-size: 12px; color: var(--muted); }
+.step { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; }
+.heading { flex-shrink: 0; padding: 6px 20px 14px; }
+.heading h2 { margin: 0; font-size: 24px; line-height: 1.2; font-weight: 500; letter-spacing: -.7px; outline: none; }
+.heading p { margin: 9px 0 0; max-width: 800px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+@media (max-width: 600px) { .dialog { width: calc(100vw - 16px); max-width: calc(100vw - 16px); height: min(700px, calc(100dvh - 16px)); max-height: calc(100dvh - 16px); border-radius: 20px; } .header { padding: 10px 12px 0; } .heading { padding: 10px 16px 16px; } .heading h2 { font-size: 24px; } .heading p { font-size: 12px; } }
+@media (max-height: 600px) { .header { padding-top: 6px; } .heading { padding-top: 4px; padding-bottom: 10px; } .heading h2 { font-size: 22px; } .heading p { margin-top: 5px; font-size: 12px; } }

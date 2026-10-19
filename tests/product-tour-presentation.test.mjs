@@ -22,11 +22,14 @@ const {default:TourPreview}=await import('../app/components/onboarding/TourPrevi
 const {default:TourNavigation}=await import('../app/components/onboarding/TourNavigation.tsx');
 const {default:ReferencePicker}=await import('../app/components/chat/ReferencePicker.tsx');
 const {tourSteps}=await import('../app/lib/productTour.ts');
+const {tourScripts,tourSceneAt}=await import('../app/components/onboarding/tourScript.ts');
+const {default:TourTransport}=await import('../app/components/onboarding/TourTransport.tsx');
+const {default:TourStage}=await import('../app/components/onboarding/TourStage.tsx');
 const {exampleFiles,exampleWorkspace}=await import('../app/components/onboarding/tourExample.ts');
 const action=()=>{};
-test('all seven scenes render the shared composer and toolbar',()=>{
+test('all five scenes render the shared composer and toolbar',()=>{
  for(const step of tourSteps){
-  const html=renderToStaticMarkup(createElement(TourPreview,{step:step.id,onRestart:action}));
+  const html=renderToStaticMarkup(createElement(TourPreview,{scene:tourSceneAt(step.id,tourScripts[step.id].duration)}));
   for(const label of ['Search workspaces and files','Info','Import','Audience'])assert.ok(html.includes(label),step.id+': '+label);
   if(!['workspace','import'].includes(step.id)){
    for(const label of ['New chat','Select','Message'])assert.ok(html.includes(label),step.id+': '+label);
@@ -36,14 +39,22 @@ test('all seven scenes render the shared composer and toolbar',()=>{
   if(step.id==='evidence')assert.ok(html.includes('Qloo search details')&&html.includes('Radiohead'));
  }
 });
-test('the last step exposes Finish, the first disables Back, and every step has direct navigation',()=>{
- const first=renderToStaticMarkup(createElement(TourNavigation,{index:0,onStep:action,onClose:action}));
- const last=renderToStaticMarkup(createElement(TourNavigation,{index:tourSteps.length-1,onStep:action,onClose:action}));
+test('player exposes playback, replay, accessible seeking and chapter navigation',()=>{
+ const navigation=renderToStaticMarkup(createElement(TourNavigation,{index:0,onStep:action}));
+ const props={time:0,duration:8000,playing:false,onToggle:action,onReplay:action,onSeek:action,count:5,onStep:action,onClose:action};
+ const first=renderToStaticMarkup(createElement(TourTransport,{...props,index:0}));
+ const last=renderToStaticMarkup(createElement(TourTransport,{...props,index:4}));
  assert.ok(first.includes('disabled=""'));
- assert.ok(first.includes('Next'));
+ for(const label of ['Play example','Replay example','Example progress','Next chapter'])assert.ok(first.includes(label));
  assert.ok(last.includes('Finish'));
- assert.ok(last.includes('7 / 7'));
- for(const step of tourSteps)assert.ok(first.includes(step.title));
+ for(const step of tourSteps)assert.ok(navigation.includes(step.title));
+});
+test('the example surface is inert while playback controls remain outside it',()=>{
+ const scene=tourSceneAt('question',4000),cue=tourScripts.question.cues[0];
+ const html=renderToStaticMarkup(createElement(TourStage,{scene,cue,time:4000}));
+ assert.ok(html.includes('inert=""'));
+ assert.ok(html.includes('role="img"'));
+ assert.ok(html.includes('aria-hidden="true"'));
 });
 test('the embedded picker preserves the actual tree and selection controls',()=>{
  const html=renderToStaticMarkup(createElement(ReferencePicker,{embedded:true,nodes:exampleFiles,workspaces:[exampleWorkspace],workspaceId:exampleWorkspace.id,selectedIds:['tour-brief'],onSelect:action,onClose:action}));

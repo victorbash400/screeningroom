@@ -3,16 +3,16 @@ import styles from "./TourViewport.module.css";
 
 export default function TourViewport({ children }: { children: ReactNode }) {
   const frame = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 1280, height: 620, scale: 1 });
+  const [size, setSize] = useState({ width: 1000, height: 460, scale: 1 });
   useLayoutEffect(() => {
     const element = frame.current;
     if (!element) return;
     function measure() {
       const width = element!.clientWidth, height = element!.clientHeight;
       if (!width || !height) return;
-      const virtualWidth = width < 900 ? width : 1280;
+      const virtualWidth = width < 600 ? width : 1000;
       const scale = width / virtualWidth;
-      setSize({ width: virtualWidth, height: Math.max(height / scale, width < 600 ? 480 : 0), scale });
+      setSize({ width: virtualWidth, height: Math.max(height / scale, width < 600 ? 380 : 0), scale });
     }
     measure();
     const observer = new ResizeObserver(measure);

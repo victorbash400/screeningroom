@@ -1,0 +1,2 @@
+.backdrop { position: absolute; inset: 0; z-index: 12; display: grid; place-items: center; background: #0000001a; }
+.panel { max-width: calc(100% - 24px); }

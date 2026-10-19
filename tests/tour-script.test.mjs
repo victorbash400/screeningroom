@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import {registerHooks} from 'node:module';
+import {existsSync} from 'node:fs';
+import test from 'node:test';
+registerHooks({resolve(specifier,context,next){if(specifier.startsWith('.')&&context.parentURL?.startsWith('file:')){const url=new URL(specifier+'.ts',context.parentURL);if(existsSync(url))return next(url.href,context);}return next(specifier,context);}});
+const {tourScripts,tourSceneAt}=await import('../app/components/onboarding/tourScript.ts');
+const {exampleQuestion}=await import('../app/components/onboarding/tourExample.ts');
+test('each chapter has ordered actions, a visible click interval and a finite ending',()=>{
+ for(const [step,script] of Object.entries(tourScripts)){
+  let end=-1;
+  for(const cue of script.cues){assert.ok(cue.at>end,step);assert.ok(cue.commit>cue.at);assert.ok(cue.commit<script.duration);assert.ok(cue.label&&cue.target);end=cue.commit;}
+ }
+});
+test('workspace creation includes naming, opening and visible file import within eight seconds',()=>{
+ assert.equal(tourSceneAt('workspace',0).workspaceExists,false);
+ assert.equal(tourSceneAt('workspace',1000).createOpen,true);
+ assert.ok(tourSceneAt('workspace',1500).workspaceName.length>0);
+ assert.equal(tourSceneAt('workspace',2000).workspaceName,'Night Signals');
+ assert.equal(tourSceneAt('workspace',2800).workspaceExists,true);
+ assert.equal(tourSceneAt('workspace',3900).workspaceOpen,true);
+ assert.equal(tourSceneAt('workspace',5000).importOpen,true);
+ assert.equal(tourSceneAt('workspace',6000).importBusy,true);
+ assert.equal(tourSceneAt('workspace',6500).importItems,3);
+ assert.equal(tourSceneAt('workspace',8000).uploaded,true);
+ assert.equal(tourSceneAt('workspace',8000).importOpen,false);
+ assert.equal(tourSceneAt('workspace',0).workspaceExists,false);
+});
+test('seeking reconstructs file selection and typing in either direction',()=>{
+ assert.deepEqual(tourSceneAt('question',2700).references,['tour-trailer','tour-brief']);
+ assert.equal(tourSceneAt('question',2700).pickerOpen,true);
+ assert.equal(tourSceneAt('question',3500).pickerOpen,false);
+ const mid=tourSceneAt('question',5000).draft;
+ assert.ok(mid.length>0&&mid.length<exampleQuestion.length);
+ assert.ok(exampleQuestion.startsWith(mid));
+ assert.equal(tourSceneAt('question',6400).draft,exampleQuestion);
+ assert.equal(tourSceneAt('question',8000).sent,true);
+ assert.equal(tourSceneAt('question',8000).draft,'');
+ assert.deepEqual(tourSceneAt('question',0).references,[]);
+ assert.equal(tourSceneAt('question',5000).draft,mid);
+});
+test('map, platform and evidence states can be undone by seeking',()=>{
+ assert.equal(tourSceneAt('live',2000).radius,10000);
+ assert.equal(tourSceneAt('live',3500).venue,1);
+ assert.equal(tourSceneAt('live',5000).mapOpen,false);
+ assert.equal(tourSceneAt('live',0).radius,5000);
+ assert.equal(tourSceneAt('digital',2500).audienceMode,'digital');
+ assert.equal(tourSceneAt('digital',2500).mapOpen,true);
+ assert.equal(tourSceneAt('digital',4500).mapOpen,false);
+ assert.equal(tourSceneAt('evidence',2000).evidenceOpen,true);
+ assert.equal(tourSceneAt('evidence',0).evidenceOpen,false);
+});
+test('the five chapters are concise and automatic transitions do not fake a click',()=>{
+ assert.equal(Object.keys(tourScripts).length,5);
+ assert.ok(Object.values(tourScripts).every(script=>script.duration<=9000));
+ assert.ok(Object.values(tourScripts).reduce((sum,script)=>sum+script.duration,0)<=35000);
+ assert.equal(tourScripts.workspace.cues.at(-1).click,false);
+});
