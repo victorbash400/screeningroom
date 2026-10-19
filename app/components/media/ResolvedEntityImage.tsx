@@ -4,7 +4,7 @@ import { loadEntityImage } from "../../lib/entityImage";
 import type { EntityImageProps } from "./EntityImage";
 import styles from "./EntityImage.module.css";
 
-export default function ResolvedEntityImage({ src, entityId, label, className = "", fit = "cover" }: EntityImageProps) {
+export default function ResolvedEntityImage({ src, entityId, label, className = "", fit = "cover", priority = false }: EntityImageProps) {
   const frame = useRef<HTMLSpanElement>(null);
   const mounted = useRef(false);
   const [source, setSource] = useState(src);
@@ -54,7 +54,7 @@ export default function ResolvedEntityImage({ src, entityId, label, className = 
     if (mounted.current) setAttempt((value) => value + 1);
   }
   return <span ref={frame} className={`${styles.frame} ${className}`} data-state={state} data-fit={fit}>
-    {source && state !== "failed" && <img key={attempt} src={source} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"
+    {source && state !== "failed" && <img key={attempt} src={source} alt="" loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" referrerPolicy="no-referrer"
       onLoad={() => setState("ready")} onError={() => { setError(`Photo of ${label} could not load.`); setState("failed"); }} />}
     {(state === "waiting" || state === "loading") && <LoaderCircle className={styles.loading} size={16} aria-label={`Loading photo of ${label}`} />}
     {(state === "failed" || state === "missing") && <button type="button" className={styles.retry} title={state === "missing" ? `No photo available for ${label}. Check again.` : error}

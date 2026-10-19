@@ -6,6 +6,7 @@ export interface EntityImageProps {
   entityId?: string;
   label: string;
   className?: string;
+  priority?: boolean;
   fit?: "cover" | "contain";
 }
 

@@ -30,8 +30,8 @@ export default function LocationSearch({ inputRef, onSelect }: { inputRef?: RefO
   }
   return <div className={styles.search}>
     <form onSubmit={(event) => { event.preventDefault(); if (query.trim()) void search(); }}>
+      <button type="submit" aria-label="Search places" disabled={busy || !query.trim()}>{busy ? <LoaderCircle className={styles.busy} /> : <Search size={18} strokeWidth={1.8} />}</button>
       <input ref={inputRef} aria-label="Search places" placeholder="Search places" value={query} onChange={(event) => { active.current?.abort(); setBusy(false); setQuery(event.target.value); setPlaces([]); setError(""); }} />
-      <button type="submit" aria-label="Search" disabled={busy || !query.trim()}>{busy ? <LoaderCircle className={styles.busy} /> : <Search />}</button>
     </form>
     {(places.length > 0 || error) && <div className={styles.results}>
       {places.map((place, index) => <button type="button" key={`${place.longitude}:${place.latitude}:${index}`} onClick={() => {

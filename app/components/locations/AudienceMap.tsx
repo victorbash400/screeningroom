@@ -44,13 +44,13 @@ export default function AudienceMap({ mode, open, area = defaultLocationInterest
     const index = presentation.locations.findIndex((item) =>
       place.id && item.id ? item.id === place.id : item.longitude === place.longitude && item.latitude === place.latitude);
     const locations = index < 0 ? [...presentation.locations, place] : presentation.locations;
-    if (!onScene({ id: crypto.randomUUID(), presentation: { ...presentation, locations, focusIndex: index < 0 ? locations.length - 1 : index } })) {
+    if (!onScene({ id: crypto.randomUUID(), presentation: { ...presentation, locations, focusIndex: index < 0 ? locations.length - 1 : index, zoom: 17, threeD: true } })) {
       setSearchError("Venue selection could not be saved.");
     }
   }
   const [landmarks, setLandmarks] = useState(true);
-  const [view, setView] = useState<{ sceneId?: string; threeD: boolean }>({ threeD: false });
-  const threeD = view.sceneId === scene?.id ? view.threeD : scene?.presentation.threeD ?? false;
+  const [view, setView] = useState<{ sceneId?: string; threeD: boolean }>({ threeD: true });
+  const threeD = view.sceneId === scene?.id ? view.threeD : scene?.presentation.threeD ?? true;
   return <section role="region" aria-label="Audience map" hidden={!open} className={styles.window}
     style={{ "--venue-carousel-height": mode === "live" && scene?.presentation.locations.length ? "clamp(190px, 34cqh, 280px)" : "0px" } as CSSProperties}>
     <div className={styles.mapArea}>

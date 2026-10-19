@@ -41,6 +41,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   }));
   const selectPlace = useEffectEvent(onPlace);
   const initialArea = useRef(area);
+  const initialThreeD = useRef(threeD);
   useEffect(() => {
     if (!container.current) return;
     setReady(false); setError(false);
@@ -50,6 +51,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
         container: container.current,
         center: initialArea.current ? [initialArea.current.longitude, initialArea.current.latitude] : [0, 20],
         zoom: initialArea.current ? 11 : 1.5,
+        pitch: initialThreeD.current ? 55 : 0,
         attributionControl: false,
       });
     } catch { setError(true); return; }

@@ -29,7 +29,7 @@ export default function VenueCarousel({ scene, onScene }: { scene?: MapScene; on
   }
   function select(index: number) {
     setVisible(index); center(index);
-    if (scene) onScene({ id: crypto.randomUUID(), reframe: true, presentation: { ...scene.presentation, focusIndex: index } });
+    if (scene) onScene({ id: crypto.randomUUID(), reframe: true, presentation: { ...scene.presentation, focusIndex: index, zoom: 17, threeD: true } });
   }
   if (!places.length) return null;
   return <section className={styles.carousel} role="region" aria-label="Venue shortlist" aria-roledescription="carousel">

@@ -166,9 +166,12 @@ test("digital catalogue displays real platform assets and category info without 
 
 test("venue cards preserve white-card details and provider photos without inventing an explanation", async () => {
   const { default: VenueCarouselCard } = await import("../app/components/locations/VenueCarouselCard.tsx");
-  const html = renderToStaticMarkup(createElement(VenueCarouselCard, { place: { ...place, description: "Independent cinema with a cafe.", image: "https://images.qloo.com/venue.jpg", affinity: .73 }, index: 0, active: true, selected: false, onSelect() {} }));
+  const html = renderToStaticMarkup(createElement(VenueCarouselCard, { place: { ...place, description: "Independent cinema with a cafe.", website: "https://example.com/cinema", image: "https://images.qloo.com/venue.jpg", affinity: .73 }, index: 0, active: true, selected: false, onSelect() {} }));
   assert.ok(html.includes('Independent cinema with a cafe.'));
   assert.ok(html.includes('https://images.qloo.com/venue.jpg'));
   assert.ok(html.includes('Qloo affinity'));
+  assert.ok(html.includes('href="https://example.com/cinema"'));
+  assert.ok(html.includes('loading="eager"'));
+  assert.ok(html.includes('fetchPriority="high"'));
   assert.ok(!html.includes('73%'));
 });
