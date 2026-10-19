@@ -21,6 +21,44 @@ pnpm dev
 
 Open http://localhost:3000.
 
+## Deployment
+
+The public application runs on Vercel:
+
+- https://screeningroom.nairobilaboratories.com
+- https://screeningroom-psi.vercel.app
+
+Project: `victor-bashs-projects/screeningroom`. Next.js route handlers deploy
+with the frontend and call the dedicated AWS backend using server-only Production
+Secrets. No AWS, Bedrock, Qloo or demo credentials use a public environment prefix.
+The separate Vercel Marketplace development table is not used by this deployment.
+
+Production uses Node.js 24 and Fluid Compute. `vercel.json` requests `iad1`,
+next to the AWS resources. The chat function explicitly traces its Linux FFmpeg,
+FFprobe and checksum-verified yt-dlp binaries; dynamic executable selection must
+not cause the whole repository to be bundled. Browser security headers disallow
+framing and object embedding, prevent MIME sniffing, and limit referrer disclosure.
+
+The custom domain uses a CNAME managed in Spaceship. Keep the existing apex,
+`www`, and verification records unchanged. Use the recommended target returned by
+`vercel domains verify` when changing this record.
+
+Production intentionally leaves `APP_ORIGIN` unset so mutations must match the
+actual request URL's origin on either assigned hostname. Local development keeps
+its explicit origin in `.env.local`. Both paths reject cross-origin and missing
+Origin headers. Deployment previews retain Vercel authentication protection;
+the assigned public domains use the application's Cognito sign-in.
+
+```sh
+pnpm typecheck
+pnpm dlx vercel@latest project inspect --non-interactive
+pnpm dlx vercel@latest deploy --prod --scope victor-bashs-projects
+pnpm dlx vercel@latest domains verify screeningroom.nairobilaboratories.com --project screeningroom --scope victor-bashs-projects
+```
+
+Confirm the linked team/project before deploying. Production secrets are managed
+in Vercel; do not upload `.env.local` or pull production secrets over local settings.
+
 ## AWS development foundation
 
 Region: `us-east-1`. Stack: `screeningroom-dev-foundation`.
@@ -75,7 +113,8 @@ APP_ORIGIN
 ```
 
 `APP_ORIGIN` is the exact browser origin, initially `http://localhost:3000`.
-Use the matching hostname and port. Change it for a different local port or deployment.
+Use the matching hostname and port for an explicitly configured origin. When unset,
+the request URL origin is required instead, supporting the assigned deployment aliases.
 Mutating routes reject missing or different `Origin` headers; no permissive CORS.
 
 ## Backend contract
@@ -591,7 +630,7 @@ YouTube links use the same sampled visuals and full speech transcription as uplo
 
 ### Product walkthrough
 
-Info opens a seven-step interactive example using the app’s toolbar, sidebar
+Info opens a six-chapter scripted example using the app’s toolbar, sidebar
 search, composer, selection tree and Audience map/catalogue. Demo accounts reopen
 it on each app start; unseen empty accounts open it once. Dismissal is saved per
 account through `/api/onboarding`, with failures surfaced for retry.
