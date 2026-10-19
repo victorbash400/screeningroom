@@ -1,11 +1,10 @@
-import { useState } from "react";
+import EntityImage from "../media/EntityImage";
 import type { ComparisonWidget } from "../../lib/researchWidget";
 import styles from "./ResearchComparison.module.css";
 
 export default function ResearchSubject({ subject }: { subject: ComparisonWidget["subjects"][number] }) {
-  const [failed, setFailed] = useState(false);
   return <div className={styles.subject}>
-    {subject.image && !failed && <img src={subject.image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />}
+    <EntityImage className={styles.photo} src={subject.image} entityId={subject.id} label={subject.name} />
     <strong>{subject.website ? <a href={subject.website} target="_blank" rel="noopener noreferrer">{subject.name}</a> : subject.name}</strong>{subject.year !== undefined && <small>{subject.year}</small>}
   </div>;
 }

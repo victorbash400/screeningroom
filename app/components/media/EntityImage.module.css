@@ -1,0 +1,11 @@
+.frame { position: var(--entity-image-position, relative); display: inline-grid; place-items: center; width: var(--entity-image-width, 48px); height: var(--entity-image-height, 48px); flex-shrink: 0; overflow: hidden; border-radius: var(--entity-image-radius, 6px); background: var(--hover); color: var(--muted); pointer-events: none; }
+.frame img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+.frame[data-state="ready"] img { opacity: 1; }
+.frame[data-fit="contain"] { background: transparent; }
+.frame[data-fit="contain"] img { object-fit: contain; object-position: left center; }
+.loading { position: absolute; animation: spin 1s linear infinite; }
+.retry { position: absolute; inset: 0; display: grid; place-items: center; border: 1px solid var(--border); border-radius: inherit; padding: 0; background: var(--surface); color: var(--icon); cursor: pointer; pointer-events: auto; }
+.retry:hover { background: var(--hover); }
+.retry:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .loading { animation: none; } }

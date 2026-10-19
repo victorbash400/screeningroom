@@ -1,3 +1,5 @@
+import EntityImage from "../media/EntityImage";
+import { canResolveEntityImage } from "../../lib/entityImage";
 import { MapPin, ExternalLink } from "lucide-react";
 import type { VenueResults } from "../../lib/audienceWidget";
 import AudienceMetricDetails from "./AudienceMetricDetails";
@@ -10,8 +12,9 @@ export default function AudienceVenueList({ widget }: { widget: VenueResults }) 
   return <AudienceWidgetShell details={widget.basis === "taste" ? <AudienceMetricDetails kind="venues" /> : undefined} title={`Venues · ${widget.area.name}`} source={widget.source === "OpenStreetMap" ? "© OpenStreetMap contributors" : widget.source === "Geoapify" ? "Geoapify · © OpenStreetMap contributors" : widget.basis === "taste" ? "Qloo · taste affinity" : "Qloo · venue discovery"}
     onMap={widget.venues.length ? () => map?.showPlaces(widget.venues) : undefined}>
     <div className={styles.list}>{widget.venues.map((venue, index) => <div key={venue.id ?? `${venue.longitude}:${venue.latitude}`} className={styles.venue}>
+      {(venue.image || (venue.source === "Qloo" && canResolveEntityImage(venue.id))) && <EntityImage className={styles.photo} src={venue.image} entityId={venue.source === "Qloo" ? venue.id : undefined} label={venue.name} />}
       <button type="button" className={styles.place} onClick={() => map?.showPlaces(widget.venues, index)}>
-        <MapPin size={15} /><span><strong>{venue.name}</strong>{venue.address && <small>{venue.address}</small>}</span>
+        {!venue.image && !(venue.source === "Qloo" && canResolveEntityImage(venue.id)) && <MapPin size={15} />}<span><strong>{venue.name}</strong>{venue.address && <small>{venue.address}</small>}</span>
       </button>
       {venue.affinity !== undefined && <span className={styles.affinity} title="Qloo affinity index">{venue.affinity.toFixed(2)}</span>}
       {venue.website && <a href={venue.website} target="_blank" rel="noopener noreferrer" aria-label={`${venue.name} website`}><ExternalLink size={13} /></a>}
