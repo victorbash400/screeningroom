@@ -10,8 +10,9 @@ export default function TourViewport({ children }: { children: ReactNode }) {
     function measure() {
       const width = element!.clientWidth, height = element!.clientHeight;
       if (!width || !height) return;
-      const virtualWidth = width < 600 && height < 380 ? Math.max(width, 360) : width;
-      const scale = width / virtualWidth;
+      const compact = width < 600;
+      const virtualWidth = compact ? 400 : 1080;
+      const scale = Math.min(1, width / virtualWidth, height / (compact ? 400 : 500));
       setSize({ width: virtualWidth, height: height / scale, scale });
     }
     measure();
