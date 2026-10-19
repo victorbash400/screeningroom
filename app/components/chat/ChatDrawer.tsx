@@ -106,6 +106,7 @@ export default function ChatDrawer({
     <aside
       ref={drawer}
       className={styles.drawer}
+      data-embedded={embeddedPicker || undefined}
       data-audience={channel === "locations"}
       data-map-open={channel === "locations" && mapOpen}
       aria-label={label}

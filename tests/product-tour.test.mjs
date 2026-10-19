@@ -12,6 +12,7 @@ registerHooks({ resolve(specifier, context, next) {
 } });
 const { shouldOpenTour, tourStatusSchema, tourSteps } = await import('../app/lib/productTour.ts');
 const { createTourRequests } = await import('../app/components/onboarding/tourRequests.ts');
+const { tourUserMessage, tourMessages, tourAnswer } = await import('../app/components/onboarding/tourConversation.ts');
 
 test('demo reopens on every mount, while only an unseen empty real account opens automatically', () => {
   for (const demo of [true, false]) for (const seen of [true, false]) for (const empty of [true, false]) {
@@ -40,4 +41,20 @@ test('walkthrough requests never reach the network or save another session’s h
     assert.equal(scene.locations.length, 3);
     assert.ok(scene.locations.every(place => place.affinity === undefined && place.source !== 'Qloo'));
   } finally { globalThis.fetch = original; }
+});
+
+test('sample conversations retain selected file identities and identify simulated evidence', () => {
+  const message = tourUserMessage('question', 'Find an audience', ['tour-brief', 'unknown-real-file']);
+  assert.deepEqual(message.references.map(file => file.id), ['tour-brief']);
+  assert.equal(message.references[0].workspaceId, 'tour-workspace');
+  const live = tourMessages('live'), digital = tourMessages('digital');
+  assert.ok(live[1].text.includes('walkthrough fixtures'));
+  assert.ok(digital[1].text.includes('no platform scores'));
+  assert.notEqual(live[1].text, digital[1].text);
+  const first = tourAnswer('first', 'live'), second = tourAnswer('second', 'live');
+  const trace = first.blocks.find(block => block.kind === 'tool').tool.trace;
+  assert.equal(trace.input.query, 'Radiohead');
+  assert.equal(trace.matches[0].name, 'Radiohead (example match)');
+  assert.ok(trace.matches[0].id.startsWith('walkthrough:'));
+  assert.notEqual(first.blocks[0].id, second.blocks[0].id);
 });

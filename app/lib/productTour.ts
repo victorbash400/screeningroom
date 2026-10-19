@@ -3,13 +3,13 @@ import { z } from "zod";
 export const tourStatusSchema = z.object({ demo: z.boolean(), seen: z.boolean() }).strict();
 export type TourStatus = z.infer<typeof tourStatusSchema>;
 export const tourSteps = [
-  { id: "workspace", title: "Start with a workspace", instruction: "Open the example workspace. Keep a production’s files and audience conversations together.", action: "Open the workspace" },
-  { id: "import", title: "Bring your media", instruction: "Open Import to try sample files or a video link. In your workspace, use your own media, script or brief.", action: "Open Import" },
-  { id: "select", title: "Choose the context", instruction: "Click Select, choose the files the agent should use, then Done. You can change this selection as you work.", action: "Select media" },
-  { id: "question", title: "Tell it what you’re making", instruction: "Try the example question or write your own. The agent uses the selected media and asks when it needs more context.", action: "Try a question" },
-  { id: "live", title: "Find a live audience", instruction: "Search the example London map, adjust the radius and click a venue to focus the map. Live is for screenings and in-person presentations.", action: "Explore the map" },
-  { id: "digital", title: "Explore digital audiences", instruction: "Switch to Digital for online platforms. Ask which audiences fit your work; platform affinity is a cultural signal, not viewer analytics.", action: "Switch to Digital" },
-  { id: "evidence", title: "Look behind the answer", instruction: "Expand a tool call to inspect its inputs and returned evidence. Reopen this walkthrough from Info whenever you need it.", action: "Expand the tool call" },
+  { id: "workspace", title: "Start with a workspace", instruction: "Open Night Signals. Try the file views or open the production brief; Home returns to your workspaces.", action: "Open the workspace" },
+  { id: "import", title: "Bring your media", instruction: "Open Import, then try sample files or enter a video link. These examples stay inside the walkthrough.", action: "Open Import" },
+  { id: "select", title: "Choose the context", instruction: "Click Select, choose the trailer and brief, then Done. The chips above the message show what you’ll send.", action: "Select media" },
+  { id: "question", title: "Tell it what you’re making", instruction: "Send the prepared question or edit it. Include your format, audience and location; try New chat or reopen a conversation from Chats.", action: "Try a question" },
+  { id: "live", title: "Find a live audience", instruction: "Search London, adjust the radius and open a venue card. Toggle Map to return to the conversation.", action: "Explore the map" },
+  { id: "digital", title: "Explore digital audiences", instruction: "Browse the platform catalogue or switch back to Live. Ask about cultural affinity; it does not predict views or ticket sales.", action: "Switch to Digital" },
+  { id: "evidence", title: "Look behind the answer", instruction: "Expand Qloo search to compare its inputs with the example match. In real conversations, inspect evidence before acting on a recommendation.", action: "Expand the tool call" },
 ] as const;
 export type TourStep = typeof tourSteps[number]["id"];
 export function shouldOpenTour(status: TourStatus, empty: boolean) { return status.demo || empty && !status.seen; }

@@ -20,7 +20,14 @@ export default function TourImport({ onImport, onClose }: { onImport: (source: I
     return () => { if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
   }, []);
   const [source, setSource] = useState<ImportSource>("upload");
-  return <section ref={panel} role="dialog" onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); onClose(); } }} className={`${modal.dialog} ${styles.panel}`} aria-label="Example import">
+  return <section ref={panel} role="dialog" aria-modal="true" onKeyDown={event => {
+    if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); onClose(); }
+    if (event.key === "Tab") {
+      const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled)'));
+      const edge = event.shiftKey ? controls[0] : controls.at(-1);
+      if (document.activeElement === edge) { event.preventDefault(); (event.shiftKey ? controls.at(-1) : controls[0])?.focus(); }
+    }
+  }} className={`${modal.dialog} ${styles.panel}`} aria-label="Example import">
     <header className={modal.header}><AppIcon /><span>Import</span><IconButton label="Close example import" onClick={onClose}><X /></IconButton></header>
     <ImportDestination path={[exampleWorkspace.name]} />
     <ImportSourceTabs source={source} busy={false} onChange={setSource} />

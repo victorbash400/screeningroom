@@ -59,4 +59,6 @@
 .drawer[data-map-open="true"] .workspace::after { content: ""; position: absolute; left: min(50%, calc(100% - 364px)); top: 12px; bottom: 24px; width: 1px; background: var(--border); pointer-events: none; }
 @container workspace (max-width: 699px) {
   .drawer[data-map-open="true"] .workspace::after { display: none; }
+  .drawer[data-embedded="true"][data-map-open="true"] .workspace { grid-template-rows: minmax(0, 1fr); }
+  .drawer[data-embedded="true"][data-map-open="true"] .body { display: none; }
 }

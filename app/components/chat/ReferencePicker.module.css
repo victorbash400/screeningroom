@@ -3,6 +3,8 @@
 .footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .footer > span { margin-right: auto; font-size: 12px; color: var(--muted); }
 
-.picker[data-embedded="true"] { position: fixed; inset: 16px; margin: auto; width: min(640px, calc(100% - 32px)); max-height: calc(100% - 32px); z-index: 10; }
+.picker[data-embedded="true"] { position: fixed; inset: 16px; display: flex; flex-direction: column; margin: auto; width: min(640px, calc(100% - 32px)); max-height: calc(100% - 32px); z-index: 10; }
+.picker[data-embedded="true"] .browser { flex: 1; min-height: 0; }
+.picker[data-embedded="true"] .footer { flex-shrink: 0; }
 
 .embeddedBackdrop { position: fixed; inset: 0; z-index: 9; border: 0; background: #0000001a; cursor: default; }
