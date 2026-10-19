@@ -1,4 +1,4 @@
-import { PanelLeft, Plus, RefreshCw } from "lucide-react";
+import { PanelLeft, Plus, RefreshCw, Info } from "lucide-react";
 import type { Workspace } from "../../lib/types";
 import PillButton from "../controls/PillButton";
 import IconButton from "../controls/IconButton";
@@ -11,6 +11,7 @@ export default function WorkspaceHome({
   onOpen,
   onNavigation,
   onRefresh,
+  onInfo,
 }: {
   workspaces: Workspace[];
   ready: boolean;
@@ -18,6 +19,7 @@ export default function WorkspaceHome({
   onOpen: (id: string) => void;
   onNavigation: () => void;
   onRefresh: () => void;
+  onInfo?: () => void;
 }) {
   return (
     <main className={styles.home} aria-label="Workspaces" aria-busy={!ready}>
@@ -38,6 +40,7 @@ export default function WorkspaceHome({
         >
           <RefreshCw />
         </IconButton>
+        {onInfo && <IconButton label="Info" onClick={onInfo}><Info /></IconButton>}
       </div>
       <div className={styles.list}>
         {workspaces.map((workspace) => (

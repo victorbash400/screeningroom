@@ -1,0 +1,2 @@
+.viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+.canvas { position: absolute; top: 0; left: 0; transform: scale(var(--tour-scale)); transform-origin: top left; }

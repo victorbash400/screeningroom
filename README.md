@@ -588,3 +588,15 @@ the map; selecting a card focuses its map pin. Qloo venue affinity and surroundi
 heatmap affinity remain separate evidence. No synthetic combined score is used.
 
 YouTube links use the same sampled visuals and full speech transcription as uploads. Builds prepare a checksum-verified standalone yt-dlp executable from its official release, included in the chat function bundle. Local development can prepare the same binary with `node scripts/prepare-youtube.mjs` or use yt-dlp on PATH; `YTDLP_PATH` can select an existing executable. Restricted or unavailable videos fail explicitly; upload a copy or transcript when a source cannot be accessed.
+
+### Product walkthrough
+
+Info opens a seven-step interactive example using the app’s toolbar, sidebar
+search, composer, selection tree and Audience map/catalogue. Demo accounts reopen
+it on each app start; unseen empty accounts open it once. Dismissal is saved per
+account through `/api/onboarding`, with failures surfaced for retry.
+
+Edit step copy and order in `app/lib/productTour.ts`, examples in
+`app/components/onboarding/tourExample.ts`, and individual scenes under
+`app/components/onboarding/`. Example API requests are isolated from real account
+data; the map loads public map tiles, while example chats do not invoke a model.

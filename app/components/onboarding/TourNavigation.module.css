@@ -1,0 +1,10 @@
+.footer { display: flex; align-items: center; gap: 16px; flex-shrink: 0; padding-top: 16px; }
+.dismiss { padding: 8px 0; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.progress { display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; }
+.progress button { width: 7px; height: 7px; padding: 0; border-radius: 6px; background: var(--border); cursor: pointer; transition: width 180ms ease, background 180ms ease; }
+.progress button[aria-current="step"] { width: 22px; background: var(--icon); }
+.buttons { display: flex; align-items: center; gap: 8px; }
+.buttons > span { margin-right: 6px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dismiss:focus-visible, .progress button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+@media (max-width: 600px) { .footer { flex-wrap: wrap; gap: 8px; } .progress { order: -1; flex-basis: 100%; padding: 4px 0 8px; } .buttons { margin-left: auto; } .buttons > span { display: none; } }
+@media (prefers-reduced-motion: reduce) { .progress button { transition: none; } }

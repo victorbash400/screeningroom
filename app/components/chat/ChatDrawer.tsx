@@ -19,6 +19,9 @@ import type { MapScene } from "../../lib/mapScene";
 import styles from "./ChatDrawer.module.css";
 const AudienceMap = dynamic(() => import("../locations/AudienceMap"), { ssr: false });
 interface Props {
+  embeddedPicker?: boolean;
+  initialMapOpen?: boolean;
+  initialReferenceIds?: string[];
   onAudienceMode: (mode: "live" | "digital") => boolean;
   onAudienceWidget: (toolId: string, widget: AudienceWidget) => boolean;
   onMapScene: (scene: MapScene) => boolean;
@@ -45,6 +48,9 @@ interface Props {
   onReference: (id: string) => void;
 }
 export default function ChatDrawer({
+  embeddedPicker,
+  initialMapOpen = true,
+  initialReferenceIds,
   onAudienceMode,
   onAudienceWidget,
   onMapScene,
@@ -84,7 +90,7 @@ export default function ChatDrawer({
     };
   }, []);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [mapOpen, setMapOpen] = useState(true);
+  const [mapOpen, setMapOpen] = useState(initialMapOpen);
   function newChat() {
     if (onNew()) setHistoryOpen(false);
   }
@@ -147,8 +153,9 @@ export default function ChatDrawer({
           onReference={onReference}
         />}
         <ChatComposer
+          embeddedPicker={embeddedPicker}
           onOpenReference={onReference}
-          initialReferenceIds={messageReferences(conversation.messages.findLast((message) => message.role !== "assistant") ?? { id: "", text: "", createdAt: "" }).map((reference) => reference.id)}
+          initialReferenceIds={initialReferenceIds ?? messageReferences(conversation.messages.findLast((message) => message.role !== "assistant") ?? { id: "", text: "", createdAt: "" }).map((reference) => reference.id)}
           area={channel === "locations" && conversation.audienceMode !== "digital" ? conversation.locationInterest ?? defaultLocationInterest : undefined}
           onLocation={channel === "locations" && conversation.audienceMode !== "digital" ? () => setMapOpen(true) : undefined}
           busy={busy}

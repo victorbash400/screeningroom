@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useProductTour } from "../../state/useProductTour";
 import InfoDialog from "../workspace/InfoDialog";
 import { folderPath } from "../../lib/storage";
 import { useAccount } from "../../state/AccountContext";
@@ -32,9 +32,9 @@ import styles from "./Screeningroom.module.css";
 
 export default function RoomApplication() {
   const app = useScreeningroom();
-  const [infoOpen, setInfoOpen] = useState(false);
   const account = useAccount();
   const settings = isSettingsSurface(account.surface);
+  const tour = useProductTour(app.room.ready && !settings, app.room.data.nodes.length === 0 && app.room.data.conversations.every(item => item.messages.length === 0));
   const {
     room,
     navigation,
@@ -49,6 +49,7 @@ export default function RoomApplication() {
   const conversation = chat.conversation;
   return (
     <div className={styles.app}>
+      {tour.error && <ErrorNotice message={tour.error} onRetry={tour.retry} onDismiss={tour.clearError} />}
       {chat.error && <ErrorNotice message={chat.error} onDismiss={chat.clearError} />}
       {room.error && (
         <ErrorNotice
@@ -96,7 +97,7 @@ export default function RoomApplication() {
                   if (app.selected) app.share(app.selected);
                 }}
                 onChat={chat.toggle}
-                onInfo={() => setInfoOpen(true)}
+                onInfo={tour.show}
                 onImport={() =>
                   app.requestImport(workspace.id, navigation.location.folderId)
                 }
@@ -206,6 +207,7 @@ export default function RoomApplication() {
           />
         ) : (
           <WorkspaceHome
+            onInfo={tour.show}
             onRefresh={room.reload}
             workspaces={room.data.workspaces}
             ready={room.ready}
@@ -215,7 +217,7 @@ export default function RoomApplication() {
           />
         )}
       </div>
-      {infoOpen && <InfoDialog onClose={() => setInfoOpen(false)} />}
+      {tour.open && <InfoDialog onClose={tour.close} />}
       {nameAction?.kind === "workspace" && (
         <NameDialog
           label="Workspace name"

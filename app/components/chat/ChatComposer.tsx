@@ -9,6 +9,7 @@ import styles from "./ChatComposer.module.css";
 import type { LocationInterest } from "../../lib/locationInterest";
 import ComposerLocation from "./ComposerLocation";
 interface Props {
+  embeddedPicker?: boolean;
   pickerRequest?: number;
   placeholder?: string;
   initialReferenceIds?: string[];
@@ -27,7 +28,7 @@ interface Props {
   onSend: (text: string, referenceIds?: string[]) => boolean;
 }
 export default function ChatComposer({
-  pickerRequest, placeholder, initialReferenceIds, onOpenReference,
+  embeddedPicker, pickerRequest, placeholder, initialReferenceIds, onOpenReference,
   area, onLocation,
   busy,
   onStop,
@@ -134,6 +135,7 @@ export default function ChatComposer({
       </div>
       {picking && (
         <ReferencePicker
+          embedded={embeddedPicker}
           workspaceId={workspaceId}
           workspaces={workspaces}
           selectedIds={references.map((node) => node.id)}

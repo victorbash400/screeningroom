@@ -11,8 +11,8 @@ import modal from "../workspace/ImportDialog.module.css";
 import styles from "./ReferencePicker.module.css";
 import tree from "../navigation/WorkspaceBranch.module.css";
 
-export default function ReferencePicker({ nodes, workspaces, workspaceId, selectedIds, onSelect, onClose }: {
-  nodes: FileNode[]; workspaces: Workspace[]; workspaceId: string; selectedIds: string[];
+export default function ReferencePicker({ embedded = false, nodes, workspaces, workspaceId, selectedIds, onSelect, onClose }: {
+  embedded?: boolean; nodes: FileNode[]; workspaces: Workspace[]; workspaceId: string; selectedIds: string[];
   onSelect: (ids: string[]) => void; onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -29,14 +29,25 @@ export default function ReferencePicker({ nodes, workspaces, workspaceId, select
     setSelected((previous) => previous.includes(node.id) ? previous.filter((id) => id !== node.id) : [...previous, node.id]);
   }
   useEffect(() => {
-    dialog.current?.showModal();
+    if (!embedded) dialog.current?.showModal();
+    else dialog.current?.querySelector<HTMLButtonElement>("button")?.focus();
     return () => { queueMicrotask(() => {
       const previous = previousFocus.current;
       if (previous instanceof HTMLElement && previous.isConnected) previous.focus();
     }); };
-  }, []);
-  return <dialog ref={dialog} className={`${modal.dialog} ${styles.picker}`} aria-label="Select files"
-    onCancel={onClose} onKeyDown={(event) => event.stopPropagation()} {...backdrop}>
+  }, [embedded]);
+  return <>{embedded && <button type="button" className={styles.embeddedBackdrop} aria-label="Close file picker" onClick={onClose} tabIndex={-1} />}<dialog ref={dialog} open={embedded ? true : undefined} data-embedded={embedded} className={`${modal.dialog} ${styles.picker}`} aria-label="Select files"
+    onCancel={onClose} onKeyDown={(event) => {
+      event.stopPropagation();
+      if (!embedded) return;
+      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key === "Tab") {
+        const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), [tabindex="0"]'));
+        const target = event.shiftKey ? controls.at(-1) : controls[0];
+        const edge = event.shiftKey ? controls[0] : controls.at(-1);
+        if (document.activeElement === edge) { event.preventDefault(); target?.focus(); }
+      }
+    }} {...backdrop}>
     <header className={modal.header}>
       <FolderOpen size={20} /><span>Select files</span>
       <IconButton label="Close file picker" onClick={onClose}><X /></IconButton>
@@ -66,5 +77,5 @@ export default function ReferencePicker({ nodes, workspaces, workspaceId, select
       <SettingsInlineButton onClick={onClose}>Cancel</SettingsInlineButton>
       <SettingsInlineButton primary onClick={() => onSelect(effective.map((node) => node.id))}>Done</SettingsInlineButton>
     </footer>
-  </dialog>;
+  </dialog></>;
 }

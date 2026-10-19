@@ -1,0 +1,1 @@
+.panel { position: absolute; inset: 16px; margin: auto; width: min(640px, calc(100% - 32px)); height: fit-content; max-height: calc(100% - 32px); z-index: 10; }

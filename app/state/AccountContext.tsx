@@ -9,7 +9,7 @@ type AccountState = ReturnType<typeof useAccountSession> & {
   open: (surface: AccountSurface) => void;
   beforeSignOut: (save: () => Promise<boolean>) => () => void;
 };
-const AccountContext = createContext<AccountState | null>(null);
+export const AccountContext = createContext<AccountState | null>(null);
 export function AccountProvider({ children }: { children: ReactNode }) {
   const account = useAccountSession();
   useEffect(() => {
