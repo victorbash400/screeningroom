@@ -23,7 +23,7 @@ export default function MapSearchControls({ area, onArea, searching, error, onSe
       </div>
       <div className={styles.areaRow}>
         <LocationAreaControl area={area} onChange={onArea} onSetLocation={() => { search.current?.focus(); search.current?.select(); }} />
-        {onSearchArea && <button type="button" className={styles.searchArea} disabled={searching} onClick={onSearchArea}>{searching && <LoaderCircle size={14} className={styles.busy} />}Search area</button>}
+        {onSearchArea && <button type="button" className={styles.searchArea} aria-label="Search area" disabled={searching} onClick={onSearchArea}>{searching && <LoaderCircle size={14} className={styles.busy} />}Search area</button>}
       </div>
       {error && <p className={styles.error} role="alert">{error}</p>}
     </header>

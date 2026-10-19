@@ -31,6 +31,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   const deviceLocation = useCurrentLocation(area, onArea);
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
+  const loadedMap = useRef<Map | null>(null);
   const marker = useRef<Marker | null>(null);
   const [pinElement, setPinElement] = useState<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(false);
@@ -45,6 +46,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   const initialThreeD = useRef(threeD);
   useEffect(() => {
     if (!container.current) return;
+    loadedMap.current = null;
     setReady(false); setError(false);
     let instance: Map;
     try {
@@ -64,6 +66,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       instance.addLayer({ id: "interest-fill", type: "fill", source: "interest", paint: { "fill-color": color, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.035, 15, 0] } });
       instance.addLayer({ id: "interest-edge", type: "line", source: "interest", paint: { "line-color": color, "line-width": 1.5 } });
       instance.setLayerZoomRange("building", 13, 24);
+      loadedMap.current = instance;
       setReady(true); setError(false);
     });
     instance.setStyle("https://tiles.openfreemap.org/styles/liberty", { transformStyle: (_, style) => cleanMapStyle(style) });
@@ -82,11 +85,11 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       instance.resize();
     });
     observer.observe(container.current);
-    return () => { observer.disconnect(); marker.current?.remove(); marker.current = null; setPinElement(null); instance.remove(); map.current = null; };
+    return () => { observer.disconnect(); marker.current?.remove(); marker.current = null; setPinElement(null); loadedMap.current = null; instance.remove(); map.current = null; };
   }, [attempt]);
 
   useEffect(() => {
-    const instance = map.current;
+    const instance = loadedMap.current;
     if (!ready || !instance) return;
     for (const layer of instance.getStyle().layers) {
       if ("source-layer" in layer && layer["source-layer"] === "poi")
@@ -94,7 +97,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     }
   }, [ready, landmarks]);
   useEffect(() => {
-    const instance = map.current;
+    const instance = loadedMap.current;
     if (!ready || !instance) return;
     instance.setLayoutProperty("building-3d", "visibility", threeD ? "visible" : "none");
     instance.setLayoutProperty("building", "visibility", threeD ? "none" : "visible");
@@ -103,7 +106,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     instance.easeTo({ pitch: threeD ? 55 : 0, bearing: threeD ? instance.getBearing() : 0, duration: animate ? 400 : 0 });
   }, [ready, threeD, animate]);
   useEffect(() => {
-    const instance = map.current;
+    const instance = loadedMap.current;
     if (!ready || !instance) return;
     const source = instance.getSource<GeoJSONSource>("interest");
     source?.setData(area ? areaBoundary(area) : { type: "FeatureCollection", features: [] });
@@ -123,14 +126,14 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     else map.current?.resize();
   }, [visible]);
   useEffect(() => {
-    if (!ready || !area || !map.current) return;
+    if (!ready || !area || !loadedMap.current) return;
     const bounds = new LngLatBounds();
     for (const coordinate of areaBoundary(area).geometry.coordinates[0]) bounds.extend([coordinate[0], coordinate[1]]);
-    map.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: animate ? 450 : 0 });
+    loadedMap.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: animate ? 450 : 0 });
   }, [ready, area?.latitude, area?.longitude, area?.radius, animate]);
 
-  useAudienceLayers(map, ready, scene, onPlace, setLayerError);
-  useMapScene(map, ready, scene, threeD, visible, animate);
+  useAudienceLayers(loadedMap, ready, scene, onPlace, setLayerError);
+  useMapScene(loadedMap, ready, scene, threeD, visible, animate);
   return <div className={styles.canvas}>
     <div className={styles.map} ref={container} aria-label="Interactive location map" />
     {!ready && !error && <LoaderCircle className={styles.loading} aria-label="Loading map" />}

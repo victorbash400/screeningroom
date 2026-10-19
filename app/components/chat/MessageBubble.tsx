@@ -27,6 +27,7 @@ export default function MessageBubble({
   if (!message.text && !referenceName && !tools?.length && !message.blocks?.length && !waiting) return null;
   return (
     <div
+      data-message-id={message.id}
       className={`${styles.row} ${groupStart ? styles.start : ""} ${message.role === "assistant" ? styles.assistant : ""}`}
       onContextMenu={(event) => {
         event.preventDefault();

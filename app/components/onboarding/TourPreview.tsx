@@ -30,4 +30,4 @@ function TourPreview({ scene }: { scene: TourScene }) {
     {scene.importOpen && <TourImport busy={scene.importBusy} items={scene.importItems} onClose={ignore} onImport={ignore} />}
   </div></TourAccountProvider>;
 }
-export default memo(TourPreview);
+export default memo(TourPreview, (previous, next) => (Object.keys(next.scene) as (keyof TourScene)[]).every(key => previous.scene[key] === next.scene[key]));

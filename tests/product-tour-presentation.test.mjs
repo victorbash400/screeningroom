@@ -67,7 +67,8 @@ test('the embedded picker preserves the actual tree and selection controls',()=>
 test('welcome introduces the guide before the numbered demos', async()=>{
  const {default:TourWelcome}=await import('../app/components/onboarding/TourWelcome.tsx');
  const html=renderToStaticMarkup(createElement(TourWelcome,{titleRef:{current:null},onStart:action}));
- for(const text of ['Welcome to Screening Room','Start walkthrough','5 demos'])assert.ok(html.includes(text));
+ for(const text of ['Welcome to Screening Room','Start walkthrough'])assert.ok(html.includes(text));
+ assert.ok(!html.includes('seconds'));
  const intro=renderToStaticMarkup(createElement(TourNavigation,{index:0,onStep:action}));
  const chapter=renderToStaticMarkup(createElement(TourNavigation,{index:3,onStep:action}));
  assert.ok(intro.includes('aria-label="1. Welcome" aria-current="step"'));

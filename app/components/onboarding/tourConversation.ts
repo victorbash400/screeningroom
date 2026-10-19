@@ -1,25 +1,48 @@
-import type { Message } from "../../lib/types";
-import { exampleFiles, exampleQuestion } from "./tourExample";
+import type { Message, MessageBlock, MessageTool } from "../../lib/types";
+import { exampleFiles, exampleQuestion, exampleArea } from "./tourExample";
+import { exampleArtist, exampleFilm, exampleVenues, exampleDigital } from "./tourEvidence";
 
 const createdAt = "2026-10-01T12:00:00Z";
-const liveAnswer = "**Example screening plan**\n\n1. Start with the selected trailer and production brief.\n2. Use a comparable artist, such as Radiohead, to define the cultural context.\n3. Explore the London map and open a venue card. Check audience evidence and availability before shortlisting.\n\nThe venues and search matches here are walkthrough fixtures; no audience ranking has been calculated.";
-const digitalAnswer = "**Example digital plan**\n\nFor this music documentary, compare video platforms such as YouTube with film platforms such as MUBI. Use the catalogue to see the available platforms.\n\nIn a real conversation, ask for platform affinity and inspect the supporting comparables. Affinity describes cultural overlap; it does not predict views, subscribers or ticket sales. This example has no platform scores.";
+export const liveFollowup = "Compare Curzon Soho with BFI Southbank. What should I check before contacting them?";
+export const digitalQuestion = "Compare YouTube, Vimeo and MUBI for this film, and show the supporting comparables.";
+const liveIntro = "Your brief describes **Night Signals**, a short documentary about independent music, with Radiohead and Stop Making Sense as taste references. I’ll use that context to explore cinemas around **London**.";
+const liveEnd = "**A starting shortlist**\n\nCompare the venue profiles below with your intended audience. The affinity values show how this example is presented; they are not ticket-sales estimates.\n\nBefore contacting a venue, check screening rights, programming fit, capacity, hire costs and availability. You can open a venue on the map or ask a follow-up about the shortlist.";
+const digitalIntro = "I’ll compare **YouTube, Vimeo and MUBI** using the music-documentary context, then show the comparable films behind the example.";
+const digitalEnd = "**Choose a route, then check the terms**\n\nCompare platform affinity alongside your release plan. Check current submission routes, rights, territory restrictions and commercial terms directly with each platform. Cultural affinity does not establish distribution access or predict views.\n\nUse **Platforms** to browse the catalogue, or ask to compare another platform against the same project.";
+const followupAnswer = "**Compare the fit before the booking**\n\nBoth venues are in the sample London shortlist. Curzon Soho has a sample affinity of **0.69** and BFI Southbank **0.74**. Those values illustrate the result format; they do not establish a booking recommendation.\n\nFor each venue, confirm:\n\n- Whether a short music documentary fits its current programme.\n- A screening slot, room capacity and accessibility.\n- Projection format, sound requirements and Q&A facilities.\n- Film and music rights, hire costs and revenue terms.\n\nSend the trailer and a short synopsis when you contact the programming or venue-hire team. **Availability and pricing have not been checked.**";
 
+function streamed(text: string, elapsed: number, start: number, duration: number) { return text.slice(0, Math.floor(Math.max(0, Math.min(1, (elapsed - start) / duration)) * text.length)); }
+function textBlock(id: string, text: string): MessageBlock { return { id, kind: "text", text }; }
+function toolBlock(id: string, name: string, elapsed: number, end: number, result: Partial<MessageTool>): MessageBlock {
+  return { id, kind: "tool", tool: { id, name, state: elapsed < end ? "running" : "done", ...(elapsed < end ? { trace: result.trace ? { input: result.trace.input } : undefined } : result) } };
+}
 export function tourUserMessage(id: string, text: string, referenceIds: string[]): Message {
   return { id, role: "user", text, createdAt, references: exampleFiles.filter(file => referenceIds.includes(file.id)).map(file => ({ id: file.id, name: file.name, kind: file.kind, workspaceId: file.workspaceId })) };
 }
-
-export function tourAnswer(id: string, mode: "live" | "digital"): Message {
-  const text = mode === "digital" ? digitalAnswer : liveAnswer;
-  return { id, role: "assistant", text, createdAt, blocks: [
-    { id: `${id}:search`, kind: "tool", tool: { id: `${id}:search`, name: "searchEntities", state: "done", trace: {
-      input: { query: "Radiohead", type: "artist", take: 5 },
-      matches: [{ id: "walkthrough:artist:radiohead", name: "Radiohead (example match)" }],
-    } } },
-    { id: `${id}:text`, kind: "text", text },
-  ] };
+export function tourAnswer(id: string, mode: "live" | "digital", elapsed = 20000): Message {
+  const digital = mode === "digital";
+  const blocks: MessageBlock[] = [];
+  if (!digital && elapsed >= 350) blocks.push(toolBlock(`${id}:files`, "readSelectedMedia", elapsed, 1100, { trace: { input: { fileId: "tour-brief" } } }));
+  const intro = streamed(digital ? digitalIntro : liveIntro, elapsed, 1100, 1700);
+  if (intro) blocks.push(textBlock(`${id}:intro`, intro));
+  if (elapsed >= 2900) blocks.push(toolBlock(`${id}:search`, "searchEntities", elapsed, 3500, { trace: { input: { query: "Radiohead", type: "artist", take: 5 }, matches: [{ id: exampleArtist.id, name: "Radiohead (example match)" }] } }));
+  if (elapsed >= 3600) blocks.push(toolBlock(`${id}:film`, "searchEntities", elapsed, 4200, { trace: { input: { query: "Stop Making Sense", type: "movie", take: 5 }, matches: [{ id: exampleFilm.id, name: "Stop Making Sense (example match)" }] } }));
+  if (elapsed >= 4400) blocks.push(toolBlock(`${id}:results`, digital ? "analyzeDigitalAudience" : "searchAudienceVenues", elapsed, 5500, {
+    trace: { input: digital ? { title: "Night Signals", type: "movie", platformIds: ["youtube", "vimeo", "mubi"], entityIds: [exampleArtist.id, exampleFilm.id] } : { area: { ...exampleArea, venueTypes: ["cinema"] }, entityIds: [exampleArtist.id, exampleFilm.id], tagIds: [] } },
+    ...(digital ? { research: exampleDigital } : { widget: exampleVenues }),
+  }));
+  const ending = streamed(digital ? digitalEnd : liveEnd, elapsed, 5600, 2600);
+  if (ending) blocks.push(textBlock(`${id}:ending`, ending));
+  return { id, role: "assistant", createdAt, text: [intro, ending].filter(Boolean).join("\n\n"), blocks, status: elapsed < 8200 ? "streaming" : "complete", waiting: elapsed < 1100 || elapsed >= 2800 && elapsed < 5500 };
 }
-
-export function tourMessages(mode: "live" | "digital"): Message[] {
-  return [tourUserMessage("tour-question", mode === "digital" ? "Which online platforms should I explore for this music documentary?" : exampleQuestion, ["tour-trailer", "tour-brief"]), tourAnswer("tour-answer", mode)];
+export function tourMessages(mode: "live" | "digital", answerTime = 20000, followupTime = -1): Message[] {
+  const messages = [tourUserMessage("tour-question", exampleQuestion, ["tour-trailer", "tour-brief"]), tourAnswer("tour-answer", "live", answerTime)];
+  if (followupTime < 0) return messages;
+  messages.push(tourUserMessage("tour-followup", mode === "digital" ? digitalQuestion : liveFollowup, ["tour-trailer", "tour-brief"]));
+  if (mode === "digital") messages.push(tourAnswer("tour-digital", "digital", followupTime));
+  else {
+    const text = streamed(followupAnswer, followupTime, 450, 4300);
+    messages.push({ id: "tour-venue-comparison", role: "assistant", text, createdAt, status: followupTime < 4750 ? "streaming" : "complete", waiting: followupTime < 450 });
+  }
+  return messages;
 }

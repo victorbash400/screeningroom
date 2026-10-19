@@ -11,6 +11,5 @@ export default function TourWelcome({ titleRef, onStart }: { titleRef: Ref<HTMLH
     <p id="walkthrough-instruction">Bring in your project. Find its audience.</p>
     <p className={styles.detail}>Follow a sample project from importing media to exploring venues, platforms and the evidence behind each answer.</p>
     <PillButton onClick={onStart}>Start walkthrough<ArrowRight size={16} /></PillButton>
-    <span className={styles.duration}>5 demos · 33 seconds</span>
   </section>;
 }

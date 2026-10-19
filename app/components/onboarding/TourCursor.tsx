@@ -6,9 +6,11 @@ const selectors: Record<TourTarget, string> = {
   create: '[data-tour-home] [aria-label="Create workspace"]', workspaceName: '[aria-label="Workspace name"]', confirmWorkspace: '[aria-label="Create workspace"] button[aria-label="Create workspace"]',
   workspace: '[aria-label="Open Night Signals"]', import: 'header [aria-label="Import"]', browse: '[aria-label="Browse files"]', select: '[aria-haspopup="dialog"]',
   trailer: '[aria-label="Select Trailer.mp4"]', briefCheckbox: '[aria-label="Select Production brief.txt"]', done: '[aria-label="Done"]',
-  message: '[aria-label="Message"]', send: '[aria-label="Send message"]', map: '[role="switch"][aria-label="Map"]',
-  radius: '[aria-label="Search radius"]', venue: '[data-venue-name="Curzon Soho"]', digital: '[aria-label="Audience format"] button:last-child',
-  platforms: '[role="switch"][aria-label="Platforms"]', evidence: 'details > summary', match: '[aria-label="Qloo search details"] li',
+  message: '[aria-label="Message"]', send: '[aria-label="Send message"], [aria-label="Stop response"]', map: '[role="switch"][aria-label="Map"]',
+  radius: '[aria-label="Search radius"]', venue: '[aria-label="Next venue"]', digital: '[aria-label="Audience format"] button:last-child',
+  transcript: '[role="log"]', searchArea: '[aria-label="Search area"]', nextVenue: '[aria-label="Next venue"]',
+  venueEvidence: '[aria-label="Venues · London"] details > summary', platformTable: '[aria-label="Platform comparison table"]', catalogue: '[aria-label="Digital platforms"]', venueTool: '[aria-label="Audience venues: done"]',
+  platforms: '[role="switch"][aria-label="Platforms"]', evidence: '[aria-label="Qloo search: done"]', match: '[aria-label="Qloo search details"] li',
 };
 interface Point { x: number; y: number }
 export default function TourCursor({ root, cue, time, first }: { root: HTMLDivElement | null; cue: TourCue; time: number; first: boolean }) {
@@ -23,10 +25,12 @@ export default function TourCursor({ root, cue, time, first }: { root: HTMLDivEl
       const target = element!.querySelector<HTMLElement>(selectors[cue.target]);
       if (!target || !target.getClientRects().length) return;
       content.disconnect();
-      target.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
       const frame = element!.getBoundingClientRect(), rect = target.getBoundingClientRect();
       const scale = frame.width / element!.offsetWidth;
-      const point = { x: (rect.left + rect.width / 2 - frame.left) / scale, y: (rect.top + rect.height / 2 - frame.top) / scale };
+      const targetX = cue.target === "radius" && target instanceof HTMLInputElement && cue.change.radius !== undefined
+        ? rect.left + 7 * scale + (rect.width - 14 * scale) * (cue.change.radius - Number(target.min)) / (Number(target.max) - Number(target.min))
+        : rect.left + rect.width / 2;
+      const point = { x: Math.max(16, Math.min(element!.offsetWidth - 24, (targetX - frame.left) / scale)), y: Math.max(16, Math.min(element!.offsetHeight - 24, (rect.top + rect.height / 2 - frame.top) / scale)) };
       setPath({ from: origin, to: point });
       last.current = point;
     }

@@ -16,12 +16,14 @@ function sameGroup(first?: Message, second?: Message) {
 }
 export default function MessageList({
   messages,
+  followOutput = true,
   threadId,
   onReply,
   nodes,
   onReference,
 }: {
   messages: Message[];
+  followOutput?: boolean;
   threadId?: string;
   onReply: (id: string) => void;
   nodes: FileNode[];
@@ -36,9 +38,9 @@ export default function MessageList({
   const list = useScrollEdges<HTMLDivElement>();
   const atBottom = useRef(true);
   useEffect(() => {
-    if (atBottom.current && list.current)
+    if (followOutput && atBottom.current && list.current)
       list.current.scrollTop = list.current.scrollHeight;
-  }, [messages]);
+  }, [messages, followOutput]);
   return (
     <div
       ref={list}

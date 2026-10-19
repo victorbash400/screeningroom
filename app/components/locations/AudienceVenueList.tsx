@@ -12,7 +12,7 @@ export default function AudienceVenueList({ widget }: { widget: VenueResults }) 
   const map = useAudienceMap();
   return <AudienceWidgetShell title={`Venues · ${widget.area.name}`} source={widget.source === "OpenStreetMap" ? "© OpenStreetMap contributors" : widget.source === "Geoapify" ? "Geoapify · © OpenStreetMap contributors" : widget.basis === "taste" ? "Qloo" : "Qloo · venue discovery"}
     onMap={widget.venues.length ? () => map?.showPlaces(widget.venues) : undefined}>
-    <div className={styles.list}>{widget.venues.map((venue, index) => <div key={venue.id ?? `${venue.longitude}:${venue.latitude}`} className={styles.entry}><div className={styles.venue}>
+    <div className={styles.list} role="list" aria-label="Venue results">{widget.venues.map((venue, index) => <div role="listitem" key={venue.id ?? `${venue.longitude}:${venue.latitude}`} className={styles.entry}><div className={styles.venue}>
       {(venue.image || (venue.source === "Qloo" && canResolveEntityImage(venue.id))) && <EntityImage className={styles.photo} src={venue.image} entityId={venue.source === "Qloo" ? venue.id : undefined} label={venue.name} />}
       <button type="button" className={styles.place} onClick={() => map?.showPlaces(widget.venues, index)}>
         {!venue.image && !(venue.source === "Qloo" && canResolveEntityImage(venue.id)) && <MapPin size={15} />}<span><strong>{venue.name}</strong>{venue.address && <small>{venue.address}</small>}</span>

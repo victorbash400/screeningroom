@@ -39,19 +39,37 @@ test('seeking reconstructs file selection and typing in either direction',()=>{
  assert.equal(tourSceneAt('question',5000).draft,mid);
 });
 test('map, platform and evidence states can be undone by seeking',()=>{
- assert.equal(tourSceneAt('live',2000).radius,10000);
- assert.equal(tourSceneAt('live',3500).venue,1);
- assert.equal(tourSceneAt('live',5000).mapOpen,false);
+ assert.equal(tourSceneAt('live',3000).radius,10000);
+ assert.equal(tourSceneAt('live',6500).venue,1);
+ assert.equal(tourSceneAt('live',12000).mapOpen,false);
  assert.equal(tourSceneAt('live',0).radius,5000);
  assert.equal(tourSceneAt('digital',2500).audienceMode,'digital');
- assert.equal(tourSceneAt('digital',2500).mapOpen,true);
- assert.equal(tourSceneAt('digital',4500).mapOpen,false);
+ assert.equal(tourSceneAt('digital',24000).mapOpen,true);
+ assert.equal(tourSceneAt('digital',35000).mapOpen,false);
  assert.equal(tourSceneAt('evidence',2000).evidenceOpen,true);
  assert.equal(tourSceneAt('evidence',0).evidenceOpen,false);
 });
-test('the five chapters are concise and automatic transitions do not fake a click',()=>{
+test('chapters leave room for full results, follow-ups and deterministic scrolling',()=>{
  assert.equal(Object.keys(tourScripts).length,5);
- assert.ok(Object.values(tourScripts).every(script=>script.duration<=9000));
- assert.ok(Object.values(tourScripts).reduce((sum,script)=>sum+script.duration,0)<=35000);
+ const ask=tourSceneAt('question',19000);
+ assert.ok(ask.answerTime>=8200);
+ assert.ok(ask.scrollProgress>0 && ask.scrollProgress<1);
+ const live=tourSceneAt('live',22000);
+ assert.equal(live.venue,2);
+ assert.equal(live.venueEvidenceOpen,true);
+ assert.ok(live.followupTime>0);
+ assert.equal(tourSceneAt('live',16000).followupTime,-1);
+ const digital=tourSceneAt('digital',28000);
+ assert.ok(digital.followupTime>=8200);
+ assert.ok(digital.catalogueScroll>0 && digital.catalogueScroll<1);
+ assert.equal(digital.comparisonScroll,1);
+ assert.equal(tourSceneAt('digital',1000).followupTime,-1);
+ assert.equal(tourSceneAt('digital',1000).catalogueScroll,0);
+ const before=tourSceneAt('digital',14000);
+ tourSceneAt('digital',tourScripts.digital.duration);
+ assert.deepEqual(tourSceneAt('digital',14000),before);
+ assert.equal(tourSceneAt('digital',0).comparisonScroll,0);
+ assert.equal(tourSceneAt('evidence',11000).evidenceTool,'venues');
+ assert.ok(tourSceneAt('evidence',11000).evidenceScroll>0);
  assert.equal(tourScripts.workspace.cues.at(-1).click,false);
 });
