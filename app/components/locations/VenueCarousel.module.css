@@ -7,7 +7,7 @@
 .controls output { display: flex; align-items: baseline; gap: 5px; margin: 0 9px; font-variant-numeric: tabular-nums; }
 .controls strong { font-size: 17px; font-weight: 550; color: #293a33; }
 .controls output > span { font-size: 10px; color: #8a918e; }
-.previous, .next { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: white; color: #46574e; cursor: pointer; }
+.previous, .next { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #bcc4c9; border-radius: 50%; background: white; color: #46574e; cursor: pointer; }
 .previous { left: 10px; }
 .next { right: 10px; }
 .previous:hover:not(:disabled), .next:hover:not(:disabled) { background: #f0f3f1; }

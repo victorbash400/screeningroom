@@ -1,3 +1,3 @@
-.platform { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 12px; min-width: 0; padding: 18px 6px; color: var(--ink); text-align: center; }
-.platform img { display: block; width: 64px; height: 32px; object-fit: contain; }
+.platform { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 12px; min-width: 0; padding: 16px 0; color: var(--ink); text-align: left; }
+.platform img { display: block; width: 64px; height: 32px; object-fit: contain; object-position: left center; }
 .platform span { font-size: 12px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }

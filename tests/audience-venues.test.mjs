@@ -69,3 +69,19 @@ test("venue filters still return map pins when optional provider text fields are
     assert.deepEqual(result.locations, [{ id: "venue", name: "Theatre", latitude: -1.28, longitude: 36.82, category: "Theatres", source: "Qloo" }]);
   } finally { globalThis.fetch = original; }
 });
+
+test("provider photos and descriptions survive venue search and saved map scenes", async () => {
+  const original = globalThis.fetch;
+  const description = "Independent cinema with a cafe and regular film screenings.";
+  const image = "https://images.qloo.com/cinema.jpg";
+  try {
+    globalThis.fetch = async () => Response.json({ success: true, results: { entities: [{ entity_id: "venue", name: "Cinema", location: { lat: -1.28, lon: 36.82 }, properties: { description, image: { url: image } } }] } });
+    const { locations } = await audienceVenues(defaultLocationInterest);
+    assert.equal(locations[0].description, description);
+    assert.equal(locations[0].image, image);
+    const data = { ...emptyData, workspaces: [{ id: "w", name: "Workspace" }], conversations: [{ id: "c", workspaceId: "w", channel: "locations", title: "Audience", draft: "", messages: [], mapScene: { id: "scene", presentation: { locations } } }] };
+    const saved = parseData(JSON.stringify(data)).conversations[0].mapScene.presentation.locations[0];
+    assert.equal(saved.image, image);
+    assert.equal(saved.description, description);
+  } finally { globalThis.fetch = original; }
+});

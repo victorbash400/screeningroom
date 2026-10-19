@@ -46,4 +46,8 @@ export const digitalPlatforms: readonly DigitalPlatform[] = [
   { id: "artstation", name: "ArtStation", category: "Art & writing", website: "https://www.artstation.com", logo: "/platforms/artstation.svg" },
   { id: "webtoon", name: "WEBTOON", category: "Art & writing", website: "https://www.webtoons.com", logo: "/platforms/webtoon.svg" },
   { id: "tapas", name: "Tapas", category: "Art & writing", website: "https://tapas.io", logo: "/platforms/tapas.svg" },
+  { id: "dailymotion", name: "Dailymotion", category: "Video", website: "https://www.dailymotion.com", logo: "/platforms/dailymotion.svg" },
+  { id: "crunchyroll", name: "Crunchyroll", category: "Video", website: "https://www.crunchyroll.com", logo: "/platforms/crunchyroll.svg" },
+  { id: "qobuz", name: "Qobuz", category: "Music", website: "https://www.qobuz.com", logo: "/platforms/qobuz.png" },
+  { id: "medium", name: "Medium", category: "Art & writing", website: "https://medium.com", logo: "/platforms/medium.svg" },
 ];

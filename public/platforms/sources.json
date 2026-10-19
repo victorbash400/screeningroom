@@ -63,6 +63,18 @@
     "source": "https://www.google.com/s2/favicons?domain=www.criterionchannel.com&sz=128"
   },
   {
+    "id": "crunchyroll",
+    "file": "crunchyroll.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/crunchyroll.svg",
+    "brandSource": "https://www.crunchyroll.com"
+  },
+  {
+    "id": "dailymotion",
+    "file": "dailymotion.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/dailymotion.svg",
+    "brandSource": "https://careers.dailymotion.com"
+  },
+  {
     "id": "deezer",
     "file": "deezer.svg",
     "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/deezer.svg",
@@ -125,6 +137,12 @@
     "brandSource": "https://www.kobo.com"
   },
   {
+    "id": "medium",
+    "file": "medium.svg",
+    "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/medium.svg",
+    "brandSource": "https://medium.design/logos-and-brand-guidelines-f1a01a733592"
+  },
+  {
     "id": "mixcloud",
     "file": "mixcloud.svg",
     "source": "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/mixcloud.svg",
@@ -164,6 +182,11 @@
     "id": "prime-video",
     "file": "prime-video.png",
     "source": "https://www.google.com/s2/favicons?domain=www.primevideo.com&sz=128"
+  },
+  {
+    "id": "qobuz",
+    "file": "qobuz.png",
+    "source": "https://www.google.com/s2/favicons?domain=www.qobuz.com&sz=128"
   },
   {
     "id": "royal-road",

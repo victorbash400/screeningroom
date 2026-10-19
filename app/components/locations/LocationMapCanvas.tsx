@@ -58,7 +58,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     instance.on("load", () => {
       instance.addSource("interest", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       const color = getComputedStyle(container.current!).getPropertyValue("--accent").trim();
-      instance.addLayer({ id: "interest-fill", type: "fill", source: "interest", paint: { "fill-color": color, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.07, 15, 0] } });
+      instance.addLayer({ id: "interest-fill", type: "fill", source: "interest", paint: { "fill-color": color, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.035, 15, 0] } });
       instance.addLayer({ id: "interest-edge", type: "line", source: "interest", paint: { "line-color": color, "line-width": 1.5 } });
       instance.setLayerZoomRange("building", 13, 24);
       setReady(true); setError(false);

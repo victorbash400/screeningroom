@@ -148,14 +148,27 @@ test('venue carousel keeps map ordering, focus and query affinity without invent
 });
 
 
-test("digital catalogue displays real platform assets without selection or search controls", async () => {
+test("digital catalogue displays real platform assets and category info without selection or search controls", async () => {
   const { default: DigitalCatalogue } = await import("../app/components/audience/DigitalCatalogue.tsx");
   const { default: AudienceModeToggle } = await import("../app/components/chat/AudienceModeToggle.tsx");
   const html = renderToStaticMarkup(createElement(DigitalCatalogue));
   for (const label of ["Video", "Music", "Podcasts", "Books", "Games", "Art &amp; writing", "YouTube", "Netflix", "Apple TV", "Kindle"]) assert.ok(html.includes(label), label);
   assert.ok(html.includes('/platforms/youtube.svg'));
-  for (const control of ['<button', '<input', 'aria-pressed', 'Selected (']) assert.equal(html.includes(control), false, control);
+  assert.equal(html.split('aria-haspopup="dialog"').length - 1, 6);
+  assert.ok(html.includes('How Video affinity works'));
+  assert.ok(html.includes('Dailymotion'));
+  for (const control of ['<input', 'aria-pressed', 'Selected (']) assert.equal(html.includes(control), false, control);
   const toggle = renderToStaticMarkup(createElement(AudienceModeToggle, { value: "digital", onChange: () => true }));
   assert.ok(toggle.includes('aria-label="Audience format"'));
   assert.ok(toggle.includes('aria-pressed="true"'));
+});
+
+
+test("venue cards preserve white-card details and provider photos without inventing an explanation", async () => {
+  const { default: VenueCarouselCard } = await import("../app/components/locations/VenueCarouselCard.tsx");
+  const html = renderToStaticMarkup(createElement(VenueCarouselCard, { place: { ...place, description: "Independent cinema with a cafe.", image: "https://images.qloo.com/venue.jpg", affinity: .73 }, index: 0, active: true, selected: false, onSelect() {} }));
+  assert.ok(html.includes('Independent cinema with a cafe.'));
+  assert.ok(html.includes('https://images.qloo.com/venue.jpg'));
+  assert.ok(html.includes('Qloo affinity'));
+  assert.ok(!html.includes('73%'));
 });
