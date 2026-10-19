@@ -70,3 +70,23 @@ test('Chat accepts a first message directly without retired workflow cards',asyn
  assert.ok(!active.includes('Find similar media'));
  assert.ok(active.includes('aria-label="Message"'));
 });
+
+test('tool searches disclose their actual inputs inline without a modal',()=>{
+ const message={...reply,text:'',blocks:[{id:'tool:t',kind:'tool',tool:{id:'t',name:'searchEntities',state:'done',trace:{input:{query:'Daft Punk',type:'artist'},matches:[{id:'artist-id',name:'Daft Punk'}]}}}]};
+ const html=renderToStaticMarkup(createElement(AssistantMessage,{message}));
+ assert.ok(html.includes('<details'));
+ assert.ok(html.includes('<summary'));
+ assert.ok(html.includes('aria-label="Qloo search details"'));
+ assert.ok(html.includes('Daft Punk'));
+ assert.ok(html.includes('artist-id'));
+ assert.equal(html.includes('<dialog'),false);
+ assert.equal(html.includes('aria-haspopup="dialog"'),false);
+});
+
+test('platform comparisons use local uncropped logos rather than provider poster photos',async()=>{
+ const {default:ResearchComparison}=await import('../app/components/research/ResearchComparison.tsx');
+ const subjects=['Spotify','Apple Music','Bandcamp'].map((name,index)=>({id:String(index),name,image:'https://images.qloo.com/cropped-brand.jpg',tags:[],metrics:[]}));
+ const html=renderToStaticMarkup(createElement(ResearchComparison,{widget:{kind:'comparison',subjectLabel:'Platform',title:'Platform affinity',source:'Qloo',retrievedAt:'2026-10-19T09:00:00Z',evidenceId:'e',subjects,commonTags:[],basis:'Query evidence'}}));
+ for(const logo of ['spotify.svg','apple-music.svg','bandcamp.svg'])assert.ok(html.includes('/platforms/'+logo));
+ assert.equal(html.includes('cropped-brand.jpg'),false);
+});
