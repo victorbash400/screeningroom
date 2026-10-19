@@ -9,6 +9,7 @@ import type { Conversation, FileNode, Message, Workspace } from "../../lib/types
 import { channelLabel } from "../../lib/mediaWorkflows";
 import { messageReferences } from "../../lib/chatSelection";
 import DigitalCatalogue from "../audience/DigitalCatalogue";
+import AudienceSurface from "./AudienceSurface";
 import ChatHeader from "./ChatHeader";
 import ChatHistory from "./ChatHistory";
 import MessageList from "./MessageList";
@@ -134,8 +135,8 @@ export default function ChatDrawer({
         onBack={() => onThread()}
       />
       <div className={styles.workspace}>
-      {channel === "locations" && mapOpen && (conversation.audienceMode === "digital" ? <DigitalCatalogue /> : <AudienceMap mode="live" open={mapOpen}
-        scene={conversation.mapScene} area={conversation.locationInterest} onArea={onLocationInterest} onScene={onMapScene} />)}
+      {channel === "locations" && <AudienceSurface open={mapOpen}>{conversation.audienceMode === "digital" ? <DigitalCatalogue /> : <AudienceMap mode="live" open={mapOpen}
+        scene={conversation.mapScene} area={conversation.locationInterest} onArea={onLocationInterest} onScene={onMapScene} />}</AudienceSurface>}
       <div className={styles.body}>
         {channel === "locations" && conversation.messages.length === 0 && !thread ? <AudienceStarter onSelect={() => startChat("Help me find an audience for ")} /> : <MessageList
           key={`messages-${conversation.id}-${thread?.id ?? "main"}`}

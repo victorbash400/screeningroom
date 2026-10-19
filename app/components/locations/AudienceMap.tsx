@@ -51,7 +51,7 @@ export default function AudienceMap({ mode, open, area = defaultLocationInterest
   const [landmarks, setLandmarks] = useState(true);
   const [view, setView] = useState<{ sceneId?: string; threeD: boolean }>({ threeD: true });
   const threeD = view.sceneId === scene?.id ? view.threeD : scene?.presentation.threeD ?? true;
-  return <section role="region" aria-label="Audience map" hidden={!open} className={styles.window}
+  return <section role="region" aria-label="Audience map" className={styles.window}
     style={{ "--venue-carousel-height": mode === "live" && scene?.presentation.locations.length ? "clamp(190px, 34cqh, 280px)" : "0px" } as CSSProperties}>
     <div className={styles.mapArea}>
     <MapSearchControls live={mode === "live"} area={area} onArea={onArea} searching={searching} error={searchError} onSearchArea={mode === "live" ? () => void searchArea() : undefined} />

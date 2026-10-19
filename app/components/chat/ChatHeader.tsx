@@ -40,10 +40,10 @@ export default function ChatHeader({
 }) {
   const Icon = historyOpen ? PanelLeftClose : PanelLeft;
   return (
-    <header className={styles.header} data-joined={Boolean(onMapToggle && mapOpen)}>
+    <header className={styles.header} data-audience={Boolean(onMapToggle)} data-joined={Boolean(onMapToggle && mapOpen)}>
       {onMapToggle && <div className={styles.mapControls}>
         {onAudienceMode && <AudienceModeToggle value={audienceMode ?? "live"} disabled={busy} onChange={onAudienceMode} />}
-        <label className={styles.mapToggle}><span>{audienceMode === "digital" ? "Platforms" : "Map"}</span><ToggleSwitch label={audienceMode === "digital" ? "Platforms" : "Map"} checked={Boolean(mapOpen)} onChange={onMapToggle} /></label>
+        <div className={styles.mapToggle}><span>{audienceMode === "digital" ? "Platforms" : "Map"}</span><ToggleSwitch label={audienceMode === "digital" ? "Platforms" : "Map"} checked={Boolean(mapOpen)} onChange={onMapToggle} /></div>
       </div>}
       <div className={styles.chatControls}>
         <IconButton

@@ -1,0 +1,18 @@
+.surface {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateX(10px);
+  visibility: hidden;
+  transition: opacity 180ms ease, transform 280ms cubic-bezier(.2, .8, .2, 1), visibility 0s linear 280ms;
+}
+.surface > * { flex: 1; }
+.surface[data-open="true"] { opacity: 1; transform: translateX(0); visibility: visible; transition-delay: 0s; }
+@starting-style { .surface[data-open="true"] { opacity: 0; transform: translateX(10px); } }
+@media (prefers-reduced-motion: reduce) { .surface { transition: none; transform: none; } }
