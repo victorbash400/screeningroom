@@ -30,6 +30,13 @@ test('audience must establish its work before research, and Digital cannot searc
   assert.equal('getDigitalPlatformFit' in live.tools, false);
 });
 
+test('a completed venue search can finish without a forced extra heatmap call', async () => {
+  const live = await createAgent('locations', undefined, 'test-user', [], 'live', true);
+  const steps = [{ toolCalls: [{ toolCallId: 'venues', toolName: 'searchAudienceVenues', input: { entityIds: ['reference'], tagIds: [] } }], toolResults: [{ toolCallId: 'venues' }] }];
+  assert.equal(live.settings.prepareStep({ steps }), undefined);
+  assert.ok('getAudienceHeatmap' in live.tools);
+});
+
 test('audience format survives backend room validation; invalid format fails', () => {
   const data={...emptyData,workspaces:[{id:'w',name:'Work'}],conversations:[{id:'c',workspaceId:'w',channel:'locations',title:'Audience',messages:[],draft:'',audienceMode:'digital'}]};
   assert.equal(parseData(JSON.stringify(data)).conversations[0].audienceMode,'digital');
