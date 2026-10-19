@@ -3,7 +3,7 @@ import type { ComparisonWidget } from "../lib/researchWidget";
 export function performanceOutput(output: ComparisonWidget) {
   return { type: "json" as const, value: {
     evidenceId: output.evidenceId, title: output.title,
-    subjects: output.subjects.map(({ id, name, year, website, metrics }) => ({ id, name, ...(year === undefined ? {} : { year }), ...(website ? { website } : {}), metrics })),
+    subjects: output.subjects.map(({ id, name, year, website, metrics, links, contributors }) => ({ id, name, ...(year === undefined ? {} : { year }), ...(website ? { website } : {}), ...(links ? { links } : {}), ...(contributors ? { contributors } : {}), metrics })),
     metricComparisons: output.metricComparisons ?? [], basis: output.basis,
     interpretation: {
       imdbRating: "User reception, 0–10; compare only other IMDb user ratings.",

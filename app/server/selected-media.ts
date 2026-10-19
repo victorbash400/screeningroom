@@ -32,7 +32,12 @@ export function selectedMedia(userId: string, selectedIds: string[]) {
   async function evidence(id: string) {
     const { data } = await load();
     for (const conversation of data.conversations) for (const message of conversation.messages) for (const block of message.blocks ?? []) {
-      if (block.kind === "tool" && block.tool.state === "done" && block.tool.research?.evidenceId === id) return block.tool.research;
+      if (block.kind !== "tool" || block.tool.state !== "done" || !block.tool.research) continue;
+      const result = block.tool.research;
+      if (result.kind === "digital") {
+        if (result.platforms?.evidenceId === id) return result.platforms;
+        if (result.comparables?.evidenceId === id) return result.comparables;
+      } else if (result.evidenceId === id) return result;
     }
     return undefined;
   }

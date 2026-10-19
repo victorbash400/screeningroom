@@ -14,12 +14,17 @@ test('audience must establish its work before research, and Digital cannot searc
   const digital = await createAgent('locations', undefined, 'test-user', [], 'digital');
   for (const name of ['searchAudienceVenues','searchMapVenues','getAreaPopulation']) assert.equal(name in digital.tools, false);
   assert.ok('getDigitalPlatformFit' in digital.tools);
+  assert.ok('analyzeDigitalAudience' in digital.tools);
+  assert.ok('analyzeProjectPerformance' in digital.tools);
+  assert.ok('findComparableMedia' in digital.tools);
   const initial = digital.settings.prepareStep({ steps: [] });
   assert.ok(initial.activeTools.includes('establishAudienceWork'));
   assert.equal(initial.activeTools.includes('getDigitalPlatformFit'), false);
   assert.equal(initial.activeTools.includes('searchEntities'), false);
   await digital.tools.establishAudienceWork.execute({medium:'Film',summary:'A documentary about space',characteristics:['Science education'],basis:'user description'}, options);
   assert.equal(digital.settings.prepareStep({ steps: [] }), undefined);
+  const followup = await createAgent('locations', undefined, 'test-user', [], 'digital', true);
+  assert.equal(followup.settings.prepareStep({ steps: [] }), undefined);
   const live = await createAgent('locations', undefined, 'test-user', [], 'live');
   assert.ok('searchAudienceVenues' in live.tools);
   assert.equal('getDigitalPlatformFit' in live.tools, false);

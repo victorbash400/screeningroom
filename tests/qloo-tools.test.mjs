@@ -42,7 +42,7 @@ test("provider failures and invalid response shapes fail explicitly", async () =
   const original = globalThis.fetch;
   try {
     globalThis.fetch = async () => new Response("rate limited", { status: 429 });
-    await assert.rejects(qlooRequest("/search", {}), { message: "Qloo request failed (429)." });
+    await assert.rejects(qlooRequest("/search", {}), { message: "Qloo is temporarily rate limiting requests. Try again shortly." });
     globalThis.fetch = async () => Response.json({ results: "invalid" });
     await assert.rejects(qlooRequest("/search", {}), { status: 502, message: "Qloo returned invalid results. Try again." });
   } finally { globalThis.fetch = original; }

@@ -1,3 +1,4 @@
+import { captureToolTrace } from "./toolTrace.ts";
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import type { MessageBlock, MessageTool } from "./types.ts";
 import { mediaAnalysisSchema } from "./mediaAnalysis.ts";
@@ -14,11 +15,12 @@ export function agentBlocks(message: UIMessage, activity?: Map<string, MessageTo
     const widget = part.state === "output-available" && ["searchMapVenues", "searchAudienceVenues", "getAudienceHeatmap", "getAudienceDemographics", "getAreaPopulation", "loadPopulationResult"].includes(getToolName(part)) ? audienceWidgetSchema.parse(part.output) : undefined;
     const terminal = ["output-available", "output-error", "output-denied"].includes(part.state);
     const tool: MessageTool = {
+        trace: captureToolTrace(part.input, part.state === "output-available" ? part.output : undefined),
         startedAt: cached?.startedAt ?? now,
         ...(terminal ? { endedAt: now } : {}),
         ...(widget ? { widget } : {}),
         ...(part.state === "output-available" && ["inspectImage", "inspectVideo", "transcribeMedia"].includes(getToolName(part)) ? { media: mediaAnalysisSchema.parse(part.output) } : {}),
-        ...(part.state === "output-available" && ["getDigitalPlatformFit", "getLocalTaste", "findComparableMedia", "getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
+        ...(part.state === "output-available" && ["analyzeDigitalAudience", "getDigitalPlatformFit", "getLocalTaste", "findComparableMedia", "getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
         id: part.toolCallId, name: getToolName(part),
         ...(getToolName(part) === "findSimilar" && part.state === "output-available" ? { results: similarResultsSchema.parse(part.output) } : {}),
         ...(part.state === "output-error" ? { error: part.errorText } : part.state === "output-denied" ? { error: "Tool call denied." } : {}),

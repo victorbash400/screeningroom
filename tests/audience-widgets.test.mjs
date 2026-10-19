@@ -40,7 +40,7 @@ test("audience widgets render source-labelled venue links, demographic indices, 
   assert.ok(venue.includes("OpenStreetMap contributors"));
   const demographics = render({ kind: "demographics", title: "Documentary audience", source: "Qloo", profiles: [{ name: "Documentary", age: [{ label: "25–29", value: -.34 }], gender: [] }] });
   assert.ok(demographics.includes("-0.34"));
-  assert.ok(demographics.includes("not population share"));
+  assert.ok(demographics.includes("Qloo"));
   const population = render({ kind: "population", source: "WorldPop", area, year: 2025, analysis: "population", taskId: "00000000-0000-4000-8000-000000000005", status: "ready", total: 1000 });
   assert.ok(population.includes("1,000"));
   assert.ok(population.includes("2025 estimate"));
@@ -70,13 +70,11 @@ test("map links focus the latest verified venue result without changing the sear
   assert.equal(scene.locationInterest, undefined);
 });
 
-test("affinity widgets expose keyboard-expandable metric definitions and scale labels", () => {
+test("affinity widgets retain scale labels without repeated generic explanations", () => {
   const heatmap = render({ kind: "heatmap", title: "Film affinity", source: "Qloo", area, cells: [{ latitude: 1, longitude: 2, geohash: "a", affinity: .8, rank: .9, popularity: .5 }] });
-  assert.ok(heatmap.includes("<details"));
-  assert.ok(heatmap.includes("About affinity"));
+  assert.ok(!heatmap.includes("About affinity"));
   assert.ok(heatmap.includes("Lower affinity"));
   assert.ok(heatmap.includes("Higher affinity"));
-  assert.ok(heatmap.includes("ticket-sales forecast"));
 });
 
 test("venue updates preserve heatmap extent while an explicit venue focus can zoom in", async () => {
@@ -103,7 +101,7 @@ test("research widgets render responsive comparisons, exact chart values and acc
   const html = renderToStaticMarkup(createElement(ResearchWidgetView, { widget: chart }));
   assert.ok(html.includes("5%"));
   assert.ok(html.includes('aria-label="Bar chart"'));
-  assert.ok(html.includes("About this result"));
+  assert.ok(!html.includes("About this result"));
   const line = renderToStaticMarkup(createElement(ResearchWidgetView, { widget: { ...chart, view: "line" } }));
   assert.ok(line.includes("View values"));
   assert.ok(line.includes('role="img"'));
@@ -154,8 +152,7 @@ test("digital catalogue displays real platform assets and category info without 
   const html = renderToStaticMarkup(createElement(DigitalCatalogue));
   for (const label of ["Video", "Music", "Podcasts", "Books", "Games", "Art &amp; writing", "YouTube", "Netflix", "Apple TV", "Kindle"]) assert.ok(html.includes(label), label);
   assert.ok(html.includes('/platforms/youtube.svg'));
-  assert.equal(html.split('aria-haspopup="dialog"').length - 1, 6);
-  assert.ok(html.includes('How Video affinity works'));
+  assert.equal(html.includes('How Video affinity works'), false);
   assert.ok(html.includes('Dailymotion'));
   for (const control of ['<input', 'aria-pressed', 'Selected (']) assert.equal(html.includes(control), false, control);
   const toggle = renderToStaticMarkup(createElement(AudienceModeToggle, { value: "digital", onChange: () => true }));

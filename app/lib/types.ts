@@ -29,6 +29,7 @@ export interface FileNode {
   size?: number;
 }
 export interface MessageTool {
+  trace?: import("./toolTrace").ToolTrace;
   startedAt?: number;
   endedAt?: number;
   media?: import("./mediaAnalysis").MediaAnalysis;

@@ -1,10 +1,9 @@
 import type { AudienceDemographics } from "../../lib/audienceWidget";
-import AudienceMetricDetails from "./AudienceMetricDetails";
 import AudienceWidgetShell from "./AudienceWidgetShell";
 import styles from "./AudienceDemographicChart.module.css";
 
 export default function AudienceDemographicChart({ widget }: { widget: AudienceDemographics }) {
-  return <AudienceWidgetShell details={<AudienceMetricDetails kind="demographics" />} title={widget.title} source="Qloo · audience affinity index, not population share">
+  return <AudienceWidgetShell title={widget.title} source="Qloo">
     {widget.profiles.map((profile, index) => <div className={styles.profile} key={index}>
       {widget.profiles.length > 1 && <strong>{profile.name}</strong>}
       {[...profile.age, ...profile.gender].map((bar) => <div className={styles.row} key={bar.label}>

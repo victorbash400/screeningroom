@@ -21,13 +21,13 @@ import { searchAudienceVenues } from "../tools/audience-venues";
 export const agents = { chat, locations, performance, similar, compare, fit };
 export type AgentId = keyof typeof agents;
 
-export async function createAgent(id: AgentId, area?: LocationInterest, userId?: string, selectedIds: string[] = [], audienceMode: "live" | "digital" = "live") {
+export async function createAgent(id: AgentId, area?: LocationInterest, userId?: string, selectedIds: string[] = [], audienceMode: "live" | "digital" = "live", workEstablished = false) {
   const audience = audienceTools(area);
   const files = userId ? selectedMedia(userId, selectedIds) : undefined;
   const selection = files && selectedIds.length ? (await files.nodes()).filter((node) => selectedIds.includes(node.id)).map(({ id, name, kind, mimeType }) => ({ id, name, kind, mimeType })) : [];
   const media = userId ? mediaResearchTools(userId, selectedIds, files, area) : undefined;
   const shared = { searchEntities: audience.searchEntities, ...(media ? { readSelectedMedia: media.readSelectedMedia, getMediaEvidence: media.getMediaEvidence, renderEvidenceChart: media.renderEvidenceChart } : {}) };
-  let workReady = false;
+  let workReady = workEstablished;
   const tools = {
     ...shared,
     ...(userId ? mediaUnderstandingTools(userId, selectedIds, files) : {}),
@@ -39,7 +39,7 @@ export async function createAgent(id: AgentId, area?: LocationInterest, userId?:
       getAudienceDemographics: audience.getAudienceDemographics, getAudienceHeatmap: audience.getAudienceHeatmap,
       ...(audienceMode === "live" ? { searchAudienceVenues, searchMapVenues: audience.searchMapVenues, getAreaPopulation: audience.getAreaPopulation, loadPopulationResult: audience.loadPopulationResult } : {}),
       ...(media ? { getLocalTaste: media.getLocalTaste, getAudienceInterestProfile: media.getAudienceInterestProfile,
-        ...(audienceMode === "digital" ? { getDigitalPlatformFit: media.getDigitalPlatformFit } : {}) } : {}),
+        ...(audienceMode === "digital" ? { analyzeDigitalAudience: media.analyzeDigitalAudience, getDigitalPlatformFit: media.getDigitalPlatformFit, findComparableMedia: media.findComparableMedia, analyzeProjectPerformance: media.analyzeProjectPerformance } : {}) } : {}),
     } : {}),
     ...(id === "similar" || id === "fit" ? { ...(id === "fit" ? { findSimilar } : {}), searchAudienceTags: audience.searchAudienceTags, ...(media ? { findComparableMedia: media.findComparableMedia, getAudienceInterestProfile: media.getAudienceInterestProfile } : {}) } : {}),
     ...(id === "fit" ? { getAudienceDemographics: audience.getAudienceDemographics } : {}),

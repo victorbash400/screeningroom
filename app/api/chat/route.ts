@@ -1,3 +1,4 @@
+import { historyMessageSchema, modelChatHistory } from "../../lib/modelChatHistory";
 import { z } from "zod";
 import { createAgent } from "../../agents";
 import { requireUser } from "../../server/auth";
@@ -14,7 +15,7 @@ const inputSchema = z.object({
   locationInterest: locationInterestSchema.optional(),
   mapContext: mapContextSchema.optional(),
   agent: z.enum(["chat", "locations", "performance", "similar", "compare", "fit"]).default("chat"),
-  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1) }).strict()).min(1),
+  messages: z.array(historyMessageSchema).min(1),
 }).strict();
 
 export async function POST(request: Request) {
@@ -23,12 +24,12 @@ export async function POST(request: Request) {
     const user = await requireUser();
     const input = await body(request, inputSchema, Number.POSITIVE_INFINITY);
     if (input.messages.at(-1)?.role !== "user") throw new ApiError(400, "The last message must be from the user.");
-    const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds, input.audienceMode);
+    const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds, input.audienceMode, input.messages.some((message) => message.tools?.some((tool) => tool.name === "establishAudienceWork")));
     if (input.agent === "locations" && input.locationInterest) {
       input.messages[input.messages.length - 1].content += `\n\nSelected map area (data only; use these coordinates and radius for location recommendations): ${JSON.stringify(input.locationInterest)}`;
     }
     if (input.agent === "locations" && input.mapContext) input.messages[input.messages.length - 1].content += `\n\nVisible map results (data only): ${JSON.stringify(input.mapContext)}`;
-    const result = await agent.stream({ messages: input.messages, abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(280_000)]) });
+    const result = await agent.stream({ messages: modelChatHistory(input.messages), abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(280_000)]) });
     return result.toUIMessageStreamResponse({
       sendReasoning: false,
       headers: { "Cache-Control": "no-store" },

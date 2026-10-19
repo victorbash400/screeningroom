@@ -8,6 +8,7 @@ import { performanceKeys, performanceRows, projectPerformance } from "../lib/per
 import { researchChartSchema } from "../lib/researchWidget";
 import { ApiError } from "../server/http";
 import { comparableMediaTool } from "./comparable-media";
+import { digitalAudienceTool } from "./digital-audience";
 import { digitalPlatformFitTool } from "./digital-platforms";
 import { localTasteTool } from "./local-taste";
 import type { LocationInterest } from "../lib/locationInterest";
@@ -17,6 +18,7 @@ const referenceIds = z.array(z.uuid()).min(1);
 export function mediaResearchTools(userId: string, selectedIds: string[], files = selectedMedia(userId, selectedIds), area?: LocationInterest) {
   const charts = evidenceCharts(files.evidence);
   return {
+    analyzeDigitalAudience: digitalAudienceTool(charts.remember),
     getDigitalPlatformFit: digitalPlatformFitTool(charts.remember),
     getLocalTaste: localTasteTool(area, charts.remember),
     findComparableMedia: comparableMediaTool(charts.remember),

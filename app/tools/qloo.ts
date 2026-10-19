@@ -17,6 +17,7 @@ const entity = z.object({
     image: z.object({ url: optionalText }).nullish().transform((value) => value?.url ? { url: value.url } : undefined),
     geocode: z.unknown().optional(),
   }).nullish().transform((value) => value ?? undefined),
+  external: z.record(z.string(), z.array(z.object({ id: z.string() }))).nullish(),
   query: z.unknown().optional(),
 });
 const searchResponse = z.object({ results: z.array(entity) });
@@ -32,6 +33,7 @@ export async function qlooJson(path: "/search" | "/entities" | "/v2/analysis/com
     cache: "no-store", redirect: "error",
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
   });
+  if (response.status === 429) throw new ApiError(429, "Qloo is temporarily rate limiting requests. Try again shortly.");
   if (!response.ok) throw new Error(`Qloo request failed (${response.status}).`);
   return response.json() as Promise<unknown>;
 }

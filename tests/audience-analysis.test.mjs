@@ -110,7 +110,7 @@ test("audience widgets survive streaming, backend serialization, and follow-up c
   const data = { ...emptyData, workspaces: [{ id: "w", name: "Workspace" }], conversations: [{ id: "c", workspaceId: "w", title: "Audience", channel: "locations", draft: "", messages: [message] }] };
   const restored = parseData(JSON.stringify(data)).conversations[0].messages[0];
   assert.deepEqual(restored.blocks[0].tool.widget, output);
-  assert.equal(chatHistory([restored])[0].content.includes('"osm:node:1"'), true);
+  assert.equal(JSON.stringify(chatHistory([restored])[0].tools).includes('"osm:node:1"'), true);
   data.conversations[0].messages[0].blocks[0].tool.widget.venues[0].latitude = 91;
   assert.throws(() => parseData(JSON.stringify(data)));
 });

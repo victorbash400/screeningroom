@@ -1,6 +1,0 @@
-.dialog { box-sizing: border-box; width: min(440px, calc(100vw - 40px)); max-height: calc(100dvh - 40px); margin: auto; padding: 22px; overflow-y: auto; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); color: var(--ink); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-.dialog::backdrop { background: #00000026; }
-.dialog header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.dialog h2 { margin: 0; font-size: 16px; font-weight: 550; }
-.dialog p { margin: 16px 0 0; font-size: 13px; line-height: 1.6; }
-.dialog p:last-child { color: var(--muted); }

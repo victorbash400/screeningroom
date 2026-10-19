@@ -59,3 +59,12 @@ test('parallel calls and streamed text never show a duplicate waiting indicator'
  assert.equal(waitingForAnswer(message({type:'text',state:'done',text:'Here is the answer.'})),false);
  assert.equal(waitingForAnswer(message(active,{type:'text',state:'done',text:'Checking.'})),false);
 });
+
+
+test('tool search inputs and returned matches survive completed activity and saved messages',()=>{
+ const input={query:'Inception',type:'movie',take:3};
+ const blocks=agentBlocks(message({type:'tool-searchEntities',toolCallId:'trace',state:'output-available',input,output:[{entity_id:'movie-id',name:'Inception',properties:{secretIgnored:'unused'}}]}));
+ assert.deepEqual(blocks[0].tool.trace,{input,matches:[{id:'movie-id',name:'Inception'}]});
+ const data={...emptyData,workspaces:[{id:'w',name:'Work'}],conversations:[{id:'c',workspaceId:'w',title:'Audience',draft:'',messages:[{id:'m',text:'Found it.',role:'assistant',createdAt:new Date().toISOString(),blocks:[...blocks,{id:'text',kind:'text',text:'Found it.'}]}]}]};
+ assert.deepEqual(parseData(JSON.stringify(data)).conversations[0].messages[0].blocks[0].tool.trace,blocks[0].tool.trace);
+});

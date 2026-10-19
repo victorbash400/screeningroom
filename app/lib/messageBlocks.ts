@@ -1,3 +1,4 @@
+import { toolTraceSchema } from "./toolTrace.ts";
 import type { Message, MessageBlock, MessageTool } from "./types.ts";
 import { mediaAnalysisSchema } from "./mediaAnalysis.ts";
 import { researchWidgetSchema } from "./researchWidget.ts";
@@ -29,6 +30,7 @@ function validMessageTool(value: unknown): value is MessageTool {
   if (typeof value !== "object" || value === null) return false;
   const tool = value as Record<string, unknown>;
   return typeof tool.id === "string" && Boolean(tool.id) && typeof tool.name === "string" && Boolean(tool.name) &&
+    (tool.trace === undefined || toolTraceSchema.safeParse(tool.trace).success) &&
     (tool.error === undefined || typeof tool.error === "string") &&
     (tool.startedAt === undefined || typeof tool.startedAt === "number" && Number.isFinite(tool.startedAt) && tool.startedAt >= 0) &&
     (tool.endedAt === undefined || typeof tool.endedAt === "number" && Number.isFinite(tool.endedAt) && typeof tool.startedAt === "number" && tool.endedAt >= tool.startedAt) &&

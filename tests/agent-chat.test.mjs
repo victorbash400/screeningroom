@@ -58,3 +58,17 @@ test("mentions preserve full text and keep folder contents inside their workspac
   assert.equal(result.includes("Own"), true);
   assert.equal(result.includes("Other"), false);
 });
+
+
+test("saved tools become structured model messages, never appended assistant prose", async () => {
+  const { modelChatHistory } = await import('../app/lib/modelChatHistory.ts');
+  const reply=message('reply','YouTube has the strongest returned affinity.',{role:'assistant',blocks:[{id:'tool:q',kind:'tool',tool:{id:'q',name:'searchEntities',state:'done',trace:{input:{query:'Inception',type:'movie'},matches:[{id:'18B098FD-3D84-4609-BFF3-ADF9A0B00E40',name:'Inception'}]}}},{id:'text',kind:'text',text:'YouTube has the strongest returned affinity.'}]});
+  const history=chatHistory([reply,message('next','Now check Vimeo.')]);
+  assert.equal(history[0].content,reply.text);
+  assert.equal(history[0].content.includes('Verified tool results'),false);
+  const model=modelChatHistory(history);
+  assert.deepEqual(model.map(part=>part.role),['assistant','tool','assistant','user']);
+  assert.equal(model[0].content[0].type,'tool-call');
+  assert.equal(model[0].content[0].input.query,'Inception');
+  assert.equal(model[1].content[0].output.value[0].name,'Inception');
+});

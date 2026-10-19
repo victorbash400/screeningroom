@@ -2,14 +2,13 @@ import EntityImage from "../media/EntityImage";
 import { canResolveEntityImage } from "../../lib/entityImage";
 import { MapPin, ExternalLink } from "lucide-react";
 import type { VenueResults } from "../../lib/audienceWidget";
-import AudienceMetricDetails from "./AudienceMetricDetails";
 import AudienceWidgetShell from "./AudienceWidgetShell";
 import { useAudienceMap } from "./AudienceMapContext";
 import styles from "./AudienceVenueList.module.css";
 
 export default function AudienceVenueList({ widget }: { widget: VenueResults }) {
   const map = useAudienceMap();
-  return <AudienceWidgetShell details={widget.basis === "taste" ? <AudienceMetricDetails kind="venues" /> : undefined} title={`Venues · ${widget.area.name}`} source={widget.source === "OpenStreetMap" ? "© OpenStreetMap contributors" : widget.source === "Geoapify" ? "Geoapify · © OpenStreetMap contributors" : widget.basis === "taste" ? "Qloo · taste affinity" : "Qloo · venue discovery"}
+  return <AudienceWidgetShell title={`Venues · ${widget.area.name}`} source={widget.source === "OpenStreetMap" ? "© OpenStreetMap contributors" : widget.source === "Geoapify" ? "Geoapify · © OpenStreetMap contributors" : widget.basis === "taste" ? "Qloo" : "Qloo · venue discovery"}
     onMap={widget.venues.length ? () => map?.showPlaces(widget.venues) : undefined}>
     <div className={styles.list}>{widget.venues.map((venue, index) => <div key={venue.id ?? `${venue.longitude}:${venue.latitude}`} className={styles.venue}>
       {(venue.image || (venue.source === "Qloo" && canResolveEntityImage(venue.id))) && <EntityImage className={styles.photo} src={venue.image} entityId={venue.source === "Qloo" ? venue.id : undefined} label={venue.name} />}
