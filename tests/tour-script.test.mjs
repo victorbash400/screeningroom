@@ -44,7 +44,7 @@ test('map, platform and evidence states can be undone by seeking',()=>{
  assert.equal(tourSceneAt('live',12000).mapOpen,false);
  assert.equal(tourSceneAt('live',0).radius,5000);
  assert.equal(tourSceneAt('digital',2500).audienceMode,'digital');
- assert.equal(tourSceneAt('digital',24000).mapOpen,true);
+ assert.equal(tourSceneAt('digital',25000).mapOpen,true);
  assert.equal(tourSceneAt('digital',35000).mapOpen,false);
  assert.equal(tourSceneAt('evidence',2000).evidenceOpen,true);
  assert.equal(tourSceneAt('evidence',0).evidenceOpen,false);
@@ -63,12 +63,15 @@ test('chapters leave room for full results, follow-ups and deterministic scrolli
  assert.ok(digital.followupTime>=8200);
  assert.ok(digital.catalogueScroll>0 && digital.catalogueScroll<1);
  assert.equal(digital.comparisonScroll,1);
+ assert.equal(digital.comparableScroll,1);
  assert.equal(tourSceneAt('digital',1000).followupTime,-1);
  assert.equal(tourSceneAt('digital',1000).catalogueScroll,0);
  const before=tourSceneAt('digital',14000);
  tourSceneAt('digital',tourScripts.digital.duration);
  assert.deepEqual(tourSceneAt('digital',14000),before);
  assert.equal(tourSceneAt('digital',0).comparisonScroll,0);
+ assert.equal(tourSceneAt('digital',17000).comparableScroll,0);
+ assert.ok(tourSceneAt('digital',18700).comparableScroll>0 && tourSceneAt('digital',18700).comparableScroll<1);
  assert.equal(tourSceneAt('evidence',11000).evidenceTool,'venues');
  assert.ok(tourSceneAt('evidence',11000).evidenceScroll>0);
  assert.equal(tourScripts.workspace.cues.at(-1).click,false);

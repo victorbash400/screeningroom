@@ -4,7 +4,7 @@ import type { MapScene } from "../../lib/mapScene";
 import VenueCarouselCard from "./VenueCarouselCard";
 import styles from "./VenueCarousel.module.css";
 
-export default function VenueCarousel({ scene, onScene, animate = true }: { scene?: MapScene; onScene: (scene: MapScene) => boolean; animate?: boolean }) {
+export default function VenueCarousel({ scene, onScene, animate = true, compact = false }: { scene?: MapScene; onScene: (scene: MapScene) => boolean; animate?: boolean; compact?: boolean }) {
   const list = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(0);
   const places = scene?.presentation.locations ?? [];
@@ -14,7 +14,7 @@ export default function VenueCarousel({ scene, onScene, animate = true }: { scen
     const element = list.current, card = element?.children[index];
     if (element && card instanceof HTMLElement) element.scrollTo({ left: card.offsetLeft - (element.clientWidth - card.offsetWidth) / 2, behavior: !animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }
-  useEffect(() => { if (selected !== undefined) { setVisible(selected); center(selected); } }, [selected, places]);
+  useEffect(() => { const index = selected ?? 0; setVisible(index); center(index); }, [selected, places]);
   function measure() {
     const element = list.current;
     if (!element) return;
@@ -35,7 +35,7 @@ export default function VenueCarousel({ scene, onScene, animate = true }: { scen
   return <section className={styles.carousel} role="region" aria-label="Venue shortlist" aria-roledescription="carousel">
     <div className={styles.track}>
     <div ref={list} className={styles.list} onScroll={measure}>
-      {places.map((place, index) => <VenueCarouselCard key={place.id ?? `${place.longitude}:${place.latitude}`} place={place} index={index} active={active === index} selected={selected === index} onSelect={() => select(index)} />)}
+      {places.map((place, index) => <VenueCarouselCard compact={compact} key={place.id ?? `${place.longitude}:${place.latitude}`} place={place} index={index} active={active === index} selected={selected === index} onSelect={() => select(index)} />)}
     </div>
     <button className={styles.previous} type="button" aria-label="Previous venue" disabled={active === 0} onClick={() => select(active - 1)}><ChevronLeft size={24} /></button>
     <button className={styles.next} type="button" aria-label="Next venue" disabled={active === places.length - 1} onClick={() => select(active + 1)}><ChevronRight size={24} /></button>

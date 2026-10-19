@@ -62,6 +62,6 @@ export default function AudienceMap({ mode, open, area = defaultLocationInterest
       animate={animate} onPlace={selectPlace} visible={open} scene={mode === "digital" && scene ? { ...scene, presentation: { ...scene.presentation, locations: [], focusIndex: undefined } } : scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />
     </div>
-    {mode === "live" && <VenueCarousel animate={animate} scene={scene} onScene={onScene} />}
+    {mode === "live" && <VenueCarousel compact={compact} animate={animate} scene={scene} onScene={onScene} />}
   </section>;
 }

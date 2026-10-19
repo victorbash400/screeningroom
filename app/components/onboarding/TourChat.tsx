@@ -23,7 +23,7 @@ export default function TourChat({ scene }: { scene: TourScene }) {
   const root = useRef<HTMLElement>(null);
   const messages = useMemo(() => scene.sent ? tourMessages(scene.audienceMode, scene.answerTime, scene.followupTime) : [], [scene.sent, scene.audienceMode, scene.answerTime, scene.followupTime]);
   const conversation: Conversation = { id: "tour-playback", workspaceId: exampleWorkspace.id, scope: "workspace", channel: "locations", title: "Audience", messages, draft: scene.draft, audienceMode: scene.audienceMode };
-  const map = useMemo(() => ({ ...exampleMap, id: `tour-map-${scene.mapSearched}-${scene.venue ?? "all"}`, presentation: { ...exampleMap.presentation, locations: scene.mapSearched ? exampleMap.presentation.locations : exampleVenues.venues, ...(scene.venue === undefined ? {} : { focusIndex: scene.venue, zoom: 15.5 }) } }), [scene.venue, scene.mapSearched]);
+  const map = useMemo(() => ({ ...exampleMap, id: `tour-map-${scene.mapSearched}-${scene.venue ?? "all"}`, presentation: { ...exampleMap.presentation, locations: scene.mapSearched ? exampleMap.presentation.locations : exampleVenues.venues, focusIndex: scene.venue ?? 0, zoom: scene.venue === undefined ? 13 : 15.5 } }), [scene.venue, scene.mapSearched]);
   const area = useMemo(() => ({ ...exampleArea, radius: scene.radius }), [scene.radius]);
   const busy = messages.at(-1)?.status === "streaming";
   useTourScroll(root, scene);

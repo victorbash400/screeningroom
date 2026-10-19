@@ -20,3 +20,10 @@
 .select:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 @media (max-height: 600px) { .card[data-image="true"] .body { min-height: 64px; } .select { padding: 12px; gap: 6px; } .photo { right: 12px; top: 30px; --entity-image-width: 64px; --entity-image-height: 64px; } .card[data-image="true"] .identity { padding-right: 76px; } }
+
+.card[data-compact="true"] { gap: 4px; }
+.card[data-compact="true"] .select { padding: 10px 14px 4px; gap: 6px; }
+.card[data-compact="true"] .identity strong { font-size: 15px; }
+.card[data-compact="true"] .website { margin: 0 14px 8px; }
+
+.card[data-compact="true"] .description { display: none; }

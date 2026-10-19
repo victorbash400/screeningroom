@@ -4,14 +4,14 @@ import { exampleQuestion } from "./tourExample";
 import { digitalQuestion, liveFollowup } from "./tourConversation";
 export type TourScrollAnchor = "start" | "end" | "venues" | "platformResults" | "comparables" | "followup" | "searchDetails" | "venueDetails";
 export interface TourScene {
-  evidenceQueryOpen: boolean; mapSearched: boolean; venueListScroll: number; mapSearching: boolean; evidenceScroll: number; answerTime: number; followupTime: number; scrollFrom: TourScrollAnchor; scrollTo: TourScrollAnchor; scrollProgress: number; catalogueScroll: number; comparisonScroll: number; venueEvidenceOpen: boolean; evidenceTool: "search" | "venues" | "digital";
+  evidenceQueryOpen: boolean; mapSearched: boolean; venueListScroll: number; mapSearching: boolean; evidenceScroll: number; answerTime: number; followupTime: number; scrollFrom: TourScrollAnchor; scrollTo: TourScrollAnchor; scrollProgress: number; catalogueScroll: number; comparisonScroll: number; comparableScroll: number; venueEvidenceOpen: boolean; evidenceTool: "search" | "venues" | "digital";
   workspaceExists: boolean; createOpen: boolean; workspaceName: string;
   workspaceOpen: boolean; uploaded: boolean; importOpen: boolean; importBusy: boolean; importItems: number;
   audienceOpen: boolean; pickerOpen: boolean; references: string[]; draft: string; sent: boolean;
   mapOpen: boolean; audienceMode: "live" | "digital"; radius: number; venue?: number;
   evidenceOpen: boolean; view: ViewMode; file?: string;
 }
-export type TourTarget = "create" | "workspaceName" | "confirmWorkspace" | "workspace" | "import" | "browse" | "select" | "trailer" | "briefCheckbox" | "done" | "message" | "send" | "map" | "radius" | "venue" | "digital" | "platforms" | "evidence" | "match" | "transcript" | "searchArea" | "nextVenue" | "venueEvidence" | "platformTable" | "catalogue" | "venueTool";
+export type TourTarget = "create" | "workspaceName" | "confirmWorkspace" | "workspace" | "import" | "browse" | "select" | "trailer" | "briefCheckbox" | "done" | "message" | "send" | "map" | "radius" | "venue" | "digital" | "platforms" | "evidence" | "match" | "transcript" | "searchArea" | "nextVenue" | "venueEvidence" | "platformTable" | "catalogue" | "venueTool" | "comparableTable";
 export interface TourCue { at: number; commit: number; target: TourTarget; label: string; change: Partial<TourScene>; click: boolean }
 interface TourScript { duration: number; initial: Partial<TourScene>; cues: TourCue[] }
 const cue = (at: number, target: TourTarget, label: string, change: Partial<TourScene>, click = true): TourCue => ({ at, commit: at + 650, target, label, change, click });
@@ -50,7 +50,7 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(19100, "transcript", "Watch the venue comparison stream", {}, false),
     cue(24500, "transcript", "Scroll through the practical screening checks", {}, false),
   ] },
-  digital: { duration: 36500, initial: { workspaceOpen: true, audienceOpen: true, references: ["tour-trailer", "tour-brief"], sent: true, scrollFrom: "end", scrollTo: "end" }, cues: [
+  digital: { duration: 37500, initial: { workspaceOpen: true, audienceOpen: true, references: ["tour-trailer", "tour-brief"], sent: true, scrollFrom: "end", scrollTo: "end" }, cues: [
     cue(200, "digital", "Switch the same conversation from Live to Digital", { audienceMode: "digital" }),
     cue(1200, "message", "Ask for a platform comparison and supporting films", {}),
     cue(4000, "send", "Send the digital question with the project files", { draft: "" }),
@@ -58,10 +58,11 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(10300, "platformTable", "Compare the returned platform affinity values", {}, false),
     cue(13000, "platformTable", "Scroll across the comparison to MUBI", {}, false),
     cue(15700, "transcript", "Scroll down to the comparable films", {}, false),
-    cue(19100, "transcript", "Read the release checks and limits of the evidence", {}, false),
-    cue(22600, "platforms", "Open the platform catalogue", { mapOpen: true }),
-    cue(24400, "catalogue", "Scroll through Video, Music and the other categories", {}, false),
-    cue(33100, "platforms", "Return to the completed digital answer", { mapOpen: false }),
+    cue(18000, "comparableTable", "Scroll across both supporting film examples", {}, false),
+    cue(20100, "transcript", "Read the release checks and limits of the evidence", {}, false),
+    cue(23600, "platforms", "Open the platform catalogue", { mapOpen: true }),
+    cue(25400, "catalogue", "Scroll through Video, Music and the other categories", {}, false),
+    cue(34100, "platforms", "Return to the completed digital answer", { mapOpen: false }),
   ] },
   evidence: { duration: 14000, initial: { workspaceOpen: true, audienceOpen: true, references: ["tour-trailer", "tour-brief"], sent: true, scrollFrom: "searchDetails", scrollTo: "searchDetails" }, cues: [
     cue(400, "evidence", "Expand Qloo search to see the exact query and sample match", { evidenceOpen: true }),
@@ -71,7 +72,7 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(11600, "transcript", "Return to the answer with its source context", { evidenceOpen: false }, false),
   ] },
 };
-const initialScene: TourScene = { evidenceQueryOpen: false, mapSearched: false, venueListScroll: 0, mapSearching: false, evidenceScroll: 0, answerTime: 20000, followupTime: -1, scrollFrom: "start", scrollTo: "start", scrollProgress: 1, catalogueScroll: 0, comparisonScroll: 0, venueEvidenceOpen: false, evidenceTool: "search", workspaceExists: true, createOpen: false, workspaceName: "", workspaceOpen: false, uploaded: true, importOpen: false, importBusy: false, importItems: 0, audienceOpen: false, pickerOpen: false, references: [], draft: "", sent: false, mapOpen: false, audienceMode: "live", radius: 5000, evidenceOpen: false, view: "list" };
+const initialScene: TourScene = { evidenceQueryOpen: false, mapSearched: false, venueListScroll: 0, mapSearching: false, evidenceScroll: 0, answerTime: 20000, followupTime: -1, scrollFrom: "start", scrollTo: "start", scrollProgress: 1, catalogueScroll: 0, comparisonScroll: 0, comparableScroll: 0, venueEvidenceOpen: false, evidenceTool: "search", workspaceExists: true, createOpen: false, workspaceName: "", workspaceOpen: false, uploaded: true, importOpen: false, importBusy: false, importItems: 0, audienceOpen: false, pickerOpen: false, references: [], draft: "", sent: false, mapOpen: false, audienceMode: "live", radius: 5000, evidenceOpen: false, view: "list" };
 export function tourDraftAt(time: number) { return exampleQuestion.slice(0, Math.floor(Math.max(0, Math.min(1, (time - 4300) / 1900)) * exampleQuestion.length)); }
 export function tourImportItemsAt(time: number) { return Math.min(3, Math.max(0, Math.floor((time - 5650) / 400) + 1)); }
 export function tourNameAt(time: number) { return "Night Signals".slice(0, Math.floor(Math.max(0, Math.min(1, (time - 1300) / 600)) * "Night Signals".length)); }
@@ -104,9 +105,10 @@ export function tourSceneAt(step: TourStep, time: number): TourScene {
     if (time >= 4650) scene.followupTime = Math.min(8200, time - 4650);
     scene.scrollFrom = "end"; scene.scrollTo = time < 10300 ? "end" : "platformResults"; scene.scrollProgress = progress(time, 10300, 900);
     if (time >= 15700) { scene.scrollFrom = "platformResults"; scene.scrollTo = "comparables"; scene.scrollProgress = progress(time, 15700, 2200); }
-    if (time >= 19100) { scene.scrollFrom = "comparables"; scene.scrollTo = "end"; scene.scrollProgress = progress(time, 19100, 2400); }
+    if (time >= 20100) { scene.scrollFrom = "comparables"; scene.scrollTo = "end"; scene.scrollProgress = progress(time, 20100, 2400); }
     scene.comparisonScroll = progress(time, 13650, 1500);
-    scene.catalogueScroll = progress(time, 25050, 7300);
+    scene.comparableScroll = progress(time, 18000, 1400);
+    scene.catalogueScroll = progress(time, 26050, 7300);
   }
   if (step === "evidence") {
     scene.scrollFrom = scene.scrollTo = scene.evidenceTool === "search" ? "searchDetails" : "venueDetails";

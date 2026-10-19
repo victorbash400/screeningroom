@@ -9,7 +9,7 @@ const selectors: Record<TourTarget, string> = {
   message: '[aria-label="Message"]', send: '[aria-label="Send message"], [aria-label="Stop response"]', map: '[role="switch"][aria-label="Map"]',
   radius: '[aria-label="Search radius"]', venue: '[aria-label="Next venue"]', digital: '[aria-label="Audience format"] button:last-child',
   transcript: '[role="log"]', searchArea: '[aria-label="Search area"]', nextVenue: '[aria-label="Next venue"]',
-  venueEvidence: '[aria-label="Venues · London"] details > summary', platformTable: '[aria-label="Platform comparison table"]', catalogue: '[aria-label="Digital platforms"]', venueTool: '[aria-label="Audience venues: done"]',
+  comparableTable: '[aria-label="Comparable films · sample"] [role="region"]', venueEvidence: '[aria-label="Venues · London"] details > summary', platformTable: '[aria-label="Platform comparison table"]', catalogue: '[aria-label="Digital platforms"]', venueTool: '[aria-label="Audience venues: done"]',
   platforms: '[role="switch"][aria-label="Platforms"]', evidence: '[aria-label="Qloo search: done"]', match: '[aria-label="Qloo search details"] li',
 };
 interface Point { x: number; y: number }

@@ -4,9 +4,9 @@ import { canResolveEntityImage } from "../../lib/entityImage";
 import type { MapPlace } from "../../lib/mapScene";
 import styles from "./VenueCarouselCard.module.css";
 
-export default function VenueCarouselCard({ place, index, active, selected, onSelect }: { place: MapPlace; index: number; active: boolean; selected: boolean; onSelect: () => void }) {
+export default function VenueCarouselCard({ place, index, active, selected, onSelect, compact = false }: { place: MapPlace; index: number; active: boolean; selected: boolean; onSelect: () => void; compact?: boolean }) {
   const hasPhoto = Boolean(place.image || (place.source === "Qloo" && canResolveEntityImage(place.id)));
-  return <article className={styles.card} data-active={active} data-image={hasPhoto}>
+  return <article className={styles.card} data-compact={compact} data-active={active} data-image={hasPhoto}>
     <button type="button" className={styles.select} data-venue-name={place.name} aria-pressed={selected} onClick={onSelect}>
     <span className={styles.top}><span>{String(index + 1).padStart(2, "0")}</span>{place.category && <span>{place.category}</span>}</span>
     <span className={styles.body}>
