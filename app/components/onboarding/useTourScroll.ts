@@ -3,11 +3,13 @@ import type { TourScene, TourScrollAnchor } from "./tourScript";
 
 const anchors: Record<Exclude<TourScrollAnchor, "start" | "end">, string> = {
   mediaTranscript: '[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Transcript"]',
-  media: '[aria-label="Video analysis · Trailer.mp4"]', image: '[aria-label="Image · Poster.jpg"]',
+  media: '[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Frames"]', image: '[aria-label="Image · Poster.jpg"]',
   venues: '[aria-label="Venues · London"]', platformResults: '[aria-label="Platform affinity · sample"]', comparables: '[aria-label="Comparable films · sample"]',
   followup: '[data-message-id="tour-followup"]', searchDetails: '[aria-label="Qloo search: done"]', venueDetails: '[aria-label="Audience venues: done"]',
 };
 function apply(root: HTMLElement, scene: TourScene) {
+  const list = root.querySelector<HTMLElement>('[role="log"]');
+  const visibleHeight = list?.clientHeight ?? 0;
   for (const [name, selected] of [["Qloo search", "search"], ["Audience venues", "venues"], ["Digital audience", "digital"]] as const) {
     const disclosure = root.querySelector(`[aria-label="${name}: done"]`)?.closest("details");
     if (disclosure) disclosure.open = scene.evidenceOpen && scene.evidenceTool === selected;
@@ -17,13 +19,14 @@ function apply(root: HTMLElement, scene: TourScene) {
   if (frames) {
     frames.open = scene.mediaFramesOpen;
     const observations = frames.querySelector<HTMLElement>(":scope > div");
-    if (observations) observations.scrollTop = scene.mediaFrameScroll * (observations.scrollHeight - observations.clientHeight);
+    if (observations) {
+      if (visibleHeight) observations.style.maxHeight = `${Math.max(64, Math.min(260, visibleHeight - 62))}px`;
+      observations.scrollTop = scene.mediaFrameScroll * (observations.scrollHeight - observations.clientHeight);
+    }
   }
   if (transcript) transcript.open = scene.mediaTranscriptOpen;
   const why = root.querySelector<HTMLDetailsElement>('[aria-label="Venues · London"] details');
   if (why) why.open = scene.venueEvidenceOpen;
-  const list = root.querySelector<HTMLElement>('[role="log"]');
-  const visibleHeight = list?.clientHeight ?? 0;
   const evidence = root.querySelector<HTMLElement>('[aria-label="Audience venues details"]');
   if (evidence) {
     if (visibleHeight) evidence.style.maxHeight = `${Math.max(80, visibleHeight - 52)}px`;
