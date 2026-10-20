@@ -550,7 +550,7 @@ research render/toolbar checks in `tests/audience-widgets.test.mjs`.
 
 `inspectImage` uses `google.gemma-4-26b-a4b` for descriptions and visible text.
 `inspectVideo` samples compressed JPEG frames across the selected time range
-(eight representative samples by default, including an early sample), with approximate frame positions. The original video is not
+(ten representative samples by default, including an early sample), with approximate frame positions. The original video is not
 sent to the model. `transcribeMedia` uses `google.gemma-4-e2b` for audio or a video's
 speech, decoded once to mono 16 kHz PCM and read as exact 30-second WAV windows.
 The default covers the entire audio track; explicit start/end times select a range.
@@ -590,7 +590,7 @@ reopening a chat preserves completed durations. The live clock is local renderin
 not network polling. Existing general chats can continue; new work still starts by
 choosing a workflow, and workflow cards only render before the first message.
 
-Video inspection extracts at most eight representative frames concurrently, using one
+Video inspection extracts up to twenty representative frames, four at a time, using one
 decoder thread per frame against the prepared local source.
 The immutable source/range/frame selection has a separate owner-scoped S3 frame
 cache, so a new question reuses extracted frames without rereading the video.
@@ -639,3 +639,37 @@ Edit step copy and order in `app/lib/productTour.ts`, examples in
 `app/components/onboarding/tourExample.ts`, and individual scenes under
 `app/components/onboarding/`. Example API requests are isolated from real account
 data; the map loads public map tiles, while example chats do not invoke a model.
+
+### Country selection and linked media
+
+New Audience conversations default to New York. The map can select a radius or
+an entire country. Radius accepts any positive finite distance in kilometers;
+the plus control expands the slider range. Country mode frames and highlights
+the selected boundary, and map clicks select another country. Boundaries are
+bundled from [Natural Earth](https://www.naturalearthdata.com/), using public-domain
+Admin 0 data at 110m with 50m small-country and US coastlines. They are generalized
+map boundaries, not legal boundary determinations. Qloo receives the selected
+Polygon/MultiPolygon with zero boundary buffer via POST; Geoapify uses country
+codes, and WorldPop receives the same boundary geometry. Country local taste
+uses Qloo's country locality signal rather than the country's label point.
+The Live walkthrough demonstrates a 500 km radius and selecting Kenya.
+
+Public YouTube and direct HTTPS video/audio download links use the existing
+analysis tools and result widgets. Video defaults to ten representative frames,
+including an early sample; explicit requests can select up to twenty. Four frame
+decoders run concurrently. Video includes full speech transcription when an audio
+track exists. `transcribeLinkedMedia` handles audio links and speech-only requests.
+Direct-file fetching validates and pins public DNS addresses, checks every redirect,
+rejects private hosts, and streams at most 512 MB to a temporary file. It never
+passes an arbitrary remote URL to FFmpeg. Restricted pages and HTML links are
+explicit errors; they are not substituted with metadata-only analysis. yt-dlp
+uses the server's Node executable and a writable temporary cache directory.
+
+Direct-file cache identities include the server's ETag or Last-Modified revision;
+links without a revision are not reused across requests. Exact trailing digital
+silence can be removed from inference payloads without dropping quiet samples or
+changing reported chunk coverage. If speech analysis fails after visual analysis
+succeeds, the existing tool row shows a failure and retains the observed frames.
+The structured result includes `transcriptError`, omits the missing transcript,
+and is not cached as a complete success. The agent must report that partial result
+explicitly and cannot infer the missing speech or silently retry it.

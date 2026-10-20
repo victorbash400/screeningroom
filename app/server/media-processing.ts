@@ -4,6 +4,7 @@ import ffmpeg from "ffmpeg-static";
 import ffprobe from "@ffprobe-installer/ffprobe";
 import { z } from "zod";
 import type { FileNode } from "../lib/types";
+import { parseLink, youtubeVideo } from "../lib/linkFiles";
 import { mediaKind } from "../lib/mediaAnalysis";
 import { ApiError } from "./http";
 
@@ -21,11 +22,12 @@ function ffmpegBinary() {
   return path;
 }
 export function mediaInputFormat(node: FileNode) {
-  if (node.sourceUrl && mediaKind(node) === "video") return "mov";
+  if (node.sourceUrl && youtubeVideo(parseLink(node.sourceUrl))) return "mov";
   if (mediaKind(node) === "image") return "image2pipe";
   const formats: Record<string, string> = { mp4: "mov", mov: "mov", m4v: "mov", m4a: "mov", webm: "matroska", mkv: "matroska", avi: "avi", mpeg: "mpeg", mpg: "mpeg", mp3: "mp3", wav: "wav", aac: "aac", flac: "flac", ogg: "ogg", opus: "ogg", aiff: "aiff", aif: "aiff" };
-  const extension = node.name.slice(node.name.lastIndexOf(".") + 1).toLowerCase();
-  const format = formats[extension] ?? formats[node.mimeType?.split("/")[1] ?? ""];
+  const name = node.sourceUrl ? parseLink(node.sourceUrl).pathname.split("/").at(-1) || node.name : node.name;
+  const extension = name.slice(name.lastIndexOf(".") + 1).toLowerCase();
+  const format = formats[extension] ?? ({ "video/mp4": "mov", "video/quicktime": "mov", "audio/mp4": "mov", "audio/mpeg": "mp3", "audio/x-wav": "wav", "audio/x-m4a": "mov", "audio/opus": "ogg" } as Record<string, string>)[node.mimeType ?? ""] ?? formats[node.mimeType?.split("/")[1] ?? ""];
   if (!format) throw new ApiError(415, "Convert this media to MP4, WebM, MP3 or WAV before analysis.");
   return format;
 }

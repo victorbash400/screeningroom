@@ -23,7 +23,7 @@ function run(args: string[], signal?: AbortSignal): Promise<string> {
   return new Promise((resolve, reject) => {
     const binaryName = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
     const bundled = join(process.cwd(), ".media-bin", binaryName);
-    execFile(/* turbopackIgnore: true */ process.env.YTDLP_PATH || (process.platform === "linux" || existsSync(bundled) ? bundled : binaryName), ["--ignore-config", "--js-runtimes", "node", "--no-playlist", "--no-warnings", "--socket-timeout", "15", "--retries", "0", "--extractor-retries", "0", ...args], { signal, maxBuffer: 16 * 1024 * 1024, encoding: "utf8" }, (error, stdout) => {
+    execFile(/* turbopackIgnore: true */ process.env.YTDLP_PATH || (process.platform === "linux" || existsSync(bundled) ? bundled : binaryName), ["--ignore-config", "--js-runtimes", `node:${process.execPath}`, "--cache-dir", join(tmpdir(), "screeningroom-ytdlp-cache"), "--no-playlist", "--no-warnings", "--socket-timeout", "15", "--retries", "0", "--extractor-retries", "0", ...args], { signal, timeout: 120_000, maxBuffer: 16 * 1024 * 1024, encoding: "utf8" }, (error, stdout) => {
       if (error) {
         if (signal?.aborted) { reject(signal.reason); return; }
         reject(new ApiError(error.code === "ENOENT" ? 503 : 422, error.code === "ENOENT" ? "YouTube processing is unavailable on this server. Configure yt-dlp or upload the video." : "YouTube could not provide this public video. Upload the video or its transcript."));
@@ -66,7 +66,7 @@ export async function withYoutubeMedia<T>(value: string, runAnalysis: (withSourc
     log?.("source-download");
     // Prefer a combined preview; otherwise remux separate video and audio without re-encoding.
     if (!ffmpeg) throw new ApiError(503, "YouTube audio/video processing is unavailable on this server.");
-    await run(["--no-progress", "--no-part", "--ffmpeg-location", ffmpeg, "--merge-output-format", "mp4", "--format", "best[height<=480][ext=mp4][acodec!=none]/bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]", "--output", path, url], signal);
+    await run(["--no-progress", "--no-part", "--ffmpeg-location", ffmpeg, "--merge-output-format", "mp4", "--format", "best[height<=480][ext=mp4][acodec!=none]/bestvideo[height<=480][ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]", "--output", path, url], signal);
     log?.("source-ready", { bytes: (await stat(path)).size });
     return path;
   }

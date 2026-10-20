@@ -20,6 +20,7 @@ export async function cachedMediaAnalysis(userId: string, identity: unknown, ana
   }
   log?.("analysis-cache", { cache: "miss" });
   const result = mediaAnalysisSchema.parse(await analyze());
+  if (result.transcriptError) return result;
   await storage().send(new PutObjectCommand({ ...location, Body: JSON.stringify(result), ContentType: "application/json" }), { abortSignal: signal });
   return result;
 }

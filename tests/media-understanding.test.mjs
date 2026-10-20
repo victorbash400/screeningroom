@@ -65,12 +65,12 @@ test('private media streams once and temporary files are removed on success and 
  }finally{client.send=originalSend;client.config.credentials=originalCredentials;}
 });
 
-test('video calls allow eight representative samples and reject an invalid request before decoding',async()=>{
+test('video calls allow ten representative samples and reject an invalid request before decoding',async()=>{
  const {mediaUnderstandingTools}=await import('../app/tools/media-understanding.ts');
  const {asSchema}=await import('ai');
  const schema=asSchema(mediaUnderstandingTools('owner',[]).inspectVideo.inputSchema);
  const valid=await schema.validate({fileId:'video',question:'Describe it',samples:5,startSeconds:0});
- const invalid=await schema.validate({fileId:'video',samples:9});
+ const invalid=await schema.validate({fileId:'video',samples:21});
  assert.equal(valid.success,true);assert.equal(invalid.success,false);
  const times=sampleTimes(0,600,5);assert.deepEqual(times,[60,180,300,420,540]);
  assert.ok(times.every(time=>time>0&&time<600));

@@ -28,12 +28,12 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       },
     }),
     inspectVideo: tool({
-      description: "Understand a selected uploaded video with sampled visuals and its full speech transcript in one call. Defaults to eight representative frames including an early sample; samples and sampling can compare configurations. By default includeAudio transcribes the entire audio track across the requested range when present. Set includeAudio false only for purely visual questions. The result contains hasAudio and transcript, so do not call transcription again unnecessarily. Only sampled visuals were seen; do not invent scenes, exact transitions, people’s identities, or speech absent from the transcript.",
-      inputSchema: z.object({ fileId: z.string(), question: z.string().min(1).default("Describe the visible subjects, setting, style and on-screen text in these sampled frames."), samples: z.number().int().min(1).max(8).default(8), sampling: z.enum(["uniform", "overview"]).default("overview"), includeAudio: z.boolean().default(true), ...rangeSchema }),
+      description: "Understand a selected uploaded video with sampled visuals and its full speech transcript in one call. Defaults to ten representative frames including an early sample; samples and sampling can compare configurations. By default includeAudio transcribes the entire audio track across the requested range when present. Set includeAudio false only for purely visual questions. If audio processing fails, returns the observed visuals with transcriptError, never an invented transcript. Report that error explicitly; the result is partial. The result contains hasAudio and transcript, so do not call transcription again unnecessarily. Only sampled visuals were seen; do not invent scenes, exact transitions, people’s identities, or speech absent from the transcript.",
+      inputSchema: z.object({ fileId: z.string(), question: z.string().min(1).default("Describe the visible subjects, setting, style and on-screen text in these sampled frames."), samples: z.number().int().min(1).max(20).default(10), sampling: z.enum(["uniform", "overview"]).default("overview"), includeAudio: z.boolean().default(true), ...rangeSchema }),
       execute: async ({ fileId, question, samples, sampling, includeAudio, startSeconds, endSeconds }, { abortSignal }) => diagnoseMedia("video", fileId, async (log) => {
         const node = await files.node(fileId);
         if (mediaKind(node) !== "video") throw new ApiError(400, "Select a video file.");
-        return cachedMediaAnalysis(userId, { version: 10, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
+        return cachedMediaAnalysis(userId, { version: 13, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
           const prepared = await videoFrames(userId, node, samples, startSeconds, endSeconds, (prepare) => withSource(prepare), abortSignal, sampling, log);
           const { duration, hasAudio, start, end, frames } = prepared;
           const speech = hasAudio && includeAudio ? transcribeFile(userId, node, { withSource: (_node, operation) => withSource(operation) }, startSeconds, endSeconds, undefined, abortSignal, log) : undefined;
@@ -50,8 +50,14 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
             for (const batch of batches) results.push({ batch, result: await describeFrames(batch, question, abortSignal, log) });
             return results;
           };
-          const [results, audio] = await Promise.all([visual(), speech]);
+          const [results, audioResult] = await Promise.all([visual(), speech?.then((audio) => ({ audio })).catch((error: unknown) => {
+            if (abortSignal?.aborted) throw error;
+            log("audio-failed", { error: error instanceof Error ? error.name : "UnknownError" });
+            return { error: "Audio transcription failed. Try again." };
+          })]);
+          const audio = audioResult && "audio" in audioResult ? audioResult.audio : undefined;
           return { kind: "media", fileId, name: node.name, modality: "video", model: visualModelId(), duration, hasAudio, start, end,
+            ...(audioResult && "error" in audioResult ? { transcriptError: audioResult.error } : {}),
             ...(audio ? { transcript: { model: audio.model, start: audio.start!, end: audio.end!, duration: audio.duration!, complete: audio.start === 0 && audio.nextStart === undefined, segments: audio.segments.map((segment) => ({ ...segment, end: segment.end! })), uncertainties: audio.uncertainties } } : {}),
             summary: results.map(({ result }) => result.summary).join("\n\n"), visibleText: results.map(({ result }) => result.visibleText).filter(Boolean).join("\n"), uncertainties: [...new Set(results.flatMap(({ result }) => result.uncertainties))],
             segments: results.flatMap(({ batch, result }) => result.frames.map((frame) => ({ start: batch[frame.index].time, text: frame.description }))).toSorted((a, b) => a.start - b.start) };

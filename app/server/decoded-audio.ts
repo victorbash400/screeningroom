@@ -41,3 +41,13 @@ export function hasAudioSignal(wav: Uint8Array) {
   for (let index = 44; index < wav.length; index++) if (wav[index] !== 0) return true;
   return false;
 }
+
+export function trimDigitalSilence(wav: Uint8Array) {
+  let end = wav.length;
+  while (end > 44 && wav[end - 1] === 0 && wav[end - 2] === 0) end -= 2;
+  if (end === wav.length || end === 44) return wav;
+  const trimmed = Buffer.from(wav.subarray(0, end));
+  trimmed.writeUInt32LE(trimmed.length - 8, 4);
+  trimmed.writeUInt32LE(trimmed.length - 44, 40);
+  return trimmed;
+}

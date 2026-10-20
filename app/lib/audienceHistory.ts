@@ -6,7 +6,7 @@ import { performanceOutput } from "../tools/performance-output.ts";
 
 export function audienceHistory(message: Message): HistoryTool[] {
   return messageBlocks(message).flatMap((block) => {
-    if (block.kind !== "tool" || block.tool.state !== "done") return [];
+    if (block.kind !== "tool" || block.tool.state !== "done" && !(block.tool.state === "failed" && block.tool.media?.transcriptError)) return [];
     const tool = block.tool;
     let output: unknown;
     if (tool.media) output = tool.media;

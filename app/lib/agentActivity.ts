@@ -13,18 +13,19 @@ export function agentBlocks(message: UIMessage, activity?: Map<string, MessageTo
     const cached = activity?.get(part.toolCallId);
     if (cached && cached.state !== "running") return [{ id: `tool:${part.toolCallId}`, kind: "tool", tool: cached }];
     const widget = part.state === "output-available" && ["searchMapVenues", "searchAudienceVenues", "getAudienceHeatmap", "getAudienceDemographics", "getAreaPopulation", "loadPopulationResult"].includes(getToolName(part)) ? audienceWidgetSchema.parse(part.output) : undefined;
+    const media = part.state === "output-available" && ["inspectImage", "inspectVideo", "inspectLinkedVideo", "transcribeLinkedMedia", "transcribeMedia"].includes(getToolName(part)) ? mediaAnalysisSchema.parse(part.output) : undefined;
     const terminal = ["output-available", "output-error", "output-denied"].includes(part.state);
     const tool: MessageTool = {
         trace: captureToolTrace(part.input, part.state === "output-available" ? part.output : undefined),
         startedAt: cached?.startedAt ?? now,
         ...(terminal ? { endedAt: now } : {}),
         ...(widget ? { widget } : {}),
-        ...(part.state === "output-available" && ["inspectImage", "inspectVideo", "inspectLinkedVideo", "transcribeMedia"].includes(getToolName(part)) ? { media: mediaAnalysisSchema.parse(part.output) } : {}),
+        ...(media ? { media } : {}),
         ...(part.state === "output-available" && ["analyzeDigitalAudience", "getDigitalPlatformFit", "getLocalTaste", "findComparableMedia", "getMediaEvidence", "compareMedia", "compareAudienceSignals", "getAudienceInterestProfile", "analyzeProjectPerformance", "renderEvidenceChart"].includes(getToolName(part)) ? { research: researchWidgetSchema.parse(part.output) } : {}),
         id: part.toolCallId, name: getToolName(part),
         ...(getToolName(part) === "findSimilar" && part.state === "output-available" ? { results: similarResultsSchema.parse(part.output) } : {}),
-        ...(part.state === "output-error" ? { error: part.errorText } : part.state === "output-denied" ? { error: "Tool call denied." } : {}),
-        state: part.state === "output-available" ? "done" : part.state === "output-error" || part.state === "output-denied" ? "failed" : "running",
+        ...(media?.transcriptError ? { error: media.transcriptError } : part.state === "output-error" ? { error: part.errorText } : part.state === "output-denied" ? { error: "Tool call denied." } : {}),
+        state: media?.transcriptError ? "failed" : part.state === "output-available" ? "done" : part.state === "output-error" || part.state === "output-denied" ? "failed" : "running",
     };
     activity?.set(part.toolCallId, tool);
     return [{ id: `tool:${part.toolCallId}`, kind: "tool", tool }];

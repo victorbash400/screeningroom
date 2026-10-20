@@ -109,3 +109,13 @@ test('venue explanations disclose named contributions inline with exact weights 
  for(const value of ['<details','<summary','Why this venue','Inception','0.550','width:55','Qloo venue profile','Provider-described visitor mix.'])assert.ok(html.includes(value),value);
  assert.equal(html.includes('<dialog'),false);
 });
+
+test('a partial video keeps its existing analysis card alongside a visible failed tool row',()=>{
+ const media={kind:'media',fileId:'video',name:'Clip.mp4',modality:'video',model:'test',summary:'A flower is visible.',visibleText:'',uncertainties:[],segments:[{start:0,text:'A flower.'}],transcriptError:'Audio transcription failed. Try again.'};
+ const html=renderToStaticMarkup(createElement(AssistantMessage,{message:{...reply,text:'',blocks:[{id:'partial',kind:'tool',tool:{id:'partial',name:'inspectLinkedVideo',state:'failed',error:media.transcriptError,media}}]}}));
+ assert.ok(html.includes('Linked video analysis failed'));
+ assert.ok(html.includes('data-state="failed"'));
+ assert.ok(html.includes('A flower is visible.'));
+ assert.ok(html.includes('Audio transcription failed. Try again.'));
+ assert.ok(!html.includes('Speech transcribed across'));
+});

@@ -6,7 +6,8 @@ export function mediaKind(node: Pick<FileNode, "name" | "mimeType" | "kind" | "s
   if (node.kind !== "file") return;
   if (node.sourceUrl && youtubeVideo(parseLink(node.sourceUrl))) return "video";
   for (const kind of ["image", "video", "audio"] as const) if (node.mimeType?.startsWith(`${kind}/`)) return kind;
-  const extension = node.name.slice(node.name.lastIndexOf(".") + 1).toLowerCase();
+  const fileName = node.sourceUrl ? parseLink(node.sourceUrl).pathname.split("/").at(-1) || node.name : node.name;
+  const extension = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
   if (["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "bmp", "tif", "tiff"].includes(extension)) return "image";
   if (["mp4", "mov", "m4v", "webm", "mkv", "avi", "mpeg", "mpg"].includes(extension)) return "video";
   if (["mp3", "wav", "m4a", "aac", "flac", "ogg", "aiff", "aif", "opus"].includes(extension)) return "audio";
@@ -20,6 +21,7 @@ export const mediaAnalysisSchema = z.object({
   duration: z.number().nonnegative().optional(), start: z.number().nonnegative().optional(), end: z.number().nonnegative().optional(),
   hasAudio: z.boolean().optional(),
   transcript: transcriptSchema.optional(),
+  transcriptError: z.string().min(1).optional(),
   nextStart: z.number().nonnegative().optional(),
   segments: z.array(z.object({ start: z.number().nonnegative(), end: z.number().nonnegative().optional(), text: z.string(), silence: z.boolean().optional() }).strict()),
 }).strict();
