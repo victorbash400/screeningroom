@@ -1,18 +1,18 @@
 .carousel { box-sizing: border-box; display: flex; flex-direction: column; position: absolute; z-index: 3; left: 0; right: 0; bottom: 22px; height: var(--venue-carousel-height, 220px); min-width: 0; padding: 8px 0 0; pointer-events: none; }
 .track { position: relative; display: flex; flex: 1; min-height: 0; }
-.list { pointer-events: auto; position: relative; display: flex; flex: 1; min-height: 0; align-items: stretch; gap: 4px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; padding: 4px 18px; scrollbar-width: thin; scrollbar-color: #dedfe1 transparent; }
+.list { pointer-events: auto; position: relative; display: flex; flex: 1; min-height: 0; align-items: stretch; gap: 4px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; padding: 4px 18px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .controls { pointer-events: auto; display: flex; align-items: center; gap: 5px; padding: 8px 18px 0; }
-.progress { flex: 1; max-width: 90px; height: 2px; background: #eceeed; margin-right: auto; overflow: hidden; }
-.progress > span { display: block; height: 100%; background: #768b83; transition: width 180ms ease; }
+.progress { flex: 1; max-width: 90px; height: 2px; background: var(--border); margin-right: auto; overflow: hidden; }
+.progress > span { display: block; height: 100%; background: var(--icon); transition: width 180ms ease; }
 .controls output { display: flex; align-items: baseline; gap: 5px; margin: 0 9px; font-variant-numeric: tabular-nums; }
-.controls strong { font-size: 17px; font-weight: 550; color: #293a33; }
-.controls output > span { font-size: 10px; color: #8a918e; }
-.previous, .next { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #bcc4c9; border-radius: 50%; background: white; color: #46574e; cursor: pointer; }
+.controls strong { font-size: 17px; font-weight: 550; color: var(--ink); }
+.controls output > span { font-size: 10px; color: var(--muted); }
+.previous, .next { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--panel); color: var(--icon); cursor: pointer; }
 .previous { left: 10px; }
 .next { right: 10px; }
-.previous:hover:not(:disabled), .next:hover:not(:disabled) { background: #f0f3f1; }
+.previous:hover:not(:disabled), .next:hover:not(:disabled) { background: var(--hover); }
 .previous:disabled, .next:disabled { visibility: hidden; cursor: default; }
 .previous:focus-visible, .next:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .list::-webkit-scrollbar { height: 4px; }
-.list::-webkit-scrollbar-thumb { background: #dedfe1; border-radius: 4px; }
+.list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { .progress > span { transition: none; } }

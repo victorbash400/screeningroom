@@ -8,6 +8,7 @@ import SettingsPicker from "../settings/SettingsPicker";
 import ThemeModeControl from "./ThemeModeControl";
 import ThemeColorControl from "./ThemeColorControl";
 import AppearanceAdvanced from "./AppearanceAdvanced";
+import ThemePresetPicker from "./ThemePresetPicker";
 import styles from "./AppearanceSettings.module.css";
 export default function AppearanceSettings() {
   const { value, dark, update, error, retry } = useAppearance();
@@ -25,21 +26,8 @@ export default function AppearanceSettings() {
           <ThemeModeControl />
         </SettingsRow>
       </SettingsGroup>
+      <ThemePresetPicker profiles={presets} value={profile.id} onChange={change} />
       <SettingsGroup>
-        <SettingsRow label="Theme">
-          <SettingsPicker
-            label="Theme"
-            value={profile.id}
-            options={presets.map((item) => ({
-              value: item.id,
-              label: item.name,
-            }))}
-            onChange={(id) => {
-              const next = presets.find((item) => item.id === id);
-              if (next) change(next);
-            }}
-          />
-        </SettingsRow>
         {(
           [
             { key: "accent", label: "Accent" },

@@ -1,10 +1,10 @@
-.options { position: absolute; bottom: calc(var(--venue-carousel-height, 0px) + 36px); right: 12px; z-index: 2; padding: 4px; border: 1px solid #e2e4e6; border-radius: 22px; background: white; color: #343b42; }
+.options { position: absolute; bottom: calc(var(--venue-carousel-height, 0px) + 36px); right: 12px; z-index: 2; padding: 4px; border: 1px solid var(--border); border-radius: 22px; background: var(--panel); color: var(--ink); }
 .actions { display: flex; align-items: center; gap: 12px; }
 .group { display: flex; align-items: center; gap: 2px; }
 .options button { color: inherit; font-size: 11px; border-radius: 50%; }
-.options button[aria-pressed="true"] { background: #e9edf0; }
-.options button:hover:not(:disabled) { background: #f1f3f5; opacity: 1; }
-.options button:focus-visible { outline: 2px solid #9aa3ac; outline-offset: 1px; }
+.options button[aria-pressed="true"] { background: var(--selection); }
+.options button:hover:not(:disabled) { background: var(--hover); opacity: 1; }
+.options button:focus-visible { outline: 2px solid var(--icon); outline-offset: 1px; }
 
 .busy { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

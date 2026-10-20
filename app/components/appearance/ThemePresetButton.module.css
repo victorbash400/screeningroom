@@ -1,0 +1,44 @@
+.button {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.preview {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  outline: 1px solid var(--border);
+}
+.preview svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  white-space: nowrap;
+}
+.button:hover,
+.button[aria-pressed="true"] {
+  color: var(--ink);
+}
+.button:hover .preview {
+  outline-color: var(--icon);
+}
+.button[aria-pressed="true"] .preview {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
