@@ -17,6 +17,7 @@ export type MediaTranscript = z.infer<typeof transcriptSchema>;
 export const mediaAnalysisSchema = z.object({
   kind: z.literal("media"), fileId: z.string().min(1), name: z.string().min(1), modality: z.enum(["image", "video", "audio"]), model: z.string().min(1),
   sourceUrl: z.string().url().optional(),
+  analysisMethod: z.enum(["native-video"]).optional(),
   summary: z.string(), visibleText: z.string(), uncertainties: z.array(z.string()),
   duration: z.number().nonnegative().optional(), start: z.number().nonnegative().optional(), end: z.number().nonnegative().optional(),
   hasAudio: z.boolean().optional(),

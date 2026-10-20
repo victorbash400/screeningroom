@@ -1,3 +1,4 @@
+import { nativeYoutubeEnabled } from "../server/youtube-provider";
 import { compareAudienceSignals } from "./compare-audience";
 import { parseLink, youtubeVideo } from "../lib/linkFiles";
 import { youtubeMetadata } from "../server/youtube-media";
@@ -35,6 +36,7 @@ export function mediaResearchTools(userId: string, selectedIds: string[], files 
         if (!fileId) return { files: (await files.nodes()).map(({ id, name, kind, mimeType, size, sourceUrl }) => ({ id, name, kind, mimeType, size, sourceUrl })) };
         const node = await files.node(fileId);
         if (node.sourceUrl && youtubeVideo(parseLink(node.sourceUrl))) {
+          if (nativeYoutubeEnabled()) return { id: node.id, name: node.name, sourceUrl: node.sourceUrl, access: "Public YouTube link", limitation: "Use inspectVideo for native video and speech analysis. Link metadata is not content evidence." };
           const info = await youtubeMetadata(node.sourceUrl, abortSignal);
           return { id: node.id, name: info.title, sourceUrl: node.sourceUrl, channel: info.channel, duration: info.duration, description: info.description, access: "YouTube metadata only", limitation: "Title and description are publisher metadata, not observed footage or speech. Use inspectVideo for visuals and the full speech transcript." };
         }

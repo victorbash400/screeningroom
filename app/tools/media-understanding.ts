@@ -1,4 +1,7 @@
 import { tool } from "ai";
+import { analyzeYoutube } from "../server/youtube-analysis";
+import { nativeYoutubeEnabled } from "../server/youtube-provider";
+import { parseLink, youtubeVideo } from "../lib/linkFiles";
 import { z } from "zod";
 import { selectedMedia } from "../server/selected-media";
 import { mediaKind } from "../lib/mediaAnalysis";
@@ -32,6 +35,7 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       inputSchema: z.object({ fileId: z.string(), question: z.string().min(1).default("Describe the visible subjects, setting, style and on-screen text in these sampled frames."), samples: z.number().int().min(1).max(20).default(10), sampling: z.enum(["uniform", "overview"]).default("overview"), includeAudio: z.boolean().default(true), ...rangeSchema }),
       execute: async ({ fileId, question, samples, sampling, includeAudio, startSeconds, endSeconds }, { abortSignal }) => diagnoseMedia("video", fileId, async (log) => {
         const node = await files.node(fileId);
+        if (node.sourceUrl && nativeYoutubeEnabled() && youtubeVideo(parseLink(node.sourceUrl))) return analyzeYoutube(userId, node, { question, modality: "video", includeAudio, startSeconds, endSeconds }, abortSignal);
         if (mediaKind(node) !== "video") throw new ApiError(400, "Select a video file.");
         return cachedMediaAnalysis(userId, { version: 13, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
           const prepared = await videoFrames(userId, node, samples, startSeconds, endSeconds, (prepare) => withSource(prepare), abortSignal, sampling, log);
@@ -69,6 +73,7 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       inputSchema: z.object({ fileId: z.string(), language: z.string().min(1).optional(), ...rangeSchema }),
       execute: async ({ fileId, language, startSeconds, endSeconds }, { abortSignal }) => diagnoseMedia("transcription", fileId, async (log) => {
         const node = await files.node(fileId);
+        if (node.sourceUrl && nativeYoutubeEnabled() && youtubeVideo(parseLink(node.sourceUrl))) return analyzeYoutube(userId, node, { question: "Transcribe the spoken words faithfully.", modality: "audio", includeAudio: true, startSeconds, endSeconds, language }, abortSignal);
         if (!["audio", "video"].includes(mediaKind(node) ?? "")) throw new ApiError(400, "Select an audio or video file.");
         return transcribeFile(userId, node, files, startSeconds, endSeconds, language, abortSignal, log);
       }),

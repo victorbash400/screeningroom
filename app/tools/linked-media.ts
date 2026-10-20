@@ -1,4 +1,5 @@
 import { tool } from "ai";
+import { nativeYoutubeEnabled } from "../server/youtube-provider";
 import { z } from "zod";
 import { youtubeMetadata, youtubeUrl } from "../server/youtube-media";
 import { linkedMediaNode } from "../server/linked-media";
@@ -21,6 +22,7 @@ export function linkedMediaTools(userId: string) {
       inputSchema: z.object({ url: urlSchema }).strict(),
       execute: async ({ url }, { abortSignal }) => {
         if (youtubeVideo(parseLink(url))) {
+          if (nativeYoutubeEnabled()) return { id: youtubeUrl(url).id, url: youtubeUrl(url).url, access: "Public YouTube link; use inspectLinkedVideo for native video and speech analysis, or transcribeLinkedMedia for speech only. Metadata has not been retrieved." };
           const info = await youtubeMetadata(url, abortSignal);
           return { id: info.id, title: info.title, channel: info.channel ?? null, duration: info.duration, description: info.description ?? "", url: youtubeUrl(url).url, access: "Publisher metadata only; use inspectLinkedVideo to inspect actual visuals and speech." };
         }
@@ -29,7 +31,7 @@ export function linkedMediaTools(userId: string) {
       },
     }),
     inspectLinkedVideo: tool({
-      description: "Inspect actual visuals and full speech of a public YouTube video or direct video download link supplied by the user. Uses the same cached analysis as uploads: ten representative frames by default (up to twenty), including an early frame, plus full audio transcription. Returns observed content, not measured viewer demographics. Continue with genuine Qloo comparable works/tags resolved from the observed content when the user requests audience analysis. Restricted or unavailable sources fail explicitly.",
+      description: "Inspect actual visuals and full speech of a public YouTube video or direct video download link supplied by the user. YouTube uses native Gemini video and speech analysis when configured, with one frame per second and up to ten timestamped observations. Other videos use ten representative frames by default (up to twenty), plus audio transcription. nextStart identifies any remaining content. Returns observed content, not measured viewer demographics. Continue with genuine Qloo comparable works/tags resolved from the observed content when the user requests audience analysis. Restricted or unavailable sources fail explicitly.",
       inputSchema: z.object({ url: urlSchema, question: z.string().min(1).default("Identify this work's subject, style and distinctive characteristics for audience analysis. Use both the sampled visuals and speech."), samples: z.number().int().min(1).max(20).default(10), includeAudio: z.boolean().default(true) }).strict(),
       execute: async ({ url, question, samples, includeAudio }, options) => {
         const { node, tools } = await toolsFor(url, options.abortSignal);

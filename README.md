@@ -673,3 +673,19 @@ succeeds, the existing tool row shows a failure and retains the observed frames.
 The structured result includes `transcriptError`, omits the missing transcript,
 and is not cached as a complete success. The agent must report that partial result
 explicitly and cannot infer the missing speech or silently retry it.
+
+Public YouTube analysis can use the direct Gemini API with `GEMINI_API_KEY`
+(server secret). Keep its Google project on the free tier with billing disabled
+to avoid charges. `GEMINI_YOUTUBE_MODEL_ID` defaults to `gemini-3-flash-preview`.
+This sends the canonical YouTube URL directly to Google, with one-frame-per-second
+video processing and structured timestamped observations and speech. It does not
+run yt-dlp or download YouTube media on the application server. Imported YouTube
+link files, pasted links and speech-only requests share this path. Other media
+and audience analysis retain Bedrock and Qloo. Native results use Observations
+in the existing card; they are not labelled as locally extracted frames.
+Quota, access and invalid-output failures surface explicitly, without paid
+provider or downloader fallback. Only public videos are supported by this route.
+Google's YouTube URL support is a free preview subject to its free-tier quotas
+(currently eight hours of YouTube input per day); free-tier inputs may be used
+to improve Google's products. See https://ai.google.dev/gemini-api/docs/video-understanding
+and https://ai.google.dev/gemini-api/docs/pricing.

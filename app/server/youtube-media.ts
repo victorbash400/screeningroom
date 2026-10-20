@@ -1,4 +1,5 @@
 import "server-only";
+import { nativeYoutubeEnabled } from "./youtube-provider";
 import { existsSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { mkdtemp, rm, stat } from "node:fs/promises";
@@ -54,6 +55,7 @@ export async function youtubeMetadata(value: string, signal?: AbortSignal) {
 }
 export async function youtubeNode(value: string, signal?: AbortSignal): Promise<FileNode> {
   const { id, url } = youtubeUrl(value);
+  if (nativeYoutubeEnabled()) return { id: `youtube:${id}`, name: `YouTube ${id}.mp4`, kind: "file", workspaceId: "linked", parentId: null, updatedAt: new Date().toISOString(), sourceUrl: url, mimeType: "video/mp4" };
   const info = await youtubeMetadata(url, signal);
   return { id: `youtube:${id}`, name: `${info.title}.mp4`, kind: "file", workspaceId: "linked", parentId: null, updatedAt: new Date().toISOString(), sourceUrl: url, mimeType: "video/mp4" };
 }
