@@ -689,3 +689,14 @@ Google's YouTube URL support is a free preview subject to its free-tier quotas
 (currently eight hours of YouTube input per day); free-tier inputs may be used
 to improve Google's products. See https://ai.google.dev/gemini-api/docs/video-understanding
 and https://ai.google.dev/gemini-api/docs/pricing.
+
+The chat composer's microphone records a temporary audio message, displays an
+audio-reactive waveform, and inserts the transcript into the existing draft after
+Stop. It never sends the message automatically. Cancel stops capture or aborts
+transcription; leaving the chat also releases the microphone. Failed requests
+retain the recording in memory for an explicit Retry. Recordings are limited to
+three minutes and 4 MB, decoded on the authenticated `/api/audio/transcribe` route,
+and removed from temporary storage after processing. They are not workspace files.
+Audio analysis includes audible sung lyrics as well as speech. Instrumental music
+and wordless humming produce no words; unclear vocals remain uncertain and lyrics
+are never completed from memory. Audience interpretation uses the actual words.

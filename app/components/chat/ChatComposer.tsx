@@ -1,4 +1,4 @@
-import { ArrowUp, Plus, Square } from "lucide-react";
+import { ArrowUp, Mic, Plus, Square } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { FileNode, Workspace } from "../../lib/types";
 import { selectedReferences } from "../../lib/chatSelection";
@@ -8,6 +8,9 @@ import SelectedFiles from "./SelectedFiles";
 import styles from "./ChatComposer.module.css";
 import type { LocationInterest } from "../../lib/locationInterest";
 import ComposerLocation from "./ComposerLocation";
+import useVoiceDraft from "./useVoiceDraft";
+import VoiceRecording from "./VoiceRecording";
+import ErrorNotice from "../shell/ErrorNotice";
 interface Props {
   embeddedPicker?: boolean;
   pickerRequest?: number;
@@ -43,6 +46,12 @@ export default function ChatComposer({
 }: Props) {
   const input = useRef<HTMLTextAreaElement>(null);
   const text = draft;
+  const voice = useVoiceDraft((transcript) => {
+    const saved = onDraft(text ? `${text}${text.endsWith(" ") || text.endsWith("\n") ? "" : " "}${transcript}` : transcript);
+    if (saved) queueMicrotask(() => input.current?.focus());
+    return saved;
+  });
+  const dictating = voice.phase !== "idle";
   useLayoutEffect(() => {
     const field = input.current;
     if (!field) return;
@@ -73,7 +82,7 @@ export default function ChatComposer({
   const references = selectedReferences(referenceIds, nodes);
   const canSend = Boolean(text.trim() || references.length);
   function send() {
-    if (busy || !canSend || !onSend(text.trim(), references.map((node) => node.id))) return;
+    if (busy || dictating || !canSend || !onSend(text.trim(), references.map((node) => node.id))) return;
     if (input.current) input.current.style.height = "auto";
     input.current?.focus();
   }
@@ -92,6 +101,7 @@ export default function ChatComposer({
       >
           <textarea
             ref={input}
+            readOnly={dictating}
             autoFocus
             aria-label="Message"
             placeholder={placeholder ?? "Message"}
@@ -117,11 +127,12 @@ export default function ChatComposer({
               }
             }}
           />
-        <div className={styles.row}>
+        {voice.phase !== "idle" ? <VoiceRecording phase={voice.phase} analyser={voice.analyser} onStop={voice.stop} onCancel={voice.cancel} /> : <div className={styles.row}>
           <button type="button" className={styles.select} onClick={() => setPicking(true)} aria-haspopup="dialog">
             <Plus size={19} />Select
           </button>
           {area && onLocation && <ComposerLocation area={area} onClick={onLocation} />}
+          {!busy && <IconButton className={styles.mic} label="Dictate message" onClick={() => void voice.start()}><Mic size={17} /></IconButton>}
           {busy ? <IconButton label="Stop response" onClick={onStop}><Square size={16} /></IconButton> : <button
             type="submit"
             aria-label="Send message"
@@ -130,9 +141,10 @@ export default function ChatComposer({
           >
             <ArrowUp size={16} />
           </button>}
-        </div>
+        </div>}
       </form>
       </div>
+      {voice.error && <ErrorNotice message={voice.error} onRetry={voice.retry} onDismiss={voice.dismissError} />}
       {picking && (
         <ReferencePicker
           embedded={embeddedPicker}

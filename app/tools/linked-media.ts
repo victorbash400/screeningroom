@@ -40,7 +40,7 @@ export function linkedMediaTools(userId: string) {
       },
     }),
     transcribeLinkedMedia: tool({
-      description: "Transcribe the full speech of a public direct audio/video file or YouTube link explicitly provided by the user. Audio is decoded once into exact timestamped chunks, using the same analysis as uploads. Use for audio links and speech-only video questions. Do not repeat when inspectLinkedVideo already returned a transcript. Music without speech is not a spoken transcript; never invent lyrics or dialogue.",
+      description: "Transcribe the full spoken words and audible sung lyrics of a public direct audio/video file or YouTube link explicitly provided by the user. Audio is decoded once into exact timestamped chunks, using the same analysis as uploads. Use for audio links and speech-only video questions. Do not repeat when inspectLinkedVideo already returned a transcript. Instrumental music is not a transcript; never invent or complete lyrics or dialogue from memory.",
       inputSchema: z.object({ url: urlSchema, language: z.string().min(1).optional(), startSeconds: z.number().nonnegative().default(0), endSeconds: z.number().positive().optional() }).strict(),
       execute: async ({ url, language, startSeconds, endSeconds }, options) => {
         const { node, tools } = await toolsFor(url, options.abortSignal);

@@ -10,7 +10,7 @@ import type { FileNode } from "../lib/types";
 import type { MediaAnalysis } from "../lib/mediaAnalysis";
 
 export async function transcribeFile(userId: string, node: FileNode, files: Pick<ReturnType<typeof selectedMedia>, "withSource">, start: number, endSeconds?: number, language?: string, signal?: AbortSignal, log?: MediaLog) {
-  return cachedMediaAnalysis(userId, { version: 7, content: node.content, sourceUrl: node.sourceUrl, fileId: node.id, name: node.name, model: audioModelId(), language, start, endSeconds }, () => files.withSource(node, async (source): Promise<MediaAnalysis> => {
+  return cachedMediaAnalysis(userId, { version: 8, content: node.content, sourceUrl: node.sourceUrl, fileId: node.id, name: node.name, model: audioModelId(), language, start, endSeconds }, () => files.withSource(node, async (source): Promise<MediaAnalysis> => {
     const format = mediaInputFormat(node), metadata = await probeMedia(source, format, signal);
     log?.("audio-probe", { audioTracks: metadata.audioTracks, videoTracks: metadata.videoTracks, duration: metadata.audioDuration ?? metadata.duration });
     if (!metadata.hasAudio) throw new ApiError(422, "The uploaded file contains no audio track. Select a copy with sound or its separate audio file.");

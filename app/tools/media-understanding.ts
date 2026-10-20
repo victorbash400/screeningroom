@@ -37,7 +37,7 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
         const node = await files.node(fileId);
         if (node.sourceUrl && nativeYoutubeEnabled() && youtubeVideo(parseLink(node.sourceUrl))) return analyzeYoutube(userId, node, { question, modality: "video", includeAudio, startSeconds, endSeconds }, abortSignal);
         if (mediaKind(node) !== "video") throw new ApiError(400, "Select a video file.");
-        return cachedMediaAnalysis(userId, { version: 13, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
+        return cachedMediaAnalysis(userId, { version: 14, content: node.content, sourceUrl: node.sourceUrl, fileId, name: node.name, model: visualModelId(), audioModel: includeAudio ? audioModelId() : undefined, question, samples, sampling, includeAudio, startSeconds, endSeconds }, () => withPreparedMedia(userId, node, async (withSource) => {
           const prepared = await videoFrames(userId, node, samples, startSeconds, endSeconds, (prepare) => withSource(prepare), abortSignal, sampling, log);
           const { duration, hasAudio, start, end, frames } = prepared;
           const speech = hasAudio && includeAudio ? transcribeFile(userId, node, { withSource: (_node, operation) => withSource(operation) }, startSeconds, endSeconds, undefined, abortSignal, log) : undefined;
@@ -69,7 +69,7 @@ export function mediaUnderstandingTools(userId: string, selectedIds: string[], f
       }),
     }),
     transcribeMedia: tool({
-      description: "Transcribe the full speech track of a selected audio or video file with Gemma 4 E2B. Defaults to the entire file; startSeconds/endSeconds can choose a range. Audio is decoded once, then read as exact 30-second chunks with timestamped coverage. Speech absence, missing audio and uncertain passages are distinct. Do not repeat this if inspectVideo already supplied its transcript.",
+      description: "Transcribe the full spoken-word and sung-lyric track of a selected audio or video file with Gemma 4 E2B. Defaults to the entire file; startSeconds/endSeconds can choose a range. Audio is decoded once, then read as exact 30-second chunks with timestamped coverage. Audibly sung lyrics are included; instrumental music and wordless humming are not words. Never complete lyrics from memory. Speech absence, missing audio and uncertain passages are distinct. Do not repeat this if inspectVideo already supplied its transcript.",
       inputSchema: z.object({ fileId: z.string(), language: z.string().min(1).optional(), ...rangeSchema }),
       execute: async ({ fileId, language, startSeconds, endSeconds }, { abortSignal }) => diagnoseMedia("transcription", fileId, async (log) => {
         const node = await files.node(fileId);

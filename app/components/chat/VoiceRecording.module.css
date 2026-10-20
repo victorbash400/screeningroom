@@ -1,0 +1,6 @@
+.recording { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 34px; }
+.waveform { display: block; flex: 1; min-width: 0; height: 32px; color: var(--muted); }
+.processing { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; color: var(--muted); }
+.processing svg { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .processing svg { animation: none; } }
