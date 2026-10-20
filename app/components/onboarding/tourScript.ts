@@ -4,7 +4,7 @@ import { exampleQuestion } from "./tourExample";
 import { digitalQuestion, liveFollowup } from "./tourConversation";
 export type TourScrollAnchor = "start" | "end" | "media" | "mediaTranscript" | "image" | "venues" | "platformResults" | "comparables" | "followup" | "searchDetails" | "venueDetails";
 export interface TourScene {
-  mediaFramesOpen: boolean; mediaTranscriptOpen: boolean; evidenceQueryOpen: boolean; mapSearched: boolean; venueListScroll: number; mapSearching: boolean; evidenceScroll: number; answerTime: number; followupTime: number; scrollFrom: TourScrollAnchor; scrollTo: TourScrollAnchor; scrollProgress: number; catalogueScroll: number; comparisonScroll: number; comparableScroll: number; venueEvidenceOpen: boolean; evidenceTool: "search" | "venues" | "digital";
+  mediaFramesOpen: boolean; mediaFrameScroll: number; mediaTranscriptOpen: boolean; evidenceQueryOpen: boolean; mapSearched: boolean; venueListScroll: number; mapSearching: boolean; evidenceScroll: number; answerTime: number; followupTime: number; scrollFrom: TourScrollAnchor; scrollTo: TourScrollAnchor; scrollProgress: number; catalogueScroll: number; comparisonScroll: number; comparableScroll: number; venueEvidenceOpen: boolean; evidenceTool: "search" | "venues" | "digital";
   workspaceExists: boolean; createOpen: boolean; workspaceName: string;
   workspaceOpen: boolean; uploaded: boolean; importOpen: boolean; importBusy: boolean; importItems: number;
   audienceOpen: boolean; pickerOpen: boolean; references: string[]; draft: string; sent: boolean;
@@ -82,7 +82,7 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(11600, "transcript", "Return to the answer with its source context", { evidenceOpen: false }, false),
   ] },
 };
-const initialScene: TourScene = { mediaFramesOpen: false, mediaTranscriptOpen: false, countryPickerOpen: false, countryQuery: "", evidenceQueryOpen: false, mapSearched: false, venueListScroll: 0, mapSearching: false, evidenceScroll: 0, answerTime: 20000, followupTime: -1, scrollFrom: "start", scrollTo: "start", scrollProgress: 1, catalogueScroll: 0, comparisonScroll: 0, comparableScroll: 0, venueEvidenceOpen: false, evidenceTool: "search", workspaceExists: true, createOpen: false, workspaceName: "", workspaceOpen: false, uploaded: true, importOpen: false, importBusy: false, importItems: 0, audienceOpen: false, pickerOpen: false, references: [], draft: "", sent: false, mapOpen: false, audienceMode: "live", radius: 5000, evidenceOpen: false, view: "list" };
+const initialScene: TourScene = { mediaFrameScroll: 0, mediaFramesOpen: false, mediaTranscriptOpen: false, countryPickerOpen: false, countryQuery: "", evidenceQueryOpen: false, mapSearched: false, venueListScroll: 0, mapSearching: false, evidenceScroll: 0, answerTime: 20000, followupTime: -1, scrollFrom: "start", scrollTo: "start", scrollProgress: 1, catalogueScroll: 0, comparisonScroll: 0, comparableScroll: 0, venueEvidenceOpen: false, evidenceTool: "search", workspaceExists: true, createOpen: false, workspaceName: "", workspaceOpen: false, uploaded: true, importOpen: false, importBusy: false, importItems: 0, audienceOpen: false, pickerOpen: false, references: [], draft: "", sent: false, mapOpen: false, audienceMode: "live", radius: 5000, evidenceOpen: false, view: "list" };
 export function tourDraftAt(time: number) { return exampleQuestion.slice(0, Math.floor(Math.max(0, Math.min(1, (time - 5350) / 3100)) * exampleQuestion.length)); }
 export function tourImportItemsAt(time: number) { return Math.min(3, Math.max(0, Math.floor((time - 5650) / 400) + 1)); }
 export function tourNameAt(time: number) { return "Night Signals".slice(0, Math.floor(Math.max(0, Math.min(1, (time - 1300) / 600)) * "Night Signals".length)); }
@@ -93,6 +93,7 @@ export function tourSceneAt(step: TourStep, time: number): TourScene {
   if (step === "workspace") { scene.workspaceName = tourNameAt(time); scene.importItems = tourImportItemsAt(time); }
   if (step === "question" && scene.sent) {
     scene.answerTime = Math.min(8200, Math.max(0, time - 9650));
+    scene.mediaFrameScroll = progress(time, 15100, 2400);
     scene.scrollFrom = "end"; scene.scrollTo = "end"; scene.scrollProgress = 1;
     if (time >= 13000) { scene.scrollFrom = "end"; scene.scrollTo = "media"; scene.scrollProgress = progress(time, 13000, 800); }
     if (time >= 17800 && time < 21000) { scene.scrollFrom = "media"; scene.scrollTo = "mediaTranscript"; scene.scrollProgress = progress(time, 17800, 800); }

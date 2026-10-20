@@ -80,6 +80,8 @@ test('chapters leave room for full results, follow-ups and deterministic scrolli
 test('Ask holds the selected trailer frames, transcript and poster before venue results',()=>{
  assert.deepEqual(tourSceneAt('question',3500).references,['tour-trailer','tour-brief','tour-poster']);
  assert.equal(tourSceneAt('question',15000).mediaFramesOpen,true);
+ assert.ok(tourSceneAt('question',16500).mediaFrameScroll>0 && tourSceneAt('question',16500).mediaFrameScroll<1);
+ assert.equal(tourSceneAt('question',12000).mediaFrameScroll,0);
  assert.equal(tourSceneAt('question',19000).mediaFramesOpen,false);
  assert.equal(tourSceneAt('question',19000).mediaTranscriptOpen,true);
  assert.equal(tourSceneAt('question',23000).scrollTo,'image');

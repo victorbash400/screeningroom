@@ -14,7 +14,11 @@ function apply(root: HTMLElement, scene: TourScene) {
   }
   const frames = root.querySelector<HTMLDetailsElement>('[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Frames"]');
   const transcript = root.querySelector<HTMLDetailsElement>('[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Transcript"]');
-  if (frames) frames.open = scene.mediaFramesOpen;
+  if (frames) {
+    frames.open = scene.mediaFramesOpen;
+    const observations = frames.querySelector<HTMLElement>(":scope > div");
+    if (observations) observations.scrollTop = scene.mediaFrameScroll * (observations.scrollHeight - observations.clientHeight);
+  }
   if (transcript) transcript.open = scene.mediaTranscriptOpen;
   const why = root.querySelector<HTMLDetailsElement>('[aria-label="Venues · London"] details');
   if (why) why.open = scene.venueEvidenceOpen;
