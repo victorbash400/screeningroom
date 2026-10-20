@@ -13,12 +13,12 @@ const fixture=()=>({title:'Public film',duration:20,coverageEnd:20,summary:'A pe
 test('native YouTube bypasses local metadata extraction, sends the URL and keeps speech and observations',async()=>{
  const original=globalThis.fetch,client=storage(),send=client.send;let request,writes=0;
  client.send=async command=>{if(command.constructor.name==='GetObjectCommand'){const e=new Error('missing');e.name='NoSuchKey';throw e;}writes++;return{};};
- globalThis.fetch=async(url,init)=>{assert.equal(String(url),'https://generativelanguage.googleapis.com/v1beta/interactions');request=JSON.parse(init.body);return Response.json({status:'completed',steps:[{type:'model_output',content:[{type:'text',text:JSON.stringify(fixture())}]}]});};
+ globalThis.fetch=async(url,init)=>{assert.equal(String(url),'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent');request=JSON.parse(init.body);return Response.json({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(fixture())}]},finishReason:'STOP'}]});};
  try{
   const node=await youtubeNode('https://youtu.be/jNQXAC9IVRw');
   const output=await analyzeYoutube('owner',node,{question:'Analyze this',modality:'video',includeAudio:true,startSeconds:0});
-  assert.equal(request.input[0].content[0].uri,'https://www.youtube.com/watch?v=jNQXAC9IVRw');
-  assert.equal(request.input[0].content[0].processing.fps,1);assert.equal(request.store,false);
+  assert.equal(request.contents[0].parts[0].fileData.fileUri,'https://www.youtube.com/watch?v=jNQXAC9IVRw');
+  assert.equal(request.generationConfig.responseMimeType,'application/json');
   assert.equal(request.background,undefined);assert.equal(output.analysisMethod,'native-video');
   assert.equal(output.transcript.segments[0].text,'Hello there.');assert.equal(output.transcript.complete,true);assert.equal(writes,1);
   const tools=mediaUnderstandingTools('owner',[],{node:async()=>({...node,id:'imported-link'} )});
@@ -37,7 +37,7 @@ test('native results reject invalid timestamps and expose free-tier limits witho
  try{
   globalThis.fetch=async()=>{calls++;return Response.json({error:{code:429,message:'quota',status:'RESOURCE_EXHAUSTED'}},{status:429});};
   await assert.rejects(analyzeYoutube('owner',node,options),{message:'Gemini free-tier limit reached. Try later or upload the video.'});assert.equal(calls,1);
-  globalThis.fetch=async()=>Response.json({status:'completed',steps:[{type:'model_output',content:[{type:'text',text:JSON.stringify({...fixture(),observations:[{start:25,text:'Outside video'}]})}]}]});
+  globalThis.fetch=async()=>Response.json({candidates:[{content:{role:'model',parts:[{text:JSON.stringify({...fixture(),observations:[{start:25,text:'Outside video'}]})}]},finishReason:'STOP'}]});
   await assert.rejects(analyzeYoutube('owner',node,options),{message:'Gemini returned invalid video timestamps. Try again or upload the video.'});
  }finally{globalThis.fetch=original;client.send=send;}
 });
