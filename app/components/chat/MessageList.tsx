@@ -37,10 +37,16 @@ export default function MessageList({
   const replyParents = new Set(messages.map((message) => message.replyToId));
   const list = useScrollEdges<HTMLDivElement>();
   const atBottom = useRef(true);
+  const latestUserId = items.findLast((message) => message.role !== "assistant")?.id;
+  const lastSent = useRef(latestUserId);
   useEffect(() => {
-    if (followOutput && atBottom.current && list.current)
+    const sent = lastSent.current !== latestUserId;
+    lastSent.current = latestUserId;
+    if (followOutput && (sent || atBottom.current) && list.current) {
+      atBottom.current = true;
       list.current.scrollTop = list.current.scrollHeight;
-  }, [messages, followOutput]);
+    }
+  }, [messages, followOutput, latestUserId]);
   return (
     <div
       ref={list}
