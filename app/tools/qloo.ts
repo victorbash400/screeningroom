@@ -41,9 +41,13 @@ export async function qlooJson(path: "/search" | "/entities" | "/v2/analysis/com
       headers: { "X-Api-Key": env("QLOO_HACKATHON_API_KEY"), Accept: "application/json" },
       cache: "no-store", redirect: "error",
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
+    }).catch((error: unknown) => {
+      if (signal?.aborted) throw signal.reason;
+      if (error instanceof Error && error.name === "TimeoutError") throw new ApiError(504, "Qloo request timed out. Try again.");
+      throw new ApiError(502, "Qloo could not be reached. Try again.");
     });
     if (response.status === 429) throw new ApiError(429, "Qloo is temporarily rate limiting requests. Try again shortly.");
-    if (!response.ok) throw new Error(`Qloo request failed (${response.status}).`);
+    if (!response.ok) throw new ApiError(502, `Qloo request failed (${response.status}). Try again.`);
     const value: unknown = await response.json();
     rememberQlooSignals(value);
     return value;

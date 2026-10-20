@@ -74,3 +74,20 @@ test("required entity names remain strict and upstream failures are not reported
     await assert.rejects(qlooRequest("/v2/insights", {}), { status: 502, message: "Qloo returned invalid results. Try again." });
   } finally { globalThis.fetch = original; }
 });
+
+
+test("provider timeouts and network failures remain actionable without masking cancellation", async () => {
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => { throw new DOMException("timeout", "TimeoutError"); };
+    await assert.rejects(qlooRequest("/search", {}), { status: 504, message: "Qloo request timed out. Try again." });
+    globalThis.fetch = async () => { throw new TypeError("fetch failed"); };
+    await assert.rejects(qlooRequest("/search", {}), { status: 502, message: "Qloo could not be reached. Try again." });
+    globalThis.fetch = async () => new Response("provider error", { status: 503 });
+    await assert.rejects(qlooRequest("/search", {}), { status: 502, message: "Qloo request failed (503). Try again." });
+    const controller = new AbortController(), reason = new Error("User stopped request");
+    controller.abort(reason);
+    globalThis.fetch = async () => { throw reason; };
+    await assert.rejects(qlooRequest("/search", {}, controller.signal), error => error === reason);
+  } finally { globalThis.fetch = original; }
+});
