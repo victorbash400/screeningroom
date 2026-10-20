@@ -23,10 +23,10 @@ function run(args: string[], signal?: AbortSignal): Promise<string> {
   return new Promise((resolve, reject) => {
     const binaryName = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
     const bundled = join(process.cwd(), ".media-bin", binaryName);
-    execFile(/* turbopackIgnore: true */ process.env.YTDLP_PATH || (process.platform === "linux" || existsSync(bundled) ? bundled : binaryName), ["--ignore-config", "--js-runtimes", `node:${process.execPath}`, "--cache-dir", join(tmpdir(), "screeningroom-ytdlp-cache"), "--no-playlist", "--no-warnings", "--socket-timeout", "15", "--retries", "0", "--extractor-retries", "0", ...args], { signal, timeout: 120_000, maxBuffer: 16 * 1024 * 1024, encoding: "utf8" }, (error, stdout) => {
+    execFile(/* turbopackIgnore: true */ process.env.YTDLP_PATH || (process.platform === "linux" || existsSync(bundled) ? bundled : binaryName), ["--ignore-config", "--js-runtimes", `node:${process.execPath}`, "--cache-dir", join(tmpdir(), "screeningroom-ytdlp-cache"), "--no-playlist", "--no-warnings", "--socket-timeout", "15", "--retries", "0", "--extractor-retries", "0", ...args], { signal, timeout: 120_000, maxBuffer: 16 * 1024 * 1024, encoding: "utf8" }, (error, stdout, stderr) => {
       if (error) {
         if (signal?.aborted) { reject(signal.reason); return; }
-        console.error("YouTube processing failed", { code: error.code, signal: error.signal, platform: process.platform, architecture: process.arch });
+        console.error("YouTube processing failed", { code: error.code, signal: error.signal, platform: process.platform, architecture: process.arch, reason: stderr.slice(0, 1200) });
         reject(new ApiError(error.code === "ENOENT" ? 503 : 422, error.code === "ENOENT" ? "YouTube processing is unavailable on this server. Configure yt-dlp or upload the video." : "YouTube could not provide this public video. Upload the video or its transcript."));
         return;
       }
