@@ -85,3 +85,21 @@ test("provider photos and descriptions survive venue search and saved map scenes
     assert.equal(saved.description, description);
   } finally { globalThis.fetch = original; }
 });
+
+
+test("direct map venue search returns the presentation contract consumed by the browser", async () => {
+  const { mapVenueSearch } = await import("../app/server/map-venues.ts");
+  const { mapPresentationSchema } = await import("../app/lib/mapScene.ts");
+  const original = globalThis.fetch, provider = process.env.VENUE_DATA_PROVIDER;
+  process.env.VENUE_DATA_PROVIDER = "qloo";
+  globalThis.fetch = async () => Response.json({ success: true, results: { entities: [{ entity_id: "venue", name: "Cinema", location: { lat: -1.28, lon: 36.82 } }] } });
+  try {
+    const result = mapPresentationSchema.parse(await mapVenueSearch(defaultLocationInterest));
+    assert.equal(result.locations.length, 1);
+    assert.equal(result.locations[0].name, "Cinema");
+  } finally {
+    globalThis.fetch = original;
+    if (provider === undefined) delete process.env.VENUE_DATA_PROVIDER;
+    else process.env.VENUE_DATA_PROVIDER = provider;
+  }
+});

@@ -46,7 +46,10 @@ export async function mapVenues(area: LocationInterest, type: VenueType, signal?
 }
 
 export async function mapVenueSearch(area: LocationInterest, signal?: AbortSignal) {
-  if ((process.env.VENUE_DATA_PROVIDER?.trim() || "qloo") === "qloo") return audienceVenues(area, [], signal);
+  if ((process.env.VENUE_DATA_PROVIDER?.trim() || "qloo") === "qloo") {
+    const { locations } = await audienceVenues(area, [], signal);
+    return { locations };
+  }
   const types = area.venueTypes?.length ? area.venueTypes : ["cinema", "theatre"] as const;
   const results = await Promise.all(types.map((type) => mapVenues(area, type, signal)));
   const unique = new Map(results.flatMap((result) => result.venues).map((venue) => [venue.id, venue]));
