@@ -65,7 +65,8 @@ export function audienceTools(selectedArea?: LocationInterest) {
       inputSchema: signals.extend({ area: locationInterestSchema.optional() }),
       execute: ({ area: value, ...signal }, { abortSignal }) => audienceHeatmap(area(value), signal, abortSignal),
       toModelOutput: ({ output }) => ({ type: "json", value: { title: output.title, area: output.area, source: output.source, cellCount: output.cells.length,
-        strongestAreas: output.cells.toSorted((a, b) => b.rank - a.rank).slice(0, 8), renderedOnMap: output.cells.length > 0 } }),
+        strongestAreas: output.cells.toSorted((a, b) => b.rank - a.rank).slice(0, 8), renderedOnMap: output.cells.length > 0,
+        interpretation: "These cells contain combined, query-relative affinity only. No per-reference contribution weights are provided. Do not claim one artist or comparable contributes more to this heatmap than another. Cell coordinates do not establish neighborhood names without separately verified location evidence. Affinity is not population, audience share or ticket sales." } }),
     }),
     getAreaPopulation: tool({
       description: "Request WorldPop resident population estimates or resident age-sex counts for the selected area. Specify a data year, default 2025. Returns a pending calculation widget with a Load result button; do not claim the result is already available or repeatedly check status. The user loads the result when ready. These are modeled resident estimates, not film fans, ticket buyers, or live footfall.",
