@@ -23,6 +23,6 @@ export default function MediaAnalysisCard({ analysis, onOpen }: { analysis: Medi
     </ResearchDisclosure>}
     {analysis.transcript && <MediaTranscript transcript={analysis.transcript} />}
     {analysis.uncertainties.length > 0 && <ResearchDisclosure title="Uncertainty"><div className={styles.scroll}>{analysis.uncertainties.map((item, index) => <p key={index}>{item}</p>)}</div></ResearchDisclosure>}
-    {analysis.nextStart !== undefined && <button type="button" className={styles.continue} disabled={chat?.busy} onClick={() => chat?.ask(`Continue transcribing the selected file ${analysis.name} (file ID ${analysis.fileId}) from ${analysis.nextStart} seconds.`)}>Continue transcript</button>}
+    {analysis.nextStart !== undefined && <button type="button" className={styles.continue} disabled={chat?.busy} onClick={() => chat?.ask(`Continue transcribing ${analysis.sourceUrl ?? `the selected file ${analysis.name} (file ID ${analysis.fileId})`} from ${analysis.nextStart} seconds.`)}>Continue transcript</button>}
   </ResearchWidgetFrame>;
 }
