@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 import type { TourScene, TourScrollAnchor } from "./tourScript";
 
 const anchors: Record<Exclude<TourScrollAnchor, "start" | "end">, string> = {
+  mediaTranscript: '[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Transcript"]',
+  media: '[aria-label="Video analysis · Trailer.mp4"]', image: '[aria-label="Image · Poster.jpg"]',
   venues: '[aria-label="Venues · London"]', platformResults: '[aria-label="Platform affinity · sample"]', comparables: '[aria-label="Comparable films · sample"]',
   followup: '[data-message-id="tour-followup"]', searchDetails: '[aria-label="Qloo search: done"]', venueDetails: '[aria-label="Audience venues: done"]',
 };
@@ -10,6 +12,10 @@ function apply(root: HTMLElement, scene: TourScene) {
     const disclosure = root.querySelector(`[aria-label="${name}: done"]`)?.closest("details");
     if (disclosure) disclosure.open = scene.evidenceOpen && scene.evidenceTool === selected;
   }
+  const frames = root.querySelector<HTMLDetailsElement>('[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Frames"]');
+  const transcript = root.querySelector<HTMLDetailsElement>('[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Transcript"]');
+  if (frames) frames.open = scene.mediaFramesOpen;
+  if (transcript) transcript.open = scene.mediaTranscriptOpen;
   const why = root.querySelector<HTMLDetailsElement>('[aria-label="Venues · London"] details');
   if (why) why.open = scene.venueEvidenceOpen;
   const list = root.querySelector<HTMLElement>('[role="log"]');

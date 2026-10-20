@@ -4,5 +4,4 @@
 .pill button:hover { background: #ffffff1c; }
 .pill button:focus-visible { outline: 2px solid white; outline-offset: -2px; }
 .pill input:focus-visible { outline: 2px solid white; outline-offset: 4px; }
-.transport > button:last-child { min-width: 30px; }
 @media (max-width: 600px) { .transport { gap: 3px; } .pill { gap: 5px; padding-right: 9px; } .pill button { width: 25px; } }

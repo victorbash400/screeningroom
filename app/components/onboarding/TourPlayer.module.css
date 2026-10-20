@@ -1,11 +1,11 @@
 .player { display: flex; flex-direction: column; flex: 1; min-height: 0; outline: none; }
 .player:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-.video { position: relative; display: flex; flex: 1; min-height: 0; margin: 0 16px; }
+.video { position: relative; display: flex; flex: 1; min-height: 0; margin: 0 44px; }
 .play { position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; gap: 10px; width: fit-content; height: fit-content; margin: auto; padding: 12px 18px; border: 0; border-radius: 30px; background: var(--ink); color: var(--surface); font-size: 13px; cursor: pointer; box-shadow: 0 4px 20px #0000001a; }
 .play:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.controls { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; margin-top: 8px; padding: 0 16px 10px; background: transparent; border-radius: 0 0 24px 24px; }
+.controls { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; margin-top: 8px; padding: 0 44px 10px; background: transparent; border-radius: 0 0 24px 24px; }
 .action { min-height: 18px; font-size: 12px; line-height: 1.5; color: var(--icon); }
-@media (max-width: 600px) { .video { margin: 0 12px; } .controls { margin-top: 8px; padding: 0 12px 10px; gap: 5px; } .action { font-size: 11px; } }
+@media (max-width: 600px) { .video { margin: 0 28px; } .controls { margin-top: 8px; padding: 0 28px 10px; gap: 5px; } .action { font-size: 11px; } }
 @media (max-height: 600px) { .controls { margin-top: 8px; padding-top: 6px; padding-bottom: 8px; gap: 2px; } }
 
 .caption { display: flex; align-items: baseline; gap: 10px; min-width: 0; }

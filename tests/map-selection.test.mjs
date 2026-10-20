@@ -49,9 +49,9 @@ test('country Qloo requests send the exact multipart boundary without a fuzzy ra
  }finally{globalThis.fetch=original;}
 });
 test('walkthrough demonstrates a 500 km radius and country boundary and seeking restores earlier states',()=>{
- assert.equal(tourSceneAt('live',31500).radius,500000);
- assert.equal(tourSceneAt('live',35000).countryPickerOpen,true);
- assert.equal(tourSceneAt('live',35000).countryQuery,'Kenya');
- assert.equal(tourSceneAt('live',37000).countryCode,'KE');
+ assert.equal(tourSceneAt('live',39500).radius,500000);
+ assert.equal(tourSceneAt('live',43500).countryPickerOpen,true);
+ assert.equal(tourSceneAt('live',43500).countryQuery,'Kenya');
+ assert.equal(tourSceneAt('live',46500).countryCode,'KE');
  assert.equal(tourSceneAt('live',0).countryCode,undefined);
 });

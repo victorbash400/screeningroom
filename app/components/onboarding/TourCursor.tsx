@@ -6,6 +6,7 @@ const selectors: Record<TourTarget, string> = {
   countryMode: '[aria-label="Area selection"] button:last-child', countrySearch: '[aria-label="Search countries"]', countryChoice: '[aria-label="Countries"] button', radiusValue: '[aria-label="Radius in kilometers"]',
   create: '[data-tour-home] [aria-label="Create workspace"]', workspaceName: '[aria-label="Workspace name"]', confirmWorkspace: '[aria-label="Create workspace"] button[aria-label="Create workspace"]',
   workspace: '[aria-label="Open Night Signals"]', import: 'header [aria-label="Import"]', browse: '[aria-label="Browse files"]', select: '[aria-haspopup="dialog"]',
+  mediaFrames: '[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Frames"] > summary', mediaTranscript: '[aria-label="Video analysis · Trailer.mp4"] [data-disclosure="Transcript"] > summary', posterCheckbox: '[aria-label="Select Poster.jpg"]',
   trailer: '[aria-label="Select Trailer.mp4"]', briefCheckbox: '[aria-label="Select Production brief.txt"]', done: '[aria-label="Done"]',
   message: '[aria-label="Message"]', send: '[aria-label="Send message"], [aria-label="Stop response"]', map: '[role="switch"][aria-label="Map"]',
   radius: '[aria-label="Search radius"]', venue: '[aria-label="Next venue"]', digital: '[aria-label="Audience format"] button:last-child',

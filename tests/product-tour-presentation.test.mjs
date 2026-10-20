@@ -23,6 +23,7 @@ const {default:TourNavigation}=await import('../app/components/onboarding/TourNa
 const {default:ReferencePicker}=await import('../app/components/chat/ReferencePicker.tsx');
 const {tourSteps}=await import('../app/lib/productTour.ts');
 const {tourScripts,tourSceneAt}=await import('../app/components/onboarding/tourScript.ts');
+const {default:TourChapterArrows}=await import('../app/components/onboarding/TourChapterArrows.tsx');
 const {default:TourTransport}=await import('../app/components/onboarding/TourTransport.tsx');
 const {default:TourStage}=await import('../app/components/onboarding/TourStage.tsx');
 const {exampleFiles,exampleWorkspace}=await import('../app/components/onboarding/tourExample.ts');
@@ -41,13 +42,16 @@ test('all five scenes render the shared composer and toolbar',()=>{
 });
 test('player exposes playback, replay, accessible seeking and chapter navigation',()=>{
  const navigation=renderToStaticMarkup(createElement(TourNavigation,{index:0,onStep:action}));
- const props={time:0,duration:8000,playing:false,onToggle:action,onReplay:action,onSeek:action,count:5,onStep:action,onClose:action};
- const first=renderToStaticMarkup(createElement(TourTransport,{...props,index:0}));
- const last=renderToStaticMarkup(createElement(TourTransport,{...props,index:4}));
+ const props={time:0,duration:8000,playing:false,onToggle:action,onReplay:action,onSeek:action};
+ const transport=renderToStaticMarkup(createElement(TourTransport,props));
+ const first=renderToStaticMarkup(createElement(TourChapterArrows,{index:0,count:5,onStep:action,onClose:action}));
+ const last=renderToStaticMarkup(createElement(TourChapterArrows,{index:4,count:5,onStep:action,onClose:action}));
  assert.ok(first.includes('Back to welcome'));
+ assert.ok(first.includes('Next chapter'));
  assert.ok(!first.includes('disabled=""'));
- for(const label of ['Play example','Replay example','Example progress','Next chapter'])assert.ok(first.includes(label));
- assert.ok(last.includes('Finish'));
+ for(const label of ['Play example','Replay example','Example progress'])assert.ok(transport.includes(label));
+ for(const label of ['Next chapter','Previous chapter','Finish walkthrough'])assert.ok(!transport.includes(label));
+ assert.ok(last.includes('Finish walkthrough'));
  for(const step of tourSteps)assert.ok(navigation.includes(step.title));
 });
 test('the example surface is inert while playback controls remain outside it',()=>{
@@ -75,4 +79,9 @@ test('welcome introduces the guide before the numbered demos', async()=>{
  assert.ok(chapter.includes('aria-label="4. Find a live audience" aria-current="step"'));
  assert.equal(chapter.split('aria-current="step"').length - 1,1);
  assert.equal(chapter.split('<li ').length - 1,6);
+});
+
+test('Ask renders the actual trailer and poster result cards with speech and ten observations',()=>{
+ const html=renderToStaticMarkup(createElement(TourPreview,{scene:tourSceneAt('question',23000)}));
+ for(const label of ['Video analysis · Trailer.mp4','Image · Poster.jpg','Frames','Transcript','Scripted example','amber record','0:01','1:25'])assert.ok(html.includes(label),label);
 });
