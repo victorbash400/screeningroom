@@ -48,6 +48,7 @@ export function useRoomData(scope: string) {
   return { data: sync.data, ready: sync.ready, error, setError, syncStatus: sync.syncStatus,
     checkSync, syncNow: () => sync.retry(),
     saveMedia: async (ids: string[]) => mediaSelectionSaved(ids, sync.data.nodes, sync.snapshot.data.nodes) || await sync.saveBeforeLeaving(),
+    retainReply: (change: Parameters<RoomSync["update"]>[0]) => sync.update(change, true),
     update: sync.update.bind(sync), reload: () => { void sync.retry(); }, hasLegacy, save: () => sync.saveBeforeLeaving(), importBrowserData: async () => {
     try { await importBrowserData(); setHasLegacy(false); }
     catch (error) { setError(error instanceof Error ? error.message : "Cannot import browser data."); }

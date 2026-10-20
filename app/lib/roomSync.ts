@@ -59,10 +59,10 @@ export class RoomSync {
       await this.flush();
     } catch (error) { if (!signal.aborted && generation === this.loadVersion) { this.error = error instanceof Error ? error.message : "Cannot load workspace."; this.emit(); } }
   }
-  update(change: (previous: RoomData) => RoomData) {
-    if (!this.ready || this.writeFailed) { this.error ??= "Workspace has not loaded. Retry before editing."; this.emit(); return false; }
+  update(change: (previous: RoomData) => RoomData, retainUnsaved = false) {
+    if (!this.ready || this.writeFailed && !retainUnsaved) { this.error ??= "Workspace has not loaded. Retry before editing."; this.emit(); return false; }
     try {
-      this.error = null;
+      if (!this.writeFailed) this.error = null;
       this.data = parseData(JSON.stringify(recordActivity(this.data, change(this.data))));
       this.dirty = true;
       this.emit();

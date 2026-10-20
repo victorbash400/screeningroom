@@ -13,8 +13,9 @@ export function useLocalChat(
   workspaceId: string | null,
   update: Update,
   save?: (ids: string[]) => Promise<boolean>,
+  retainReply?: Update,
 ) {
-  const agent = useAgentReply(update, save);
+  const agent = useAgentReply(update, save, retainReply);
   const [threads, setThreads] = useState<Record<string, string | undefined>>(
     {},
   );

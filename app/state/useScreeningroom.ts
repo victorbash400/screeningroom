@@ -78,7 +78,7 @@ export function useScreeningroom() {
   } | null>(null);
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
-  const chat = useLocalChat(room.data, workspace?.id ?? null, room.update, room.saveMedia);
+  const chat = useLocalChat(room.data, workspace?.id ?? null, room.update, room.saveMedia, room.retainReply);
   const selected = nodes.find((node) => node.id === selection);
   useEffect(() => {
     if (account.user && selected?.content) void warmAsset(account.user.id, selected.content);

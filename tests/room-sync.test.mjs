@@ -164,3 +164,30 @@ test('switching accounts cancels pending work before it can commit under another
  const sync=new RoomSync(server.request,async value=>{await gate;return value;},server.uploadSnapshot);await sync.load();
  sync.update(()=>data([workspace('private')]));sync.dispose();release();await settle(sync);assert.equal(server.writes.length,0);
 });
+
+test('a completed audio reply is retained through a failed save and explicit merge retry',async()=>{
+ const server=backend(),a=store(server),b=store(server);
+ await a.load();
+ a.update(()=>({...data([workspace('music')]),conversations:[{id:'audio-test',workspaceId:'music',title:'Audio test',draft:'',messages:[]}]}));
+ await settle(a); await b.load();
+ // Another browser adds material while analysis is running in the first.
+ b.update(previous=>({...previous,workspaces:[...previous.workspaces,workspace('remote')]}));
+ await settle(b);
+ a.update(previous=>({...previous,conversations:previous.conversations.map(chat=>({...chat,draft:'Analyze audio'}))}));
+ await settle(a);
+ assert.ok(a.error);
+ const reply={id:'audio-reply',role:'assistant',text:'Audible words were transcribed.',createdAt:new Date().toISOString(),status:'complete'};
+ assert.equal(a.update(previous=>({...previous,conversations:previous.conversations.map(chat=>({...chat,messages:[...chat.messages,reply]}))}),true),true);
+ assert.ok(a.error); // Failure stays visible; retaining does not claim a cloud save.
+ assert.equal(a.unsaved,true);
+ assert.equal(a.data.conversations[0].messages[0].id,'audio-reply');
+ const writes=server.writes.length;
+ await a.retry();
+ assert.equal(a.error,null);
+ assert.equal(a.unsaved,false);
+ assert.equal(server.writes.length,writes+1);
+ assert.equal(server.snapshot.data.conversations[0].messages[0].id,'audio-reply');
+ assert.ok(server.snapshot.data.workspaces.some(item=>item.id==='remote'));
+ await a.retry();
+ assert.equal(server.snapshot.data.conversations[0].messages.length,1);
+});

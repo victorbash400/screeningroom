@@ -13,7 +13,7 @@ import type { MapScene } from "../lib/mapScene";
 import type { ChatChannel, Message, MessageTool, RoomData } from "../lib/types";
 
 type Update = (change: (data: RoomData) => RoomData) => boolean;
-export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<boolean>) {
+export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<boolean>, retainReply: Update = update) {
   const account = useAccount();
   const [error, setError] = useState<string | null>(null);
   const nameChat = useChatTitle(update, setError);
@@ -75,7 +75,7 @@ export function useAgentReply(update: Update, save?: (ids: string[]) => Promise<
     } finally {
       if (controllers.current.get(conversationId) === controller) {
         let shouldName = false;
-        const saved = update((previous) => ({ ...previous, conversations: previous.conversations.map((item) => {
+        const saved = retainReply((previous) => ({ ...previous, conversations: previous.conversations.map((item) => {
           if (item.id !== conversationId) return item;
           shouldName = isFirstChatReply(messages, current) && canNameChat(item, messages[0].id);
           return { ...item, ...(locationArea ? { locationInterest: locationArea } : {}), ...(mapScene ? { mapScene } : {}), messages: [...item.messages, current] };
