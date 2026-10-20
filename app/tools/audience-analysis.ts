@@ -30,7 +30,7 @@ export function audienceTools(selectedArea?: LocationInterest) {
       },
     }),
     setAudienceArea: tool({
-      description: "Change the selected map search location, radius or venue filters. Only use when the user explicitly requests a change, including agreeing to expand the search. Never change the area just because a result is clicked or a search returns no data.",
+      description: "Change the selected map search location, radius or venue filters. Set countryCode to a supported ISO alpha-2 code for a whole-country boundary instead of a radius; omit countryCode to return to radius mode. Only use when the user explicitly requests a change, including agreeing to expand the search. Never change the area just because a result is clicked or a search returns no data.",
       inputSchema: locationInterestSchema,
       execute: async (value) => { currentArea = value; return value; },
     }),

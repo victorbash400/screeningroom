@@ -29,16 +29,18 @@ export async function qlooJson(path: "/search" | "/entities" | "/v2/analysis/com
   const base = new URL(env("QLOO_HACKATHON_API_SERVER_URL"));
   if (base.protocol !== "https:" || base.username || base.password) throw new Error("Configure a secure Qloo API URL.");
   const url = new URL(path, base);
-  url.search = new URLSearchParams(parameters).toString();
+  const polygon = path === "/v2/insights" && (parameters["filter.location"]?.startsWith("POLYGON") || parameters["filter.location"]?.startsWith("MULTIPOLYGON"));
+  url.search = polygon ? "" : new URLSearchParams(parameters).toString();
   url.searchParams.sort();
   checkQlooSignals(parameters);
   const requests = qlooRequestContext.getStore()?.requests;
-  const key = url.href;
+  const key = polygon ? `${url.href}:${JSON.stringify(parameters)}` : url.href;
   const existing = requests?.get(key);
   if (existing) { signal?.throwIfAborted(); return existing; }
   const request = (async () => {
     const response = await qlooFetch(url, {
-      headers: { "X-Api-Key": env("QLOO_HACKATHON_API_KEY"), Accept: "application/json" },
+      headers: { "X-Api-Key": env("QLOO_HACKATHON_API_KEY"), Accept: "application/json", ...(polygon ? { "Content-Type": "application/json" } : {}) },
+      ...(polygon ? { method: "POST", body: JSON.stringify(parameters) } : {}),
       cache: "no-store", redirect: "error",
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
     }).catch((error: unknown) => {

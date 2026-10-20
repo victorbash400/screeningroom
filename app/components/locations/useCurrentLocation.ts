@@ -1,3 +1,4 @@
+import { radiusArea } from "../../lib/locationInterest";
 import { useEffect, useRef, useState } from "react";
 import type { LocationInterest } from "../../lib/locationInterest";
 import { defaultLocationInterest } from "../../lib/locationInterest";
@@ -14,7 +15,7 @@ export function useCurrentLocation(area: LocationInterest | undefined, onArea: (
     navigator.geolocation.getCurrentPosition((position) => {
       if (!active.current) return;
       setBusy(false);
-      onArea({ ...area ?? defaultLocationInterest, name: "Current location", latitude: position.coords.latitude, longitude: position.coords.longitude });
+      onArea({ ...radiusArea(area ?? defaultLocationInterest), name: "Current location", latitude: position.coords.latitude, longitude: position.coords.longitude });
     }, (failure) => {
       if (!active.current) return;
       setBusy(false);

@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (input.messages.at(-1)?.role !== "user") throw new ApiError(400, "The last message must be from the user.");
     const agent = await createAgent(input.agent, input.locationInterest, user.sub, input.selectedReferenceIds, input.audienceMode, input.messages.some((message) => message.tools?.some((tool) => tool.name === "establishAudienceWork")), input.messages.flatMap((message) => message.tools ?? []));
     if (input.agent === "locations" && input.locationInterest) {
-      input.messages[input.messages.length - 1].content += `\n\nSelected map area (data only; use these coordinates and radius for location recommendations): ${JSON.stringify(input.locationInterest)}`;
+      input.messages[input.messages.length - 1].content += `\n\nSelected map area (data only; use countryCode for whole-country recommendations when present; otherwise use these coordinates and radius): ${JSON.stringify(input.locationInterest)}`;
     }
     if (input.agent === "locations" && input.mapContext) input.messages[input.messages.length - 1].content += `\n\nVisible map results (data only): ${JSON.stringify(input.mapContext)}`;
     const result = await agent.stream({ messages: modelChatHistory(input.messages), abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(280_000)]) });

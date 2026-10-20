@@ -31,7 +31,7 @@ export async function mapVenues(area: LocationInterest, type: VenueType, signal?
   const category = categories[type];
   if (!category) throw new ApiError(400, "Use Qloo venue search for live music venues and concert halls; Geoapify has no matching category.");
   const url = new URL("https://api.geoapify.com/v2/places");
-  url.search = new URLSearchParams({ categories: category, filter: `circle:${area.longitude},${area.latitude},${area.radius}`, bias: `proximity:${area.longitude},${area.latitude}`, limit: "40" }).toString();
+  url.search = new URLSearchParams({ categories: category, filter: area.countryCode ? `countrycode:${area.countryCode.toLowerCase()}` : `circle:${area.longitude},${area.latitude},${area.radius}`, bias: `proximity:${area.longitude},${area.latitude}`, limit: "40" }).toString();
   const response = await fetch(url, { headers: { "X-API-Key": key, Accept: "application/json" }, next: { revalidate: 3600 },
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000) });
   if (!response.ok) throw new ApiError(502, `Geoapify venue search failed (${response.status}).`);

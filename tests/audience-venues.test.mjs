@@ -28,7 +28,7 @@ test("venue search uses the chosen area and exact category filters, with optiona
   try {
     const area = { ...defaultLocationInterest, radius: 12000, venueTypes: ["music", "concert"] };
     const result = await audienceVenues(area, ["artist"]);
-    assert.equal(requested.searchParams.get("filter.location"), "POINT(36.8219 -1.2921)");
+    assert.equal(requested.searchParams.get("filter.location"), "POINT(-74.006 40.7128)");
     assert.equal(requested.searchParams.get("filter.location.radius"), "12000");
     assert.equal(requested.searchParams.get("filter.tags"), "urn:tag:category:place:live_music_venue,urn:tag:category:place:concert_hall");
     assert.equal(requested.searchParams.get("signal.interests.entities"), "artist");

@@ -8,10 +8,11 @@ export interface TourScene {
   workspaceExists: boolean; createOpen: boolean; workspaceName: string;
   workspaceOpen: boolean; uploaded: boolean; importOpen: boolean; importBusy: boolean; importItems: number;
   audienceOpen: boolean; pickerOpen: boolean; references: string[]; draft: string; sent: boolean;
+  countryCode?: string; countryPickerOpen: boolean; countryQuery: string;
   mapOpen: boolean; audienceMode: "live" | "digital"; radius: number; venue?: number;
   evidenceOpen: boolean; view: ViewMode; file?: string;
 }
-export type TourTarget = "create" | "workspaceName" | "confirmWorkspace" | "workspace" | "import" | "browse" | "select" | "trailer" | "briefCheckbox" | "done" | "message" | "send" | "map" | "radius" | "venue" | "digital" | "platforms" | "evidence" | "match" | "transcript" | "searchArea" | "nextVenue" | "venueEvidence" | "platformTable" | "catalogue" | "venueTool" | "comparableTable";
+export type TourTarget = "create" | "workspaceName" | "confirmWorkspace" | "workspace" | "import" | "browse" | "select" | "trailer" | "briefCheckbox" | "done" | "message" | "send" | "map" | "radius" | "venue" | "digital" | "platforms" | "evidence" | "match" | "transcript" | "searchArea" | "nextVenue" | "venueEvidence" | "platformTable" | "catalogue" | "venueTool" | "comparableTable" | "countryMode" | "countrySearch" | "countryChoice" | "radiusValue";
 export interface TourCue { at: number; commit: number; target: TourTarget; label: string; change: Partial<TourScene>; click: boolean }
 interface TourScript { duration: number; initial: Partial<TourScene>; cues: TourCue[] }
 const cue = (at: number, target: TourTarget, label: string, change: Partial<TourScene>, click = true): TourCue => ({ at, commit: at + 650, target, label, change, click });
@@ -37,7 +38,7 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(13000, "transcript", "Read the returned venue cards", {}, false),
     cue(16000, "transcript", "Scroll through the shortlist and next steps", {}, false),
   ] },
-  live: { duration: 28500, initial: { workspaceOpen: true, audienceOpen: true, references: ["tour-trailer", "tour-brief"], sent: true, scrollFrom: "venues", scrollTo: "venues" }, cues: [
+  live: { duration: 40000, initial: { workspaceOpen: true, audienceOpen: true, references: ["tour-trailer", "tour-brief"], sent: true, scrollFrom: "venues", scrollTo: "venues" }, cues: [
     cue(200, "map", "Open the London venue shortlist on the map", { mapOpen: true }),
     cue(1900, "radius", "Expand the search radius to 10 km", { radius: 10000 }),
     cue(3400, "searchArea", "Search the selected area", {}),
@@ -49,6 +50,12 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(17900, "send", "Send the comparison question", { draft: "" }),
     cue(19100, "transcript", "Watch the venue comparison stream", {}, false),
     cue(24500, "transcript", "Scroll through the practical screening checks", {}, false),
+    cue(28000, "map", "Open the map to select a wider area", { mapOpen: true }),
+    cue(30000, "radiusValue", "Set a 500 km search radius", { radius: 500000 }),
+    cue(32300, "countryMode", "Switch from Radius to Country", { countryPickerOpen: true }),
+    cue(34000, "countrySearch", "Find Kenya in the country selector", { countryQuery: "Kenya" }),
+    cue(35800, "countryChoice", "Select Kenya and frame its full boundary", { countryCode: "KE", countryPickerOpen: false, countryQuery: "" }),
+    cue(38200, "map", "Return to the conversation", { mapOpen: false }),
   ] },
   digital: { duration: 37500, initial: { workspaceOpen: true, audienceOpen: true, references: ["tour-trailer", "tour-brief"], sent: true, scrollFrom: "end", scrollTo: "end" }, cues: [
     cue(200, "digital", "Switch the same conversation from Live to Digital", { audienceMode: "digital" }),
@@ -72,7 +79,7 @@ export const tourScripts: Record<TourStep, TourScript> = {
     cue(11600, "transcript", "Return to the answer with its source context", { evidenceOpen: false }, false),
   ] },
 };
-const initialScene: TourScene = { evidenceQueryOpen: false, mapSearched: false, venueListScroll: 0, mapSearching: false, evidenceScroll: 0, answerTime: 20000, followupTime: -1, scrollFrom: "start", scrollTo: "start", scrollProgress: 1, catalogueScroll: 0, comparisonScroll: 0, comparableScroll: 0, venueEvidenceOpen: false, evidenceTool: "search", workspaceExists: true, createOpen: false, workspaceName: "", workspaceOpen: false, uploaded: true, importOpen: false, importBusy: false, importItems: 0, audienceOpen: false, pickerOpen: false, references: [], draft: "", sent: false, mapOpen: false, audienceMode: "live", radius: 5000, evidenceOpen: false, view: "list" };
+const initialScene: TourScene = { countryPickerOpen: false, countryQuery: "", evidenceQueryOpen: false, mapSearched: false, venueListScroll: 0, mapSearching: false, evidenceScroll: 0, answerTime: 20000, followupTime: -1, scrollFrom: "start", scrollTo: "start", scrollProgress: 1, catalogueScroll: 0, comparisonScroll: 0, comparableScroll: 0, venueEvidenceOpen: false, evidenceTool: "search", workspaceExists: true, createOpen: false, workspaceName: "", workspaceOpen: false, uploaded: true, importOpen: false, importBusy: false, importItems: 0, audienceOpen: false, pickerOpen: false, references: [], draft: "", sent: false, mapOpen: false, audienceMode: "live", radius: 5000, evidenceOpen: false, view: "list" };
 export function tourDraftAt(time: number) { return exampleQuestion.slice(0, Math.floor(Math.max(0, Math.min(1, (time - 4300) / 1900)) * exampleQuestion.length)); }
 export function tourImportItemsAt(time: number) { return Math.min(3, Math.max(0, Math.floor((time - 5650) / 400) + 1)); }
 export function tourNameAt(time: number) { return "Night Signals".slice(0, Math.floor(Math.max(0, Math.min(1, (time - 1300) / 600)) * "Night Signals".length)); }

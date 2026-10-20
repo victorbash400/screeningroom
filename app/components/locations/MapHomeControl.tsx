@@ -1,3 +1,4 @@
+import { radiusArea } from "../../lib/locationInterest";
 import { useEffect, useId, useRef, useState } from "react";
 import { House, LoaderCircle } from "lucide-react";
 import { useAccount } from "../../state/AccountContext";
@@ -47,7 +48,7 @@ export default function MapHomeControl({ area, onArea }: { area: LocationInteres
     onKeyDown={(event) => { if (event.key === "Escape" && open) { event.preventDefault(); event.stopPropagation(); setOpen(false); button.current?.focus(); } }}>
     <button type="button" ref={button} className={styles.trigger} aria-label="Home location" title="Home location" aria-expanded={open} aria-controls={id} onClick={() => { setOpen(!open); if (!open) void request(); }}><House /></button>
     {open && <div id={id} className={styles.menu} role="group" aria-label="Home location">
-      <button type="button" disabled={busy || !saved?.home} onClick={() => { if (saved?.home) { onArea({ ...area, ...saved.home }); setOpen(false); button.current?.focus(); } }}>Go home{saved?.home && <small>{saved.home.name}</small>}</button>
+      <button type="button" disabled={busy || !saved?.home} onClick={() => { if (saved?.home) { onArea({ ...radiusArea(area), ...saved.home }); setOpen(false); button.current?.focus(); } }}>Go home{saved?.home && <small>{saved.home.name}</small>}</button>
       <button type="button" disabled={busy || !saved} onClick={() => void request(area)}>Set this location as home</button>
       {busy && <LoaderCircle size={15} className={styles.busy} aria-label="Saving or loading home location" />}
       {error && <p role="alert">{error}</p>}

@@ -9,8 +9,9 @@ import LocationMapCanvas from "./LocationMapCanvas";
 import styles from "./AudienceMap.module.css";
 import VenueCarousel from "./VenueCarousel";
 
-export default function AudienceMap({ mode, open, area = defaultLocationInterest, scene, onArea, onScene, compact = false, animate = true, searching: controlledSearching }: {
+export default function AudienceMap({ mode, open, area = defaultLocationInterest, scene, onArea, onScene, compact = false, animate = true, searching: controlledSearching, countryPreview }: {
   searching?: boolean;
+  countryPreview?: { open: boolean; query: string };
   compact?: boolean;
   animate?: boolean;
   onScene: (scene: MapScene) => boolean;
@@ -27,7 +28,7 @@ export default function AudienceMap({ mode, open, area = defaultLocationInterest
   useEffect(() => {
     request.current?.abort(); setSearching(false); setSearchError("");
     return () => request.current?.abort();
-  }, [area.latitude, area.longitude, area.radius, area.venueTypes?.join(",")]);
+  }, [area.latitude, area.longitude, area.radius, area.countryCode, area.venueTypes?.join(",")]);
   async function searchArea() {
     request.current?.abort();
     const controller = new AbortController(); request.current = controller;
@@ -57,7 +58,7 @@ export default function AudienceMap({ mode, open, area = defaultLocationInterest
   return <section role="region" aria-label="Audience map" className={styles.window}
     style={{ "--venue-carousel-height": mode === "live" && scene?.presentation.locations.length ? compact ? "clamp(170px, 32cqh, 220px)" : "clamp(190px, 34cqh, 280px)" : "0px" } as CSSProperties}>
     <div className={styles.mapArea}>
-    <MapSearchControls live={mode === "live"} area={area} onArea={onArea} searching={controlledSearching ?? searching} error={searchError} onSearchArea={mode === "live" ? () => void searchArea() : undefined} />
+    <MapSearchControls countryPreview={countryPreview} live={mode === "live"} area={area} onArea={onArea} searching={controlledSearching ?? searching} error={searchError} onSearchArea={mode === "live" ? () => void searchArea() : undefined} />
     <LocationMapCanvas
       animate={animate} onPlace={selectPlace} visible={open} scene={mode === "digital" && scene ? { ...scene, presentation: { ...scene.presentation, locations: [], focusIndex: undefined } } : scene} area={area} onArea={onArea} landmarks={landmarks} threeD={threeD}
       onLandmarks={setLandmarks} onThreeD={(value) => setView({ sceneId: scene?.id, threeD: value })} />

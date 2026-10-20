@@ -8,3 +8,7 @@
 .busy { animation: spin 1s linear infinite; }
 .header button:focus-visible { outline: 2px solid var(--icon); outline-offset: 2px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.modes { display: flex; flex-shrink: 0; gap: 2px; }
+.modes button { border: 0; border-radius: 14px; padding: 7px 8px; background: transparent; color: var(--muted); font: inherit; font-size: 11px; cursor: pointer; }
+.modes button[aria-pressed="true"] { color: var(--ink); background: var(--hover); }

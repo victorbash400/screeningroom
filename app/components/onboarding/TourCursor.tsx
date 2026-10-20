@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { TourCue, TourTarget } from "./tourScript";
 import styles from "./TourCursor.module.css";
 const selectors: Record<TourTarget, string> = {
+  countryMode: '[aria-label="Area selection"] button:last-child', countrySearch: '[aria-label="Search countries"]', countryChoice: '[aria-label="Countries"] button', radiusValue: '[aria-label="Radius in kilometers"]',
   create: '[data-tour-home] [aria-label="Create workspace"]', workspaceName: '[aria-label="Workspace name"]', confirmWorkspace: '[aria-label="Create workspace"] button[aria-label="Create workspace"]',
   workspace: '[aria-label="Open Night Signals"]', import: 'header [aria-label="Import"]', browse: '[aria-label="Browse files"]', select: '[aria-haspopup="dialog"]',
   trailer: '[aria-label="Select Trailer.mp4"]', briefCheckbox: '[aria-label="Select Production brief.txt"]', done: '[aria-label="Done"]',

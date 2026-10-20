@@ -1,3 +1,4 @@
+import { areaFilter } from "./area-filter";
 import "server-only";
 import { z } from "zod";
 import { qlooJson } from "../tools/qloo";
@@ -17,7 +18,7 @@ const heatmapResponse = z.object({ success: z.literal(true), results: z.object({
 })) }) });
 export async function audienceHeatmap(area: LocationInterest, signal: AudienceSignal, abortSignal?: AbortSignal) {
   const response = heatmapResponse.safeParse(await qlooJson("/v2/insights", {
-    "filter.type": "urn:heatmap", "filter.location": `POINT(${area.longitude} ${area.latitude})`, "filter.location.radius": String(area.radius), ...signalParameters(signal),
+    "filter.type": "urn:heatmap", ...areaFilter(area), ...signalParameters(signal),
   }, abortSignal));
   if (!response.success) throw new ApiError(502, "Qloo returned invalid heatmap data.");
   return audienceHeatmapSchema.parse({ kind: "heatmap", title: signal.title, area, source: "Qloo", cells: response.data.results.heatmap.map(({ location, query }) => ({ ...location, affinity: query.affinity, rank: query.affinity_rank, popularity: query.popularity })) });

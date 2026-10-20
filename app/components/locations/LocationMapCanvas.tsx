@@ -3,7 +3,8 @@ import { LoaderCircle, MapPin } from "lucide-react";
 import { createPortal } from "react-dom";
 import { LngLatBounds, Map, Marker, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { areaBoundary, type LocationInterest } from "../../lib/locationInterest";
+import { areaBoundary, areaBounds, type LocationInterest } from "../../lib/locationInterest";
+import { countryAt } from "../../lib/countries";
 import LocationMapOptions from "./LocationMapOptions";
 import { useCurrentLocation } from "./useCurrentLocation";
 import MapAttribution from "./MapAttribution";
@@ -37,11 +38,18 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const select = useEffectEvent((longitude: number, latitude: number, name?: string) => onArea({
+  const select = useEffectEvent((longitude: number, latitude: number, name?: string) => {
+    if (area?.countryCode) {
+      const selected = countryAt(((longitude + 180) % 360 + 360) % 360 - 180, latitude);
+      if (selected) onArea({ ...area, countryCode: selected.code, name: selected.name, latitude: selected.latitude, longitude: selected.longitude });
+      return;
+    }
+    onArea({
     longitude: ((longitude + 180) % 360 + 360) % 360 - 180, latitude,
     name: name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, radius: area?.radius ?? 5_000, venueTypes: area?.venueTypes,
-  }));
+  }); });
   const selectPlace = useEffectEvent(onPlace);
+  const countryMode = useEffectEvent(() => Boolean(area?.countryCode));
   const initialArea = useRef(area);
   const initialThreeD = useRef(threeD);
   useEffect(() => {
@@ -63,7 +71,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     instance.on("load", () => {
       instance.addSource("interest", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       const color = getComputedStyle(container.current!).getPropertyValue("--accent").trim();
-      instance.addLayer({ id: "interest-fill", type: "fill", source: "interest", paint: { "fill-color": color, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.035, 15, 0] } });
+      instance.addLayer({ id: "interest-fill", type: "fill", source: "interest", paint: { "fill-color": color, "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.08, 15, 0.035] } });
       instance.addLayer({ id: "interest-edge", type: "line", source: "interest", paint: { "line-color": color, "line-width": 1.5 } });
       instance.setLayerZoomRange("building", 13, 24);
       loadedMap.current = instance;
@@ -71,6 +79,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     });
     instance.setStyle("https://tiles.openfreemap.org/styles/liberty", { transformStyle: (_, style) => cleanMapStyle(style) });
     instance.on("click", (event) => {
+      if (countryMode()) { select(event.lngLat.lng, event.lngLat.lat); return; }
       const features = instance.queryRenderedFeatures(event.point);
       if (features.some((feature) => ["audience-venue", "audience-clusters", "audience-count"].includes(feature.layer.id))) return;
       const feature = features.find((item) => item.sourceLayer === "poi" && typeof item.properties?.name === "string");
@@ -110,7 +119,7 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
     if (!ready || !instance) return;
     const source = instance.getSource<GeoJSONSource>("interest");
     source?.setData(area ? areaBoundary(area) : { type: "FeatureCollection", features: [] });
-    if (area) {
+    if (area && !area.countryCode) {
       if (!marker.current) {
         const element = document.createElement("div");
         element.className = styles.pin;
@@ -120,17 +129,17 @@ export default function LocationMapCanvas({ area, landmarks, threeD, scene, visi
       marker.current.getElement().setAttribute("aria-label", area.name);
       marker.current.setLngLat([area.longitude, area.latitude]);
     } else { marker.current?.remove(); marker.current = null; setPinElement(null); }
-  }, [ready, area?.name, area?.latitude, area?.longitude, area?.radius]);
+  }, [ready, area?.name, area?.latitude, area?.longitude, area?.radius, area?.countryCode]);
   useEffect(() => {
     if (!visible) map.current?.stop();
     else map.current?.resize();
   }, [visible]);
   useEffect(() => {
     if (!ready || !area || !loadedMap.current) return;
-    const bounds = new LngLatBounds();
-    for (const coordinate of areaBoundary(area).geometry.coordinates[0]) bounds.extend([coordinate[0], coordinate[1]]);
+    const [west, south, east, north] = areaBounds(area);
+    const bounds = new LngLatBounds([west, south], [east, north]);
     loadedMap.current.fitBounds(bounds, { padding: 32, maxZoom: 14, duration: animate ? 450 : 0 });
-  }, [ready, area?.latitude, area?.longitude, area?.radius, animate]);
+  }, [ready, area?.latitude, area?.longitude, area?.radius, area?.countryCode, animate]);
 
   useAudienceLayers(loadedMap, ready, scene, onPlace, setLayerError);
   useMapScene(loadedMap, ready, scene, threeD, visible, animate);

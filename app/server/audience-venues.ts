@@ -1,3 +1,4 @@
+import { areaFilter } from "./area-filter";
 import "server-only";
 import { affinityQuerySchema } from "../lib/affinityEvidence";
 import { affinityReferenceNames } from "./affinity-references";
@@ -11,8 +12,7 @@ export async function audienceVenues(area: LocationInterest, entityIds: string[]
   const filters = area.venueTypes ?? [];
   const selected = filters.length ? venueTypes.filter((item) => filters.includes(item.id)) : venueTypes;
   const parameters = { "feature.explainability": "true",
-    "filter.type": "urn:entity:place", "filter.location": `POINT(${area.longitude} ${area.latitude})`,
-    "filter.location.radius": String(area.radius), "filter.tags": selected.map((item) => item.tag).join(","),
+    "filter.type": "urn:entity:place", ...areaFilter(area), "filter.tags": selected.map((item) => item.tag).join(","),
     "operator.filter.tags": "union", take: "20",
     ...(entityIds.length ? { "signal.interests.entities": entityIds.join(",") } : {}),
     ...(tagIds.length ? { "signal.interests.tags": tagIds.join(",") } : {}),
@@ -30,7 +30,7 @@ export async function audienceVenues(area: LocationInterest, entityIds: string[]
       ...(item.properties?.description ? { description: item.properties.description } : {}),
       ...(item.properties?.address ? { address: item.properties.address } : {}),
       ...(publicWebUrl.safeParse(item.properties?.website).success ? { website: item.properties!.website } : {}),
-      ...(score.distance !== undefined ? { distanceMeters: score.distance } : {}),
+      ...(!area.countryCode && score.distance !== undefined ? { distanceMeters: score.distance } : {}),
       ...(contributions?.length ? { contributions } : {}),
       ...(item.properties?.customer_demographics_description ? { audienceProfile: item.properties.customer_demographics_description } : {}),
       ...((entityIds.length || tagIds.length) && score.affinity !== undefined ? { affinity: score.affinity } : {}),
