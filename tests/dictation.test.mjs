@@ -27,8 +27,11 @@ test('temporary dictation decodes browser audio, skips silence, rejects excessiv
   execFileSync(ffmpeg,['-v','error','-f','lavfi','-i','sine=frequency=440:duration=1','-c:a','libopus',voice]);
   assert.equal(await transcribeRecording(await readFile(voice),'matroska'),'A recorded message.');
   assert.equal(globalThis.dictationCalls,1);
+  const streamed=execFileSync(ffmpeg,['-v','error','-f','lavfi','-i','sine=frequency=440:duration=1','-c:a','libopus','-f','webm','pipe:1']);
+  assert.equal(await transcribeRecording(streamed,'matroska'),'A recorded message.');
+  assert.equal(globalThis.dictationCalls,2);
   execFileSync(ffmpeg,['-v','error','-f','lavfi','-i','anullsrc=r=16000:cl=mono','-t','1',silence]);
-  await assert.rejects(transcribeRecording(await readFile(silence),'wav'),{message:'No words detected. Record again.'});assert.equal(globalThis.dictationCalls,1);
+  await assert.rejects(transcribeRecording(await readFile(silence),'wav'),{message:'No words detected. Record again.'});assert.equal(globalThis.dictationCalls,2);
   execFileSync(ffmpeg,['-v','error','-f','lavfi','-i','anullsrc=r=16000:cl=mono','-t','181',long]);
   await assert.rejects(transcribeRecording(await readFile(long),'wav'),{message:'Recording exceeds 3 minutes. Record a shorter message.'});
   await assert.rejects(transcribeRecording(new Uint8Array([1,2,3]),'wav'));
