@@ -45,6 +45,7 @@ export async function analyzeYoutube(userId: string, node: FileNode, options: Op
       if (signal?.aborted) throw error;
       if (APICallError.isInstance(error)) {
         const status = error.statusCode;
+        console.error("Gemini YouTube request failed", { status, message: error.message.slice(0, 400) });
         if (status === 429) throw new ApiError(429, "Gemini free-tier limit reached. Try later or upload the video.");
         if (status === 401 || status === 403) throw new ApiError(503, "Gemini access is unavailable. Check GEMINI_API_KEY and API access.");
         if (status === 404) throw new ApiError(503, "The configured Gemini video model is unavailable.");
